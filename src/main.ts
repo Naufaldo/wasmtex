@@ -10,6 +10,10 @@ import { configurePdfjsWorker } from './viewer/pdf-viewer'
 import { WasmTex } from './wasmtex'
 import { VisualEditor } from './editor/visual-editor'
 import { LibraryView } from './library/library-view'
+import { SearchDialog } from './features/search-dialog'
+import { VersionHistoryDialog } from './features/version-history'
+import { CommentsPanel } from './features/comments-panel'
+import { ReviewManager } from './features/review-manager'
 import './styles.css'
 
 // Start warmup immediately — fetches TeX Live files in parallel while
@@ -486,6 +490,110 @@ async function start() {
     a.click()
     URL.revokeObjectURL(url)
   })
+
+  // 1. Search Dialog
+  const searchDialog = new SearchDialog({
+    getFiles: () => editor.listFiles(),
+    getFileContent: (file) => editor.getFile(file),
+    setFileContent: (file, content) => editor.setFile(file, content),
+    onOpenFile: (file, line) => {
+      activeFile = file
+      editor.openFile(file)
+      renderFileList(editor.listFiles())
+      if (line) editor.revealLine(line, file)
+      if (file.endsWith('.tex')) {
+        const c = editor.getFile(file)
+        if (typeof c === 'string') visualEditor.setLatex(c)
+      }
+    },
+    onRecompile: () => editor.compile(),
+  })
+  document.getElementById('btn-search')?.addEventListener('click', () => searchDialog.open())
+
+  // Global Ctrl+Shift+F shortcut for Search
+  window.addEventListener('keydown', (e) => {
+    if ((e.ctrlKey || e.metaKey) && e.shiftKey && e.key.toLowerCase() === 'f') {
+      e.preventDefault()
+      searchDialog.open()
+    }
+  })
+
+  // 2. Version History Dialog
+  const versionDialog = new VersionHistoryDialog({
+    getCurrentFiles: () => {
+      const map: Record<string, string> = {}
+      for (const f of editor.listFiles()) {
+        const content = editor.getFile(f)
+        if (typeof content === 'string') map[f] = content
+      }
+      return map
+    },
+    onRestore: (files) => {
+      for (const [f, c] of Object.entries(files)) {
+        editor.setFile(f, c)
+      }
+      renderFileList(editor.listFiles())
+      if (files['main.tex']) {
+        visualEditor.setLatex(files['main.tex'])
+        editor.openFile('main.tex')
+      }
+      editor.compile()
+    },
+  })
+  document.getElementById('btn-history')?.addEventListener('click', () => versionDialog.open())
+
+  // 3. Comments Panel
+  const badgeComments = document.getElementById('badge-comments') as HTMLElement
+  const commentsPanel = new CommentsPanel({
+    getActiveFile: () => activeFile,
+    getActiveSelection: () => {
+      const monaco = editor.getMonacoEditor()
+      if (monaco) {
+        const sel = monaco.getSelection()
+        const text = sel ? monaco.getModel()?.getValueInRange(sel) : ''
+        return {
+          text: text?.trim() || activeFile,
+          line: sel ? sel.startLineNumber : 1,
+        }
+      }
+      return { text: activeFile, line: 1 }
+    },
+    onJumpToLine: (file, line) => {
+      activeFile = file
+      editor.openFile(file)
+      renderFileList(editor.listFiles())
+      editor.revealLine(line, file)
+    },
+    onBadgeUpdate: (count) => {
+      if (badgeComments) {
+        badgeComments.textContent = String(count)
+        badgeComments.style.display = count > 0 ? 'inline-block' : 'none'
+      }
+    },
+  })
+  document.getElementById('btn-comments')?.addEventListener('click', () => commentsPanel.toggle())
+
+  // 4. Review Manager
+  const badgeReview = document.getElementById('badge-review') as HTMLElement
+  const reviewManager = new ReviewManager({
+    getActiveFile: () => activeFile,
+    getFileContent: (file) => editor.getFile(file),
+    setFileContent: (file, content) => {
+      editor.setFile(file, content)
+      if (file === activeFile) {
+        editor.openFile(file)
+        if (file.endsWith('.tex')) visualEditor.setLatex(content)
+      }
+    },
+    onRecompile: () => editor.compile(),
+    onBadgeUpdate: (count) => {
+      if (badgeReview) {
+        badgeReview.textContent = String(count)
+        badgeReview.style.display = count > 0 ? 'inline-block' : 'none'
+      }
+    },
+  })
+  document.getElementById('btn-review')?.addEventListener('click', () => reviewManager.togglePanel())
 
   addFileButton.addEventListener('click', () => {
     const decision = resolveAddFile(prompt('New file path'), (p) => editor.getFile(p) !== null)
