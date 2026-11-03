@@ -99,7 +99,7 @@ export function createEditor(
   ensureMonacoConfigured()
   return monaco.editor.create(container, {
     model,
-    theme: 'vs-dark',
+    theme: 'vs',
     fontSize: 14,
     lineNumbers: 'on',
     minimap: { enabled: false },

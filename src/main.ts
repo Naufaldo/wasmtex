@@ -15,7 +15,9 @@ import './styles.css'
 // cache (`?cache=1`) is active, since the durable cache seeds the engine and a
 // network warmup on every load would defeat the "near-zero fetches" goal.
 const persistentCacheRequested = new URLSearchParams(window.location.search).get('cache') === '1'
-const warmupPromise: Promise<WarmupCache> | null = persistentCacheRequested ? null : warmup()
+const warmupPromise: Promise<WarmupCache> | null = persistentCacheRequested
+  ? null
+  : warmup({ texliveUrl: `${window.location.origin}/texlive/2025/` })
 const WARMUP_TIMEOUT_MS = 8_000
 
 // Configure workers for the demo app — must happen before WasmTex is created
@@ -290,6 +292,7 @@ async function start() {
     texliveVersion: config.texliveVersion,
     persistentCache: config.persistentCache,
     incremental: config.incremental,
+    texliveUrl: `${window.location.origin}/texlive/${config.texliveVersion}/`,
   }
   if (warmupCache) opts.warmupCache = warmupCache
   if (files) {

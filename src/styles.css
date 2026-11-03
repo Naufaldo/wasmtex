@@ -18,7 +18,7 @@ body {
 }
 
 #editor-container {
-  border-right: 1px solid #404040;
+  border-right: 1px solid #e5e7eb;
 }
 
 .le-root *,
@@ -36,8 +36,8 @@ body {
   overflow: hidden;
   font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
   font-size: 14px;
-  background: #1e1e1e;
-  color: #ccc;
+  background: #ffffff;
+  color: #212529;
 }
 
 .le-main {
@@ -54,8 +54,8 @@ body {
 .le-left-panel {
   width: 180px;
   flex-shrink: 0;
-  background: #252526;
-  border-right: 1px solid #404040;
+  background: #f8f9fa;
+  border-right: 1px solid #e5e7eb;
   display: flex;
   flex-direction: column;
 }
@@ -73,7 +73,7 @@ body {
   display: flex;
   flex-direction: column;
   overflow-y: auto;
-  border-top: 1px solid #404040;
+  border-top: 1px solid #e5e7eb;
   min-height: 100px;
 }
 
@@ -81,12 +81,13 @@ body {
   flex: 1;
   min-width: 200px;
   position: relative;
+  background: #ffffff;
 }
 
 .le-root .le-viewer {
   flex: 1;
   min-width: 200px;
-  background: #333;
+  background: #e9ecef;
   overflow: auto;
   display: flex;
   flex-direction: column;
@@ -97,7 +98,7 @@ body {
 .le-root .divider {
   width: 4px;
   cursor: col-resize;
-  background: #404040;
+  background: #e5e7eb;
   flex-shrink: 0;
 }
 
@@ -109,8 +110,8 @@ body {
 .le-error-log {
   height: 0;
   flex-shrink: 0;
-  background: #1e1e1e;
-  border-top: 1px solid #404040;
+  background: #ffffff;
+  border-top: 1px solid #e5e7eb;
   overflow-y: auto;
   font-family: "Menlo", "Consolas", monospace;
   font-size: 12px;
@@ -138,7 +139,7 @@ body {
 }
 
 #status-detail {
-  color: rgba(255, 255, 255, 0.72);
+  color: rgba(255, 255, 255, 0.85);
   font-size: 11px;
 }
 
@@ -181,9 +182,9 @@ body {
 }
 
 .le-version-select {
-  background: rgba(255, 255, 255, 0.1);
+  background: rgba(255, 255, 255, 0.2);
   color: white;
-  border: none;
+  border: 1px solid rgba(255, 255, 255, 0.4);
   border-radius: 2px;
   font-size: 11px;
   padding: 1px 4px;
@@ -192,12 +193,12 @@ body {
 }
 
 .le-version-select option {
-  background: #333;
-  color: white;
+  background: #ffffff;
+  color: #212529;
 }
 
 .le-version-select:hover {
-  background: rgba(255, 255, 255, 0.2);
+  background: rgba(255, 255, 255, 0.35);
 }
 
 .le-error-log .log-header {
@@ -205,15 +206,16 @@ body {
   align-items: center;
   justify-content: space-between;
   padding: 4px 12px;
-  background: #2d2d2d;
-  border-bottom: 1px solid #404040;
+  background: #f1f3f5;
+  border-bottom: 1px solid #e5e7eb;
   cursor: pointer;
   position: sticky;
   top: 0;
+  color: #212529;
 }
 
 .le-error-log .log-header .badge {
-  background: #f44747;
+  background: #dc3545;
   color: #fff;
   border-radius: 8px;
   padding: 0 6px;
@@ -227,6 +229,7 @@ body {
   word-break: break-all;
   user-select: text;
   cursor: text;
+  color: #212529;
 }
 
 .le-error-log .log-entry.clickable {
@@ -234,15 +237,15 @@ body {
 }
 
 .le-error-log .log-entry:hover {
-  background: #2a2d2e;
+  background: #f8f9fa;
 }
 
 .le-error-log .log-entry.error {
-  color: #f44747;
+  color: #dc3545;
 }
 
 .le-error-log .log-entry.warning {
-  color: #dcdcaa;
+  color: #b45309;
 }
 
 /* File tree */
@@ -254,14 +257,15 @@ body {
   font-size: 11px;
   text-transform: uppercase;
   letter-spacing: 0.5px;
-  color: #888;
-  border-bottom: 1px solid #404040;
+  color: #495057;
+  border-bottom: 1px solid #e5e7eb;
+  font-weight: 600;
 }
 
 .file-tree-header button {
   background: none;
   border: none;
-  color: #ccc;
+  color: #495057;
   cursor: pointer;
   font-size: 16px;
   padding: 0 4px;
@@ -269,7 +273,7 @@ body {
 }
 
 .file-tree-header button:hover {
-  color: #fff;
+  color: #000;
 }
 
 .file-item {
@@ -279,22 +283,23 @@ body {
   overflow: hidden;
   text-overflow: ellipsis;
   font-size: 13px;
+  color: #343a40;
 }
 
 .file-item:hover {
-  background: #2a2d2e;
+  background: #e9ecef;
 }
 
 .file-item.active {
-  background: #094771;
-  color: #fff;
+  background: #0d6efd;
+  color: #ffffff;
 }
 
 .file-item .delete-btn {
   float: right;
   background: none;
   border: none;
-  color: #666;
+  color: #6c757d;
   cursor: pointer;
   font-size: 12px;
   display: none;
@@ -305,7 +310,7 @@ body {
 }
 
 .file-item .delete-btn:hover {
-  color: #f44747;
+  color: #dc3545;
 }
 
 /* PDF viewer loading overlay */
@@ -321,13 +326,13 @@ body {
 
 .pdf-loading-text {
   font-size: 13px;
-  color: #888;
+  color: #495057;
 }
 
 .pdf-loading-bar {
   width: 160px;
   height: 3px;
-  background: #444;
+  background: #dee2e6;
   border-radius: 2px;
   overflow: hidden;
 }
@@ -343,7 +348,7 @@ body {
 /* PDF viewer */
 .pdf-page-container {
   margin-bottom: 8px;
-  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.3);
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15);
 }
 
 .pdf-page-container canvas {
@@ -358,15 +363,17 @@ body {
   align-items: center;
   gap: 8px;
   padding: 4px 8px;
-  background: rgba(45, 45, 45, 0.9);
+  background: rgba(255, 255, 255, 0.95);
+  border: 1px solid #dee2e6;
   border-radius: 4px;
   margin-bottom: 8px;
+  box-shadow: 0 2px 6px rgba(0, 0, 0, 0.08);
 }
 
 .pdf-download-btn {
-  background: #404040;
-  border: none;
-  color: #ccc;
+  background: #ffffff;
+  border: 1px solid #ced4da;
+  color: #212529;
   padding: 2px 8px;
   cursor: pointer;
   border-radius: 3px;
@@ -375,13 +382,14 @@ body {
 }
 
 .pdf-download-btn:hover {
-  background: #505050;
+  background: #f8f9fa;
+  border-color: #adb5bd;
 }
 
 .pdf-controls button {
-  background: #404040;
-  border: none;
-  color: #ccc;
+  background: #ffffff;
+  border: 1px solid #ced4da;
+  color: #212529;
   padding: 2px 8px;
   cursor: pointer;
   border-radius: 3px;
@@ -389,12 +397,13 @@ body {
 }
 
 .pdf-controls button:hover {
-  background: #505050;
+  background: #f8f9fa;
+  border-color: #adb5bd;
 }
 
 .pdf-controls span {
   font-size: 12px;
-  color: #999;
+  color: #495057;
 }
 
 .pdf-controls .zoom-label {
@@ -404,7 +413,7 @@ body {
 }
 
 .pdf-controls .zoom-label:hover {
-  color: #ccc;
+  color: #000;
 }
 
 /* Binary file preview */
@@ -417,7 +426,7 @@ body {
   display: flex;
   align-items: center;
   justify-content: center;
-  background: #1e1e1e;
+  background: #ffffff;
   z-index: 10;
 }
 
@@ -428,7 +437,7 @@ body {
 }
 
 .binary-preview-info {
-  color: #888;
+  color: #495057;
   font-size: 14px;
 }
 
@@ -450,12 +459,13 @@ body {
   font-size: 11px;
   text-transform: uppercase;
   letter-spacing: 0.5px;
-  color: #888;
-  background: #2d2d2d;
-  border-bottom: 1px solid #404040;
+  color: #495057;
+  background: #f1f3f5;
+  border-bottom: 1px solid #e5e7eb;
   position: sticky;
   top: 0;
   z-index: 5;
+  font-weight: 600;
 }
 
 .outline-item {
@@ -465,24 +475,24 @@ body {
   overflow: hidden;
   text-overflow: ellipsis;
   font-size: 13px;
-  color: #ccc;
+  color: #343a40;
 }
 
 .outline-item:hover {
-  background: #2a2d2e;
-  color: #fff;
+  background: #e9ecef;
+  color: #000;
 }
 
 .outline-item.active {
-  background: #37373d;
-  color: #fff;
-  box-shadow: inset 2px 0 0 #007acc;
+  background: #e7f1ff;
+  color: #0d6efd;
+  box-shadow: inset 2px 0 0 #0d6efd;
 }
 
 .outline-empty {
   padding: 12px;
   font-size: 12px;
-  color: #666;
+  color: #6c757d;
   font-style: italic;
 }
 
@@ -493,7 +503,7 @@ body {
   overflow: hidden;
   text-overflow: ellipsis;
   font-size: 13px;
-  color: #ccc;
+  color: #343a40;
   display: flex;
   align-items: center;
   gap: 4px;
@@ -501,11 +511,11 @@ body {
 }
 
 .folder-item:hover {
-  background: #2a2d2e;
+  background: #e9ecef;
 }
 
 .folder-item.drag-over {
-  background: #094771;
+  background: #d0e2ff;
 }
 
 .folder-toggle {
@@ -516,5 +526,5 @@ body {
 }
 
 .folder-name {
-  color: #ccc;
+  color: #343a40;
 }
