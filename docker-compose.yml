@@ -1,0 +1,14 @@
+version: '3.8'
+
+services:
+  cortex-studio:
+    build:
+      context: .
+      dockerfile: Dockerfile
+    image: wasmtex-cortex:latest
+    container_name: cortex-studio
+    restart: unless-stopped
+    ports:
+      - "8080:8080"
+    environment:
+      - NODE_ENV=production

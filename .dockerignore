@@ -1,0 +1,12 @@
+node_modules
+.git
+.github
+test
+e2e
+playwright*
+coverage
+dist
+lib
+*.log
+.DS_Store
+Thumbs.db

@@ -119,10 +119,9 @@ export class VisualEditor {
     const el = document.createElement('div')
     el.innerHTML = html
     const frag = document.createDocumentFragment()
-    let node: ChildNode | null
     let lastNode: ChildNode | null = null
-    while ((node = el.firstChild)) {
-      lastNode = frag.appendChild(node)
+    while (el.firstChild) {
+      lastNode = frag.appendChild(el.firstChild)
     }
     range.insertNode(frag)
     if (lastNode) {

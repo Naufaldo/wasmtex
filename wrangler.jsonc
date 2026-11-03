@@ -1,6 +1,6 @@
 {
   "$schema": "node_modules/wrangler/config-schema.json",
-  "name": "wasmtex",
+  "name": "wasmtex-studio",
   "main": "worker/index.ts",
   "compatibility_date": "2026-11-02",
   "assets": {
