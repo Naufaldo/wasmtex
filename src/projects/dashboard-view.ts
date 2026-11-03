@@ -126,17 +126,17 @@ export class DashboardView {
             <div class="tactical-hero-left">
               <div>
                 <div class="unit-classification-tag">
-                  ACADEMIC RESEARCH LAB / WASMTEX COMPILER CORE
+                  PURPOSE: BROWSER-NATIVE SCIENTIFIC PUBLISHING &amp; LATEX WORKSPACE
                 </div>
                 <h1 class="hero-headline-serif">
                   Scaling Academic<span class="headline-reg">®</span> Research &amp; LaTeX Intelligence
                 </h1>
                 <p class="hero-description-mono">
-                  Next-generation browser-native LaTeX compilation core powered by WebAssembly. Sub-second incremental compilation, visual-code AST synchronization, and zero-install client runtime.
+                  Pusat kerja terpadu untuk penulisan naskah LaTeX, kompilasi WebAssembly sub-detik, sinkronisasi AST, dan manajemen referensi sitasi riset tanpa instalasi lokal.
                 </p>
 
                 <div class="hero-action-row">
-                  <button id="dash-new-project-btn" class="tactical-cta-btn cta-orange">
+                  <button id="dash-new-project-btn" class="tactical-cta-btn cta-orange" title="Mulai buat dokumen LaTeX baru dari template awal">
                     <span class="bracket-corner tl"></span>
                     <span class="bracket-corner tr"></span>
                     <span class="bracket-corner bl"></span>
@@ -144,14 +144,22 @@ export class DashboardView {
                     <span class="cta-inner">+ NEW MANUSCRIPT</span>
                   </button>
 
-                  <label for="dash-import-file-input" class="tactical-cta-btn cta-secondary" title="Upload .tex or .zip">
+                  <label for="dash-import-file-input" class="tactical-cta-btn cta-secondary" title="Impor file .tex tunggal atau .zip proyek (otomatis diekstrak)">
                     <span class="bracket-corner tl"></span>
                     <span class="bracket-corner tr"></span>
                     <span class="bracket-corner bl"></span>
                     <span class="bracket-corner br"></span>
-                    <span class="cta-inner">⬆ IMPORT LATEX</span>
+                    <span class="cta-inner">⬆ IMPORT LATEX / ZIP</span>
                     <input type="file" id="dash-import-file-input" accept=".tex,.bib,.txt,.zip" style="display:none;" />
                   </label>
+
+                  <button id="dash-goto-library-btn" class="tactical-cta-btn cta-secondary" title="Kelola katalog referensi literatur dan sitasi BibTeX">
+                    <span class="bracket-corner tl"></span>
+                    <span class="bracket-corner tr"></span>
+                    <span class="bracket-corner bl"></span>
+                    <span class="bracket-corner br"></span>
+                    <span class="cta-inner">📚 RESEARCH LIBRARY</span>
+                  </button>
                 </div>
               </div>
 
@@ -241,7 +249,12 @@ export class DashboardView {
             <div class="archive-section-header">
               <div class="archive-title-wrap">
                 <span class="archive-index">[ 02 ]</span>
-                <span class="archive-heading">RESEARCH LIBRARY &amp; LITERATURE REPOSITORY</span>
+                <div>
+                  <div class="archive-heading">RESEARCH LIBRARY &amp; LITERATURE REPOSITORY</div>
+                  <div style="font-family: var(--font-mono); font-size: 11px; color: var(--text-muted); margin-top: 2px;">
+                    Katalog literatur ilmiah &amp; sitasi BibTeX. Klik "ADD TO BIBTEX" untuk menyisipkan referensi langsung ke naskah Anda.
+                  </div>
+                </div>
               </div>
               <div class="archive-actions-wrap" style="display:flex; align-items:center; gap:10px;">
                 <div style="display:flex; align-items:center; gap:6px;">
@@ -293,7 +306,12 @@ export class DashboardView {
             <div class="archive-section-header">
               <div class="archive-title-wrap">
                 <span class="archive-index">[ 01 ]</span>
-                <span class="archive-heading">MANUSCRIPT &amp; RESEARCH ARCHIVE</span>
+                <div>
+                  <div class="archive-heading">MANUSCRIPT &amp; RESEARCH ARCHIVE</div>
+                  <div style="font-family: var(--font-mono); font-size: 11px; color: var(--text-muted); margin-top: 2px;">
+                    Daftar dokumen naskah ilmiah Anda. Klik baris dokumen untuk membuka dan mengedit langsung di editor workspace.
+                  </div>
+                </div>
               </div>
               <div class="archive-search-container">
                 <span class="search-terminal-prompt">&gt;_</span>
@@ -437,6 +455,12 @@ export class DashboardView {
   private bindEvents(): void {
     const newBtn = this.container.querySelector('#dash-new-project-btn')
     newBtn?.addEventListener('click', () => this.promptNewProject())
+
+    const gotoLibBtn = this.container.querySelector('#dash-goto-library-btn')
+    gotoLibBtn?.addEventListener('click', () => {
+      this.currentFilter = 'library'
+      this.render()
+    })
 
     // Research Library bindings on Dashboard
     const libProjectSelect = this.container.querySelector('#dash-lib-project-select') as HTMLSelectElement | null
