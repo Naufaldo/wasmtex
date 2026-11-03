@@ -6,124 +6,140 @@
   <title>CorTeX Personal Workspace — LaTeX & Research Studio</title>
 </head>
 <body>
-  <div id="app" class="le-root">
-    <!-- Top Application Header -->
-    <header class="app-topbar">
-      <div class="topbar-brand">
-        <span class="brand-logo">📐</span>
-        <span class="brand-title">CorTeX Studio</span>
-        <input type="text" id="doc-title-input" class="doc-title-input" value="Academic Paper Manuscript" title="Click to rename document" />
-      </div>
-
-      <!-- Navigation Tabs -->
-      <nav class="topbar-nav">
-        <button id="nav-tab-editor" class="topbar-nav-tab active">✍️ Editor</button>
-        <button id="nav-tab-library" class="topbar-nav-tab">📚 Research Library</button>
-      </nav>
-
-      <!-- Editor Mode Controls & Actions -->
-      <div class="topbar-actions">
-        <!-- Feature Tools -->
-        <button id="btn-search" class="topbar-btn topbar-btn-outline" title="Search & Replace (Ctrl+Shift+F)">
-          🔍 Search
-        </button>
-        <button id="btn-history" class="topbar-btn topbar-btn-outline" title="Version History & Snapshots">
-          🕒 History
-        </button>
-        <button id="btn-comments" class="topbar-btn topbar-btn-outline" title="Comments">
-          💬 Comments <span id="badge-comments" class="topbar-badge" style="display:none">0</span>
-        </button>
-        <button id="btn-review" class="topbar-btn topbar-btn-outline" title="Track Changes & Review">
-          📝 Review <span id="badge-review" class="topbar-badge" style="display:none">0</span>
-        </button>
-
-        <div class="editor-mode-toggle" id="editor-mode-toggle">
-          <button id="btn-mode-visual" class="mode-btn active" title="Visual WYSIWYG Mode">Visual</button>
-          <button id="btn-mode-code" class="mode-btn" title="LaTeX Code Mode">Code</button>
-          <button id="btn-mode-split" class="mode-btn" title="Split Dual Mode">Split</button>
-        </div>
-
-        <button id="recompile-btn" class="topbar-btn topbar-btn-primary" title="Recompile LaTeX PDF">
-          ▶ Recompile
-        </button>
-        <button id="download-pdf-btn" class="topbar-btn topbar-btn-outline" title="Download compiled PDF">
-          ⬇ PDF
-        </button>
-      </div>
-    </header>
-
-    <!-- Main Workspace Container -->
-    <main class="app-main-view">
-      <!-- 1. Editor View -->
-      <div id="view-editor" class="view-panel active">
-        <aside id="file-tree-panel" class="le-left-panel panel">
-          <div class="le-file-tree">
-            <div class="file-tree-header">
-              <span>Project Files</span>
-              <div class="file-tree-btns">
-                <button id="add-file-btn" title="New file">+</button>
-              </div>
-            </div>
-            <div id="file-tree-list"></div>
-          </div>
-          <div class="le-outline">
-            <div class="outline-header">Document Outline</div>
-            <div id="outline-list"></div>
-          </div>
-        </aside>
-
-        <div class="divider"></div>
-
-        <!-- Center Editor Area (Supports Visual, Code, and Split modes) -->
-        <div id="editor-wrapper" class="editor-wrapper mode-visual">
-          <div id="visual-editor-container" class="visual-editor-container"></div>
-          <div id="editor-container" class="le-editor panel"></div>
-        </div>
-
-        <div class="divider"></div>
-
-        <!-- Right Preview Area -->
-        <div id="preview-container" class="le-viewer panel"></div>
-      </div>
-
-      <!-- 2. Research Library View -->
-      <div id="view-library" class="view-panel">
-        <div id="library-container" class="library-container"></div>
-      </div>
-    </main>
-
-    <!-- Error Diagnostics Panel -->
-    <div id="error-log-panel" class="le-error-log">
-      <div class="log-header">
-        <span>Diagnostics & Compiler Output</span>
-        <span id="error-count" class="badge">0</span>
-      </div>
-      <div id="error-log-list"></div>
+  <div id="app" class="app-root theme-light">
+    <!-- View 1: Overleaf-style Dashboard -->
+    <div id="view-dashboard" class="app-page-view active">
+      <div id="dashboard-container" class="dashboard-container"></div>
     </div>
 
-    <!-- Status Bar -->
-    <footer id="status-bar" class="le-status-bar">
-      <div class="le-status-group">
-        <span id="status">Initializing...</span>
-        <span id="status-detail"></span>
-      </div>
-      <div class="le-status-controls">
-        <div class="le-version-info">
-          <label for="project-select">Project:</label>
-          <select id="project-select" class="le-version-select">
-            <option value="default">Default</option>
-            <option value="sample">Sample</option>
-          </select>
+    <!-- View 2: Overleaf-style Editor Workspace -->
+    <div id="view-workspace" class="app-page-view">
+      <!-- Editor Top Bar (Overleaf style) -->
+      <header class="app-topbar">
+        <div class="topbar-left">
+          <button id="btn-back-dashboard" class="topbar-back-btn" title="Back to Projects Dashboard">
+            <span class="back-arrow">&larr;</span> Projects
+          </button>
+          <div class="topbar-divider"></div>
+          <span class="brand-logo-small">📐</span>
+          <input type="text" id="doc-title-input" class="doc-title-input" value="Academic Paper Manuscript" title="Click to rename document" />
         </div>
-        <div class="le-version-info">
-          <label for="texlive-version">TeX Live:</label>
-          <select id="texlive-version" class="le-version-select">
-            <option value="2025">2025</option>
-            <option value="2026">2026</option>
-          </select>
+
+        <div class="topbar-center">
+          <nav class="topbar-nav">
+            <button id="nav-tab-editor" class="topbar-nav-tab active">✍️ Editor</button>
+            <button id="nav-tab-library" class="topbar-nav-tab">📚 Research Library</button>
+          </nav>
         </div>
+
+        <div class="topbar-actions">
+          <!-- Overleaf-style Action Icons -->
+          <button id="btn-review" class="topbar-icon-action" title="Track Changes & Review">
+            <span class="icon-svg">📝</span> Review <span id="badge-review" class="topbar-badge" style="display:none">0</span>
+          </button>
+          <button id="btn-comments" class="topbar-icon-action" title="Comments">
+            <span class="icon-svg">💬</span> <span id="badge-comments" class="topbar-badge" style="display:none">0</span>
+          </button>
+          <button id="btn-history" class="topbar-icon-action" title="History & Changelog">
+            <span class="icon-svg">🕒</span> History
+          </button>
+          <button id="btn-search" class="topbar-icon-action" title="Find in Project (Ctrl+Shift+F)">
+            <span class="icon-svg">🔍</span>
+          </button>
+          <button id="btn-theme-toggle" class="topbar-icon-action" title="Toggle Light / Dark Mode">
+            <span id="theme-icon">🌙</span>
+          </button>
+
+          <div class="editor-mode-toggle" id="editor-mode-toggle">
+            <button id="btn-mode-visual" class="mode-btn active" title="Visual Mode">Visual</button>
+            <button id="btn-mode-code" class="mode-btn" title="Code Mode">Code</button>
+            <button id="btn-mode-split" class="mode-btn" title="Split Mode">Split</button>
+          </div>
+
+          <button id="recompile-btn" class="topbar-btn topbar-btn-primary" title="Recompile LaTeX PDF">
+            ▶ Recompile
+          </button>
+          <button id="download-pdf-btn" class="topbar-btn topbar-btn-outline" title="Download compiled PDF">
+            ⬇ PDF
+          </button>
+        </div>
+      </header>
+
+      <!-- Main Workspace Views -->
+      <main class="app-main-view">
+        <!-- 1. Editor View -->
+        <div id="view-editor" class="view-panel active">
+          <!-- Overleaf-style Left Sidebar -->
+          <aside id="file-tree-panel" class="le-left-panel panel">
+            <!-- Sidebar toolbar: + File, + Folder, Upload -->
+            <div class="sidebar-top-tools">
+              <span class="sidebar-files-label">FILES</span>
+              <div class="sidebar-tool-icons">
+                <button id="add-file-btn" class="sidebar-tool-btn" title="New file">📄+</button>
+                <button id="add-folder-btn" class="sidebar-tool-btn" title="New folder">📁+</button>
+                <label for="upload-file-input" class="sidebar-tool-btn" title="Upload file" style="cursor: pointer; margin: 0;">
+                  ⬆
+                  <input type="file" id="upload-file-input" style="display: none;" />
+                </label>
+              </div>
+            </div>
+            <div id="file-tree-list" class="le-file-tree"></div>
+
+            <div class="le-outline">
+              <div class="outline-header">OUTLINE</div>
+              <div id="outline-list"></div>
+            </div>
+          </aside>
+
+          <div class="divider"></div>
+
+          <!-- Center Editor Area (Supports Visual, Code, and Split modes) -->
+          <div id="editor-wrapper" class="editor-wrapper mode-visual">
+            <div id="visual-editor-container" class="visual-editor-container"></div>
+            <div id="editor-container" class="le-editor panel"></div>
+          </div>
+
+          <div class="divider"></div>
+
+          <!-- Right PDF Preview Area -->
+          <div id="preview-container" class="le-viewer panel"></div>
+        </div>
+
+        <!-- 2. Research Library View -->
+        <div id="view-library" class="view-panel">
+          <div id="library-container" class="library-container"></div>
+        </div>
+      </main>
+
+      <!-- Hidden Diagnostics Drawer (Popup on demand, never blocks screen) -->
+      <div id="diagnostics-drawer" class="diagnostics-drawer">
+        <div class="drawer-header">
+          <span class="drawer-title">Diagnostics & Compiler Output</span>
+          <button class="modal-close-btn" id="diagnostics-drawer-close">&times;</button>
+        </div>
+        <div id="error-log-list" class="diagnostics-drawer-body"></div>
       </div>
-    </footer>
+
+      <!-- Minimal Status Bar -->
+      <footer id="status-bar" class="le-status-bar">
+        <div class="le-status-group">
+          <span id="status">Ready</span>
+          <span id="status-detail"></span>
+        </div>
+        <div class="le-status-controls">
+          <button id="btn-toggle-diagnostics" class="status-diagnostics-pill" title="Click to view compiler diagnostics">
+            ✓ 0 Diagnostics
+          </button>
+          <div class="le-version-info">
+            <label for="texlive-version">TeX Live:</label>
+            <select id="texlive-version" class="le-version-select">
+              <option value="2025">2025</option>
+              <option value="2026">2026</option>
+            </select>
+          </div>
+        </div>
+      </footer>
+    </div>
   </div>
   <script type="module" src="/src/main.ts"></script>
 </body>

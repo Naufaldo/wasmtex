@@ -5,7 +5,6 @@ import { defaultFileContent } from './fs/default-file-content'
 import type { SectionDef } from './lsp/types'
 import { mergeDiagnostics, type PanelDiagnostic, resolveAddFile } from './main-helpers'
 import type { AppStatus, WarmupCache } from './types'
-import { hasErrorsOrWarnings } from './ui/diagnostics-panel'
 import { configurePdfjsWorker } from './viewer/pdf-viewer'
 import { WasmTex } from './wasmtex'
 import { VisualEditor } from './editor/visual-editor'
@@ -14,6 +13,8 @@ import { SearchDialog } from './features/search-dialog'
 import { VersionHistoryDialog } from './features/version-history'
 import { CommentsPanel } from './features/comments-panel'
 import { ReviewManager } from './features/review-manager'
+import { DashboardView } from './projects/dashboard-view'
+import { type ProjectItem, saveProject } from './projects/project-store'
 import './styles.css'
 
 // Start warmup immediately — fetches TeX Live files in parallel while
@@ -35,14 +36,12 @@ const editorContainer = document.getElementById('editor-container')!
 const previewContainer = document.getElementById('preview-container')!
 const fileTreeContainer = document.getElementById('file-tree-list') as HTMLDivElement
 const outlineContainer = document.getElementById('outline-list') as HTMLDivElement
-const errorLogPanel = document.getElementById('error-log-panel') as HTMLDivElement
 const errorLogList = document.getElementById('error-log-list') as HTMLDivElement
-const errorCountElement = document.getElementById('error-count') as HTMLSpanElement
 const addFileButton = document.getElementById('add-file-btn') as HTMLButtonElement
 const texliveVersionSelect = document.getElementById('texlive-version') as HTMLSelectElement
-const projectSelect = document.getElementById('project-select') as HTMLSelectElement
 const statusElement = document.getElementById('status') as HTMLSpanElement
 const statusDetailElement = document.getElementById('status-detail') as HTMLSpanElement
+let activeProjectId = 'default'
 let editorRef: WasmTex | null = null
 let visualEditorRef: VisualEditor | null = null
 let lastCompileErrors: PanelDiagnostic[] = []
@@ -214,29 +213,37 @@ function renderOutline(sections: SectionDef[]): void {
 function renderDiagnostics(
   diagnostics: Array<{ file?: string; line: number; message: string; severity: string }>,
 ): void {
-  errorLogList.innerHTML = ''
+  if (errorLogList) errorLogList.innerHTML = ''
 
   const errors = diagnostics.filter((entry) => entry.severity === 'error')
+  const warnings = diagnostics.filter((entry) => entry.severity === 'warning')
 
-  errorCountElement.textContent = `${errors.length}/${diagnostics.length}`
+  const pill = document.getElementById('btn-toggle-diagnostics')
+  if (pill) {
+    if (errors.length > 0) {
+      pill.textContent = `❌ ${errors.length} Error${errors.length > 1 ? 's' : ''}`
+      pill.style.background = '#dc2626'
+    } else if (warnings.length > 0) {
+      pill.textContent = `⚠️ ${warnings.length} Warning${warnings.length > 1 ? 's' : ''}`
+      pill.style.background = '#d97706'
+    } else {
+      pill.textContent = '✓ 0 Diagnostics'
+      pill.style.background = 'rgba(255, 255, 255, 0.15)'
+    }
+  }
 
   if (diagnostics.length === 0) {
-    errorLogPanel.classList.remove('open')
-
-    const empty = document.createElement('div')
-    empty.className = 'log-entry'
-    empty.textContent = 'No diagnostics'
-    errorLogPanel.style.height = '0'
-    errorLogList.appendChild(empty)
+    if (errorLogList) {
+      const empty = document.createElement('div')
+      empty.className = 'log-entry'
+      empty.textContent = 'No diagnostics reported'
+      errorLogList.appendChild(empty)
+    }
     return
   }
 
-  errorLogPanel.classList.add('open')
-  errorLogPanel.style.height = ''
-
   for (const entry of diagnostics) {
     const item = document.createElement('div')
-
     item.className = `log-entry ${entry.severity}`
     item.textContent = `${entry.file ? `${entry.file}:` : ''}${entry.line} ${entry.message}`
 
@@ -248,11 +255,7 @@ function renderDiagnostics(
       })
     }
 
-    errorLogList.appendChild(item)
-  }
-
-  if (!hasErrorsOrWarnings(diagnostics)) {
-    errorLogPanel.classList.remove('open')
+    errorLogList?.appendChild(item)
   }
 }
 
@@ -595,6 +598,120 @@ async function start() {
   })
   document.getElementById('btn-review')?.addEventListener('click', () => reviewManager.togglePanel())
 
+  // Theme Management (Light / Dark mode toggle)
+  let isDark = localStorage.getItem('wasmtex_theme') === 'dark'
+  const applyTheme = (dark: boolean) => {
+    isDark = dark
+    localStorage.setItem('wasmtex_theme', dark ? 'dark' : 'light')
+    const app = document.getElementById('app')
+    if (app) {
+      app.className = dark ? 'app-root theme-dark' : 'app-root theme-light'
+    }
+    const themeIcon = document.getElementById('theme-icon')
+    if (themeIcon) themeIcon.textContent = dark ? '☀️' : '🌙'
+    const monacoGlobal = (globalThis as Record<string, unknown>).monaco as
+      | { editor?: { setTheme?: (t: string) => void } }
+      | undefined
+    monacoGlobal?.editor?.setTheme?.(dark ? 'vs-dark' : 'vs')
+  }
+  applyTheme(isDark)
+
+  document.getElementById('btn-theme-toggle')?.addEventListener('click', () => {
+    applyTheme(!isDark)
+  })
+
+  // Diagnostics Drawer Toggle
+  const diagDrawer = document.getElementById('diagnostics-drawer')
+  document.getElementById('btn-toggle-diagnostics')?.addEventListener('click', () => {
+    diagDrawer?.classList.toggle('open')
+  })
+  document.getElementById('diagnostics-drawer-close')?.addEventListener('click', () => {
+    diagDrawer?.classList.remove('open')
+  })
+
+  // Dashboard & Workspace Navigation
+  const viewDashboard = document.getElementById('view-dashboard')!
+  const viewWorkspace = document.getElementById('view-workspace')!
+
+  const showDashboard = () => {
+    viewDashboard.classList.add('active')
+    viewWorkspace.classList.remove('active')
+    dashboardView.init()
+  }
+
+  const showWorkspace = (proj: ProjectItem) => {
+    activeProjectId = proj.id
+    viewDashboard.classList.remove('active')
+    viewWorkspace.classList.add('active')
+
+    const docTitleInput = document.getElementById('doc-title-input') as HTMLInputElement
+    if (docTitleInput) docTitleInput.value = proj.title
+
+    for (const [name, text] of Object.entries(proj.files)) {
+      editor.setFile(name, text)
+    }
+    activeFile = 'main.tex'
+    editor.openFile('main.tex')
+    renderFileList(editor.listFiles())
+    if (proj.files['main.tex']) {
+      visualEditor.setLatex(proj.files['main.tex'])
+    }
+    editor.compile()
+  }
+
+  const dashboardContainer = document.getElementById('dashboard-container')!
+  const dashboardView = new DashboardView(dashboardContainer, {
+    onOpenProject: showWorkspace,
+    onToggleTheme: () => applyTheme(!isDark),
+    isDarkMode: () => isDark,
+  })
+  dashboardView.init()
+
+  document.getElementById('btn-back-dashboard')?.addEventListener('click', showDashboard)
+
+  // Document Title update
+  const docTitleInput = document.getElementById('doc-title-input') as HTMLInputElement
+  docTitleInput?.addEventListener('change', () => {
+    if (activeProjectId && activeProjectId !== 'default') {
+      const filesMap: Record<string, string> = {}
+      for (const f of editor.listFiles()) {
+        const c = editor.getFile(f)
+        if (typeof c === 'string') filesMap[f] = c
+      }
+      saveProject({
+        id: activeProjectId,
+        title: docTitleInput.value,
+        owner: 'You',
+        lastModified: Date.now(),
+        files: filesMap,
+        tags: ['Custom'],
+      })
+    }
+  })
+
+  // Sidebar File upload & Folder creation
+  const uploadInput = document.getElementById('upload-file-input') as HTMLInputElement
+  uploadInput?.addEventListener('change', async (e) => {
+    const file = (e.target as HTMLInputElement).files?.[0]
+    if (!file) return
+    if (FILE_EXTENSIONS_THAT_ARE_BINARY.test(file.name)) {
+      const buf = new Uint8Array(await file.arrayBuffer())
+      editor.setFile(file.name, buf)
+    } else {
+      const text = await file.text()
+      editor.setFile(file.name, text)
+    }
+    renderFileList(editor.listFiles())
+  })
+
+  document.getElementById('add-folder-btn')?.addEventListener('click', () => {
+    const folder = prompt('Folder name:')
+    if (folder) {
+      editor.setFile(`${folder.replace(/\/$/, '')}/placeholder.tex`, '% Folder placeholder')
+      renderFileList(editor.listFiles())
+    }
+  })
+
   addFileButton.addEventListener('click', () => {
     const decision = resolveAddFile(prompt('New file path'), (p) => editor.getFile(p) !== null)
     if (decision.action === 'cancel') return
@@ -618,6 +735,7 @@ async function start() {
 
 function bindDemoSelectors(): void {
   const config = readDemoConfig()
+  const projectSelect = document.getElementById('project-select') as HTMLSelectElement | null
 
   if (projectSelect) {
     projectSelect.value = config.project
