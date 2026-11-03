@@ -32,24 +32,84 @@ export class VisualEditor {
   private initLayout(): void {
     this.container.innerHTML = `
       <div class="ve-root">
-        <!-- Visual Editor Toolbar -->
+        <!-- Word-Style Formatting Ribbon / Toolbar -->
         <div class="ve-toolbar">
+          <!-- Undo / Redo -->
+          <div class="ve-btn-group">
+            <button class="ve-tool-btn" data-command="undo" title="Undo (Ctrl+Z)">↺</button>
+            <button class="ve-tool-btn" data-command="redo" title="Redo (Ctrl+Y)">↻</button>
+          </div>
+
+          <!-- Section Level / Style Dropdown -->
+          <div class="ve-btn-group">
+            <select id="ve-style-select" class="ve-tool-select" title="Paragraph Style / Section Level">
+              <option value="p">Paragraph (Normal)</option>
+              <option value="h1">Heading 1 (Section)</option>
+              <option value="h2">Heading 2 (Subsection)</option>
+              <option value="h3">Heading 3 (Subsubsection)</option>
+            </select>
+          </div>
+
+          <!-- Basic Font Formatting -->
           <div class="ve-btn-group">
             <button class="ve-tool-btn" data-command="bold" title="Bold (Ctrl+B)"><strong>B</strong></button>
             <button class="ve-tool-btn" data-command="italic" title="Italic (Ctrl+I)"><em>I</em></button>
+            <button class="ve-tool-btn" data-command="underline" title="Underline (Ctrl+U)"><u>U</u></button>
+            <button class="ve-tool-btn" data-command="strikeThrough" title="Strikethrough"><s>S</s></button>
           </div>
+
+          <!-- Text Alignment -->
           <div class="ve-btn-group">
-            <button class="ve-tool-btn" data-tag="h1" title="Section (H1)">§ H1</button>
-            <button class="ve-tool-btn" data-tag="h2" title="Subsection (H2)">§ H2</button>
-            <button class="ve-tool-btn" data-tag="h3" title="Subsubsection (H3)">§ H3</button>
+            <button class="ve-tool-btn" data-command="justifyLeft" title="Align Left">⇤</button>
+            <button class="ve-tool-btn" data-command="justifyCenter" title="Center">⇥⇤</button>
+            <button class="ve-tool-btn" data-command="justifyRight" title="Align Right">⇥</button>
           </div>
+
+          <!-- Lists & Abstract -->
           <div class="ve-btn-group">
             <button class="ve-tool-btn" data-command="insertUnorderedList" title="Bullet List">• List</button>
             <button class="ve-tool-btn" data-command="insertOrderedList" title="Numbered List">1. List</button>
+            <button class="ve-tool-btn" id="ve-btn-abstract" title="Insert Abstract Box">📄 Abstract</button>
           </div>
+
+          <!-- Insert Objects (Direct Typing, Zero Popups) -->
           <div class="ve-btn-group">
-            <button class="ve-tool-btn" id="ve-btn-math" title="Insert Math Block">∑ Equation</button>
-            <button class="ve-tool-btn" id="ve-btn-cite" title="Insert Citation">🏷️ Cite</button>
+            <button class="ve-tool-btn" id="ve-btn-math" title="Insert Word-style Equation Box">∑ Equation</button>
+            <button class="ve-tool-btn" id="ve-btn-cite" title="Insert Inline Citation Tag">🏷️ Cite</button>
+            <button class="ve-tool-btn" id="ve-btn-ref" title="Insert Cross-Reference">🔗 Ref</button>
+            <button class="ve-tool-btn" id="ve-btn-table" title="Insert 3x3 Table">📊 Table</button>
+            <button class="ve-tool-btn" id="ve-btn-figure" title="Insert Figure Box">🖼️ Figure</button>
+            <button class="ve-tool-btn" id="ve-btn-link" title="Insert Link">🌐 Link</button>
+            
+            <div class="ve-symbol-dropdown-wrap">
+              <button class="ve-tool-btn" id="ve-btn-symbol" title="Insert Special Symbol">Ω Symbol ▾</button>
+              <div id="ve-symbol-menu" class="ve-symbol-menu" style="display:none;">
+                <span class="ve-sym-item" data-sym="α">α</span>
+                <span class="ve-sym-item" data-sym="β">β</span>
+                <span class="ve-sym-item" data-sym="γ">γ</span>
+                <span class="ve-sym-item" data-sym="δ">δ</span>
+                <span class="ve-sym-item" data-sym="θ">θ</span>
+                <span class="ve-sym-item" data-sym="λ">λ</span>
+                <span class="ve-sym-item" data-sym="μ">μ</span>
+                <span class="ve-sym-item" data-sym="π">π</span>
+                <span class="ve-sym-item" data-sym="σ">σ</span>
+                <span class="ve-sym-item" data-sym="ω">ω</span>
+                <span class="ve-sym-item" data-sym="∑">∑</span>
+                <span class="ve-sym-item" data-sym="∫">∫</span>
+                <span class="ve-sym-item" data-sym="√">√</span>
+                <span class="ve-sym-item" data-sym="±">±</span>
+                <span class="ve-sym-item" data-sym="≤">≤</span>
+                <span class="ve-sym-item" data-sym="≥">≥</span>
+                <span class="ve-sym-item" data-sym="≠">≠</span>
+                <span class="ve-sym-item" data-sym="≈">≈</span>
+                <span class="ve-sym-item" data-sym="∞">∞</span>
+                <span class="ve-sym-item" data-sym="→">→</span>
+                <span class="ve-sym-item" data-sym="⇒">⇒</span>
+                <span class="ve-sym-item" data-sym="∈">∈</span>
+                <span class="ve-sym-item" data-sym="∀">∀</span>
+                <span class="ve-sym-item" data-sym="∃">∃</span>
+              </div>
+            </div>
           </div>
         </div>
 
@@ -69,8 +129,10 @@ export class VisualEditor {
     const toolbar = this.container.querySelector('.ve-toolbar')
     const editable = this.container.querySelector('#ve-editable-body') as HTMLElement
 
+    // Standard formatting commands (bold, italic, underline, strike, lists, undo, redo, align)
     toolbar?.querySelectorAll<HTMLButtonElement>('.ve-tool-btn[data-command]').forEach((btn) => {
-      btn.addEventListener('click', () => {
+      btn.addEventListener('click', (e) => {
+        e.preventDefault()
         const cmd = btn.getAttribute('data-command')!
         document.execCommand(cmd, false)
         editable.focus()
@@ -78,86 +140,192 @@ export class VisualEditor {
       })
     })
 
-    toolbar?.querySelectorAll<HTMLButtonElement>('.ve-tool-btn[data-tag]').forEach((btn) => {
-      btn.addEventListener('click', () => {
-        const tag = btn.getAttribute('data-tag')!
-        document.execCommand('formatBlock', false, tag)
-        editable.focus()
-        this.triggerChange()
+    // Section Level dropdown (Heading 1, 2, 3, Paragraph)
+    const styleSelect = toolbar?.querySelector('#ve-style-select') as HTMLSelectElement | null
+    styleSelect?.addEventListener('change', () => {
+      const tag = styleSelect.value
+      document.execCommand('formatBlock', false, tag)
+      editable.focus()
+      this.triggerChange()
+    })
+
+    // Insert Abstract Box
+    toolbar?.querySelector('#ve-btn-abstract')?.addEventListener('click', (e) => {
+      e.preventDefault()
+      this.insertHtmlAtCursor(`
+        <div class="ve-abstract-card">
+          <div class="ve-abstract-title">Abstract</div>
+          <div class="ve-abstract-text"><p>Tuliskan ringkasan abstrak manuskrip Anda di sini...</p></div>
+        </div>
+        <p><br></p>
+      `)
+      this.triggerChange()
+    })
+
+    // Insert Equation Box (Direct inline typing, NO popup)
+    toolbar?.querySelector('#ve-btn-math')?.addEventListener('click', (e) => {
+      e.preventDefault()
+      const defaultEq = 'E = mc^2'
+      this.insertHtmlAtCursor(`
+        <div class="ve-math-container" contenteditable="false" data-latex="${escapeAttr(defaultEq)}">
+          <div class="ve-math-top-bar">
+            <span class="ve-math-badge">∑ EQUATION</span>
+            <input type="text" class="ve-math-inline-input" value="${escapeAttr(defaultEq)}" placeholder="Ketik rumus LaTeX di sini (contoh: \\int_0^1 x^2 dx)..." />
+            <span class="ve-math-eq-num">(Eq)</span>
+            <button type="button" class="ve-math-del-btn" title="Hapus persamaan">✕</button>
+          </div>
+          <div class="ve-math-rendered">${renderMath(defaultEq, true)}</div>
+        </div>
+        <p><br></p>
+      `)
+      this.triggerChange()
+    })
+
+    // Insert Citation Tag (Direct inline typing, NO popup)
+    toolbar?.querySelector('#ve-btn-cite')?.addEventListener('click', (e) => {
+      e.preventDefault()
+      this.insertHtmlAtCursor(`
+        <span class="ve-cite-pill" contenteditable="false">[cite: <span class="ve-cite-key" contenteditable="true" spellcheck="false" title="Ketik citation key">cite_key</span>]</span>&nbsp;
+      `)
+      this.triggerChange()
+    })
+
+    // Insert Cross-Reference Tag (Direct inline typing, NO popup)
+    toolbar?.querySelector('#ve-btn-ref')?.addEventListener('click', (e) => {
+      e.preventDefault()
+      this.insertHtmlAtCursor(`
+        <span class="ve-ref-pill" contenteditable="false">[ref: <span class="ve-ref-key" contenteditable="true" spellcheck="false" title="Ketik reference key">eq:1</span>]</span>&nbsp;
+      `)
+      this.triggerChange()
+    })
+
+    // Insert Table (3x3 Word-style editable table, NO popup)
+    toolbar?.querySelector('#ve-btn-table')?.addEventListener('click', (e) => {
+      e.preventDefault()
+      this.insertHtmlAtCursor(`
+        <div class="ve-table-wrap" contenteditable="false">
+          <table class="ve-table" contenteditable="true">
+            <thead>
+              <tr><th>Header 1</th><th>Header 2</th><th>Header 3</th></tr>
+            </thead>
+            <tbody>
+              <tr><td>Item A</td><td>Data 1</td><td>10.5</td></tr>
+              <tr><td>Item B</td><td>Data 2</td><td>20.8</td></tr>
+            </tbody>
+          </table>
+        </div>
+        <p><br></p>
+      `)
+      this.triggerChange()
+    })
+
+    // Insert Figure Box (Word-style figure with placeholder and editable caption)
+    toolbar?.querySelector('#ve-btn-figure')?.addEventListener('click', (e) => {
+      e.preventDefault()
+      this.insertHtmlAtCursor(`
+        <div class="ve-figure-card" contenteditable="false">
+          <div class="ve-figure-graphic">[ 🖼️ FIGURE / GRAPHIC PLACEHOLDER ]</div>
+          <div class="ve-figure-caption">
+            <strong>Figure:</strong> <span class="ve-figure-caption-text" contenteditable="true">Deskripsi gambar atau diagram Anda di sini</span>
+          </div>
+        </div>
+        <p><br></p>
+      `)
+      this.triggerChange()
+    })
+
+    // Insert Hyperlink (Direct inline editable link)
+    toolbar?.querySelector('#ve-btn-link')?.addEventListener('click', (e) => {
+      e.preventDefault()
+      this.insertHtmlAtCursor(`
+        <a href="https://example.com" class="ve-link" target="_blank" contenteditable="true">https://example.com</a>&nbsp;
+      `)
+      this.triggerChange()
+    })
+
+    // Special Symbols Dropdown Menu
+    const symBtn = toolbar?.querySelector('#ve-btn-symbol') as HTMLElement | null
+    const symMenu = toolbar?.querySelector('#ve-symbol-menu') as HTMLElement | null
+
+    symBtn?.addEventListener('click', (e) => {
+      e.preventDefault()
+      e.stopPropagation()
+      if (symMenu) {
+        symMenu.style.display = symMenu.style.display === 'none' ? 'grid' : 'none'
+      }
+    })
+
+    document.addEventListener('click', () => {
+      if (symMenu) symMenu.style.display = 'none'
+    })
+
+    symMenu?.querySelectorAll('.ve-sym-item').forEach((item) => {
+      item.addEventListener('click', (e) => {
+        e.preventDefault()
+        e.stopPropagation()
+        const sym = item.getAttribute('data-sym')
+        if (sym) {
+          this.insertHtmlAtCursor(sym)
+          this.triggerChange()
+        }
+        if (symMenu) symMenu.style.display = 'none'
       })
     })
 
-    toolbar?.querySelector('#ve-btn-math')?.addEventListener('click', () => {
-      const eq = prompt('Masukkan rumus LaTeX matematika:', 'E = mc^2')
-      if (eq) {
-        const trimmed = eq.trim()
-        this.insertHtmlAtCursor(`
-          <div class="ve-math-container" contenteditable="false" data-latex="${escapeAttr(trimmed)}">
-            <div class="ve-math-rendered">${renderMath(trimmed, true)}</div>
-            <div class="ve-math-side-preview">
-              <div class="ve-math-side-top">
-                <span class="ve-math-badge">[ EQUATION ]</span>
-                <button type="button" class="ve-math-edit-btn" title="Edit LaTeX Equation">✎ Edit</button>
-              </div>
-              <div class="ve-math-raw-code">$$${escapeHtml(trimmed)}$$</div>
-            </div>
-          </div>
-          <p><br></p>
-        `)
-        this.triggerChange()
-      }
-    })
-
-    // Click handler for editing math equations or inline math
-    editable.addEventListener('click', (e) => {
+    // Real-time input listener inside canvas (delegated for inputs, editable pills, and normal text)
+    editable.addEventListener('input', (e) => {
       const target = e.target as HTMLElement
-      const editBtn = target.closest('.ve-math-edit-btn')
-      const mathContainer = target.closest('.ve-math-container') as HTMLElement | null
 
-      if ((editBtn || target.closest('.ve-math-side-preview')) && mathContainer) {
-        e.stopPropagation()
-        const currentLatex = mathContainer.getAttribute('data-latex') || ''
-        const updated = prompt('Edit rumus LaTeX matematika:', currentLatex)
-        if (updated !== null && updated.trim()) {
-          const trimmed = updated.trim()
-          mathContainer.setAttribute('data-latex', trimmed)
-          const renderedEl = mathContainer.querySelector('.ve-math-rendered')
-          const rawEl = mathContainer.querySelector('.ve-math-raw-code')
-          if (renderedEl) renderedEl.innerHTML = renderMath(trimmed, true)
-          if (rawEl) rawEl.textContent = `$$${trimmed}$$`
-          this.triggerChange()
+      // Math equation inline input typing
+      if (target.classList.contains('ve-math-inline-input')) {
+        const input = target as HTMLInputElement
+        const container = input.closest('.ve-math-container') as HTMLElement | null
+        if (container) {
+          const val = input.value
+          container.setAttribute('data-latex', val)
+          const rendered = container.querySelector('.ve-math-rendered')
+          if (rendered) {
+            rendered.innerHTML = renderMath(val, true)
+          }
         }
+        this.triggerChange()
         return
       }
 
-      const inlineMath = target.closest('.ve-inline-math') as HTMLElement | null
-      if (inlineMath) {
-        e.stopPropagation()
-        const currentMath = inlineMath.getAttribute('data-math') || ''
-        const updated = prompt('Edit rumus inline LaTeX:', currentMath)
-        if (updated !== null && updated.trim()) {
-          const trimmed = updated.trim()
-          inlineMath.setAttribute('data-math', trimmed)
-          inlineMath.setAttribute('title', `LaTeX: $${trimmed}$`)
-          inlineMath.innerHTML = renderMath(trimmed, false)
-          this.triggerChange()
+      // Citation key typing
+      if (target.classList.contains('ve-cite-key')) {
+        const pill = target.closest('.ve-cite-pill') as HTMLElement | null
+        if (pill) {
+          pill.setAttribute('data-cite', target.textContent?.trim() || '')
         }
-      }
-    })
-
-    toolbar?.querySelector('#ve-btn-cite')?.addEventListener('click', () => {
-      const key = prompt('Citation Key (misal: vaswani2017attention):')
-      if (key) {
-        this.insertHtmlAtCursor(`
-          <span class="ve-cite-pill" contenteditable="false" data-cite="${escapeAttr(key)}">[cite:${escapeHtml(key)}]</span>&nbsp;
-        `)
         this.triggerChange()
+        return
       }
-    })
 
-    editable.addEventListener('input', () => {
+      // Reference key typing
+      if (target.classList.contains('ve-ref-key')) {
+        const pill = target.closest('.ve-ref-pill') as HTMLElement | null
+        if (pill) {
+          pill.setAttribute('data-ref', target.textContent?.trim() || '')
+        }
+        this.triggerChange()
+        return
+      }
+
+      // Standard text change
       if (this.isUpdatingFromCode) return
       this.triggerChange()
+    })
+
+    // Click delegation for equation delete button
+    editable.addEventListener('click', (e) => {
+      const target = e.target as HTMLElement
+      if (target.classList.contains('ve-math-del-btn')) {
+        e.stopPropagation()
+        const container = target.closest('.ve-math-container')
+        container?.remove()
+        this.triggerChange()
+      }
     })
   }
 
@@ -338,14 +506,87 @@ function parseLatexToHtml(body: string): string {
         .trim()
       htmlParts.push(`
         <div class="ve-math-container" contenteditable="false" data-latex="${escapeAttr(rawEq)}">
-          <div class="ve-math-rendered">${renderMath(rawEq, true)}</div>
-          <div class="ve-math-side-preview">
-            <div class="ve-math-side-top">
-              <span class="ve-math-badge">[ EQUATION ]</span>
-              <button type="button" class="ve-math-edit-btn" title="Edit LaTeX Equation">✎ Edit</button>
-            </div>
-            <div class="ve-math-raw-code">$$${escapeHtml(rawEq)}$$</div>
+          <div class="ve-math-top-bar">
+            <span class="ve-math-badge">∑ EQUATION</span>
+            <input type="text" class="ve-math-inline-input" value="${escapeAttr(rawEq)}" placeholder="Ketik rumus LaTeX di sini..." />
+            <span class="ve-math-eq-num">(Eq)</span>
+            <button type="button" class="ve-math-del-btn" title="Hapus persamaan">✕</button>
           </div>
+          <div class="ve-math-rendered">${renderMath(rawEq, true)}</div>
+        </div>
+      `)
+      continue
+    }
+
+    // Tables
+    if (line.includes('\\begin{tabular}')) {
+      const tableLines = [line]
+      while (i + 1 < lines.length) {
+        i++
+        tableLines.push(lines[i]!)
+        if (lines[i]!.includes('\\end{tabular}')) break
+      }
+      htmlParts.push(parseTabularToHtml(tableLines.join('\n')))
+      continue
+    }
+
+    // Figures
+    if (line.includes('\\begin{figure}')) {
+      const figLines = [line]
+      while (i + 1 < lines.length) {
+        i++
+        figLines.push(lines[i]!)
+        if (lines[i]!.includes('\\end{figure}')) break
+      }
+      const figBlock = figLines.join('\n')
+      const capMatch = figBlock.match(/\\caption\{([^}]+)\}/)
+      const caption = capMatch ? capMatch[1] : 'Figure description'
+      htmlParts.push(`
+        <div class="ve-figure-card" contenteditable="false">
+          <div class="ve-figure-graphic">[ 🖼️ FIGURE / GRAPHIC PLACEHOLDER ]</div>
+          <div class="ve-figure-caption">
+            <strong>Figure:</strong> <span class="ve-figure-caption-text" contenteditable="true">${escapeHtml(caption!)}</span>
+          </div>
+        </div>
+      `)
+      continue
+    }
+
+    // Blank line or comments
+    if (!line || line.startsWith('%')) {
+      continue
+    }
+
+    // Page breaks
+    if (line.startsWith('\\newpage') || line.startsWith('\\clearpage')) {
+      htmlParts.push('<div class="ve-page-break" contenteditable="false">─── PAGE BREAK ───</div>')
+      continue
+    }
+
+    // Table of contents
+    if (line.startsWith('\\tableofcontents')) {
+      htmlParts.push('<div class="ve-toc-box" contenteditable="false">📖 Table of Contents (Disusun otomatis saat kompilasi PDF)</div>')
+      continue
+    }
+
+    // Theorem environments
+    if (
+      line.startsWith('\\begin{theorem}') ||
+      line.startsWith('\\begin{lemma}') ||
+      line.startsWith('\\begin{proposition}') ||
+      line.startsWith('\\begin{example}')
+    ) {
+      const type = line.match(/\\begin\{([^}]+)\}/)?.[1] || 'Theorem'
+      const thmLines: string[] = []
+      while (i + 1 < lines.length) {
+        i++
+        if (lines[i]!.includes(`\\end{${type}}`)) break
+        thmLines.push(lines[i]!)
+      }
+      htmlParts.push(`
+        <div class="ve-theorem-box" contenteditable="true" data-type="${type}">
+          <span class="ve-theorem-title" contenteditable="false">${type}:</span>
+          ${formatInlineLatex(thmLines.join(' '))}
         </div>
       `)
       continue
@@ -385,6 +626,38 @@ function parseLatexToHtml(body: string): string {
   return htmlParts.join('\n')
 }
 
+function parseTabularToHtml(tabularBlock: string): string {
+  const rows = tabularBlock
+    .replace(/\\begin\{tabular\}\{[^}]+\}/, '')
+    .replace(/\\end\{tabular\}/, '')
+    .replace(/\\hline/g, '')
+    .split('\\\\')
+    .map((r) => r.trim())
+    .filter((r) => r.length > 0)
+
+  if (rows.length === 0) {
+    return `<div class="ve-table-wrap" contenteditable="false"><table class="ve-table" contenteditable="true"><tbody><tr><td>Data</td></tr></tbody></table></div>`
+  }
+
+  const htmlRows: string[] = []
+  rows.forEach((row, idx) => {
+    const cells = row.split('&').map((c) => c.trim())
+    const tag = idx === 0 ? 'th' : 'td'
+    const cellHtml = cells.map((c) => `<${tag}>${formatInlineLatex(c)}</${tag}>`).join('')
+    htmlRows.push(`<tr>${cellHtml}</tr>`)
+  })
+
+  return `
+    <div class="ve-table-wrap" contenteditable="false">
+      <table class="ve-table" contenteditable="true">
+        <tbody>
+          ${htmlRows.join('\n')}
+        </tbody>
+      </table>
+    </div>
+  `
+}
+
 function formatInlineLatex(text: string): string {
   // Protect inline math from HTML escaping so symbols like < and > remain intact
   const mathTokens: string[] = []
@@ -401,16 +674,28 @@ function formatInlineLatex(text: string): string {
   // Italic
   s = s.replace(/\\textit\{([^}]+)\}/g, '<em>$1</em>')
   s = s.replace(/\\emph\{([^}]+)\}/g, '<em>$1</em>')
+  // Underline
+  s = s.replace(/\\underline\{([^}]+)\}/g, '<u>$1</u>')
 
-  // Citation \cite{...}
+  // Hyperlinks
+  s = s.replace(/\\href\{([^}]+)\}\{([^}]+)\}/g, '<a href="$1" class="ve-link" target="_blank" contenteditable="true">$2</a>')
+
+  // Citation \cite{...} (Direct inline typing, NO popup)
   s = s.replace(/\\cite\{([^}]+)\}/g, (_m, key) => {
-    return `<span class="ve-cite-pill" contenteditable="false" data-cite="${escapeAttr(key)}">[cite:${escapeHtml(key)}]</span>`
+    return `<span class="ve-cite-pill" contenteditable="false" data-cite="${escapeAttr(key)}">[cite: <span class="ve-cite-key" contenteditable="true" spellcheck="false" title="Ketik citation key">${escapeHtml(key)}</span>]</span>`
   })
 
-  // Reference \ref{...}
+  // Reference \ref{...} (Direct inline typing, NO popup)
   s = s.replace(/\\ref\{([^}]+)\}/g, (_m, key) => {
-    return `<span class="ve-ref-pill" contenteditable="false" data-ref="${escapeAttr(key)}">[ref:${escapeHtml(key)}]</span>`
+    return `<span class="ve-ref-pill" contenteditable="false" data-ref="${escapeAttr(key)}">[ref: <span class="ve-ref-key" contenteditable="true" spellcheck="false" title="Ketik reference key">${escapeHtml(key)}</span>]</span>`
   })
+  s = s.replace(/\\eqref\{([^}]+)\}/g, (_m, key) => {
+    return `<span class="ve-ref-pill" contenteditable="false" data-ref="${escapeAttr(key)}">[eq: <span class="ve-ref-key" contenteditable="true" spellcheck="false" title="Ketik reference key">${escapeHtml(key)}</span>]</span>`
+  })
+
+  // Labels & Includes
+  s = s.replace(/\\label\{([^}]+)\}/g, '<span class="ve-label-badge" contenteditable="false">[label: $1]</span>')
+  s = s.replace(/\\input\{([^}]+)\}/g, '<div class="ve-toc-box" contenteditable="false">📄 Include file: $1</div>')
 
   // Restore and render inline math via KaTeX
   s = s.replace(/%%MATH_TOKEN_(\d+)%%/g, (_m, idxStr) => {
@@ -439,8 +724,36 @@ function serializeHtmlToLatex(root: HTMLElement): string {
         const text = el.querySelector('.ve-abstract-text')
         parts.push(`\\begin{abstract}\n${text ? serializeInline(text as HTMLElement) : ''}\n\\end{abstract}`)
       } else if (el.classList.contains('ve-math-container') || el.classList.contains('ve-math-block')) {
-        const math = el.getAttribute('data-latex') || el.innerText
+        const input = el.querySelector('.ve-math-inline-input') as HTMLInputElement | null
+        const math = input ? input.value : (el.getAttribute('data-latex') || '')
         parts.push(`\\begin{equation}\n  ${math.trim()}\n\\end{equation}`)
+      } else if (el.classList.contains('ve-table-wrap') || tag === 'table') {
+        const table = (tag === 'table' ? el : el.querySelector('table')) as HTMLTableElement | null
+        if (table) {
+          parts.push(serializeTableToLatex(table))
+        }
+      } else if (el.classList.contains('ve-figure-card')) {
+        const cap = el.querySelector('.ve-figure-caption-text')?.textContent?.trim() || 'Figure'
+        parts.push(`\\begin{figure}[htbp]\n  \\centering\n  \\caption{${cap}}\n\\end{figure}`)
+      } else if (el.classList.contains('ve-theorem-box')) {
+        const type = el.getAttribute('data-type') || 'theorem'
+        const titleEl = el.querySelector('.ve-theorem-title')
+        const content = Array.from(el.childNodes)
+          .filter((n) => n !== titleEl)
+          .map((n) => (n.nodeType === Node.TEXT_NODE ? n.textContent : serializeInline(n as HTMLElement)))
+          .join('')
+          .trim()
+        parts.push(`\\begin{${type}}\n${content}\n\\end{${type}}`)
+      } else if (el.classList.contains('ve-page-break')) {
+        parts.push('\\newpage')
+      } else if (el.classList.contains('ve-toc-box')) {
+        const text = el.textContent || ''
+        if (text.includes('Include file:')) {
+          const file = text.replace(/.*Include file:\s*/, '').trim()
+          parts.push(`\\input{${file}}`)
+        } else {
+          parts.push('\\tableofcontents')
+        }
       } else if (tag === 'ul') {
         const items: string[] = []
         el.querySelectorAll('li').forEach((li) => {
@@ -470,6 +783,33 @@ function serializeHtmlToLatex(root: HTMLElement): string {
   return parts.join('\n\n')
 }
 
+function serializeTableToLatex(table: HTMLTableElement): string {
+  const trs = Array.from(table.querySelectorAll('tr'))
+  if (trs.length === 0) return ''
+
+  let maxCols = 1
+  trs.forEach((tr) => {
+    const cellCount = tr.querySelectorAll('th, td').length
+    if (cellCount > maxCols) maxCols = cellCount
+  })
+
+  const colAlign = '|' + 'c|'.repeat(maxCols)
+  const rowsLatex: string[] = []
+
+  trs.forEach((tr) => {
+    const cells = Array.from(tr.querySelectorAll('th, td')).map((c) => serializeInline(c as HTMLElement).trim())
+    rowsLatex.push('    ' + cells.join(' & ') + ' \\\\ \\hline')
+  })
+
+  return `\\begin{table}[htbp]
+  \\centering
+  \\begin{tabular}{${colAlign}}
+    \\hline
+${rowsLatex.join('\n')}
+  \\end{tabular}
+\\end{table}`
+}
+
 function serializeInline(el: HTMLElement): string {
   let result = ''
 
@@ -481,10 +821,10 @@ function serializeInline(el: HTMLElement): string {
       const tag = elem.tagName.toLowerCase()
 
       if (elem.classList.contains('ve-cite-pill')) {
-        const key = elem.getAttribute('data-cite') || ''
+        const key = elem.querySelector('.ve-cite-key')?.textContent?.trim() || elem.getAttribute('data-cite') || ''
         result += `\\cite{${key}}`
       } else if (elem.classList.contains('ve-ref-pill')) {
-        const key = elem.getAttribute('data-ref') || ''
+        const key = elem.querySelector('.ve-ref-key')?.textContent?.trim() || elem.getAttribute('data-ref') || ''
         result += `\\ref{${key}}`
       } else if (elem.classList.contains('ve-inline-math')) {
         const math = elem.getAttribute('data-math') || elem.innerText.replace(/\$/g, '')
@@ -493,6 +833,16 @@ function serializeInline(el: HTMLElement): string {
         result += `\\textbf{${serializeInline(elem)}}`
       } else if (tag === 'em' || tag === 'i') {
         result += `\\textit{${serializeInline(elem)}}`
+      } else if (tag === 'u') {
+        result += `\\underline{${serializeInline(elem)}}`
+      } else if (tag === 's' || tag === 'strike') {
+        result += serializeInline(elem)
+      } else if (tag === 'a' && elem.classList.contains('ve-link')) {
+        const href = elem.getAttribute('href') || ''
+        result += `\\href{${href}}{${serializeInline(elem)}}`
+      } else if (elem.classList.contains('ve-label-badge')) {
+        const lbl = elem.textContent?.replace(/^\[label:\s*|\]$/g, '').trim() || ''
+        result += `\\label{${lbl}}`
       } else {
         result += serializeInline(elem)
       }

@@ -14,6 +14,16 @@ breaking changes are called out under **Changed** with a ⚠️ marker.
 ## [0.1.0] - 2026-11-03
 
 ### Added
+- **Word-Style Visual Editor & Zero-Popup Equation/Citation Writing (`src/editor/visual-editor.ts`)**:
+  - Direct inline equation typing with live KaTeX rendering, equation numbering label `(Eq)`, and delete button with zero intrusive popups.
+  - Direct inline editable citation pills (`[cite: key]`) and cross-reference pills (`[ref: key]`, `[eq: key]`).
+  - Word-style formatting ribbon: Undo (`Ctrl+Z`), Redo (`Ctrl+Y`), Paragraph / Section level dropdown (`p`, `h1`, `h2`, `h3`), Bold, Italic, Underline, Strikethrough, and Text Alignment (Left, Center, Right).
+  - Insert tools: 3x3 editable Word-style table (`\begin{tabular}`), Figure box (`\begin{figure}`), Hyperlinks (`\href`), Abstract block, and 24-symbol mathematical / Greek letter picker dropdown.
+- **Enterprise IAM & Multi-Tenant Sandbox (`src/auth/auth-store.ts`)**:
+  - Role-Based Access Control (`admin`, `researcher`, `viewer`) with multi-user isolation.
+  - Project sandbox: projects automatically bind to `ownerId` preventing cross-user document overwrites.
+  - Self-service account credential management: change username, change password, reset password, and admin IAM console.
+  - Interactive Landing Page (`src/ui/home-view.ts`) with quick demo access.
 - **KaTeX Visual Math Rendering with Side Preview Box (`src/editor/visual-editor.ts`)**:
   - Full WYSIWYG mathematical equation rendering inside visual editor canvas via KaTeX.
   - Side preview box adjacent to every equation displaying `[ EQUATION ]`, raw LaTeX code, and instant `✎ Edit` button.

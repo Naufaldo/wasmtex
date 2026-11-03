@@ -39,7 +39,11 @@ Repository ini merupakan *fork* dari **WasmTex** (oleh Corca AI). Fokus utama fo
   - Seamless Worker API endpoints (`/api/storage/<key>`) supporting `PUT`, `GET`, `DELETE`, and `LIST`.
   - 1-click `☁ R2 CLOUD` sync directly from the dashboard navbar.
 - **✍️ Triple-Mode Editor**:
-  - **Visual (WYSIWYG)**: Rich-text document editing with live KaTeX mathematical equation rendering and side preview boxes ([ EQUATION ], raw LaTeX, and interactive formula editing).
+  - **Visual (WYSIWYG)**: Word-style direct typing without disruptive popups:
+    - Inline equation typing with real-time KaTeX rendering, equation numbering `(Eq)`, and instant delete.
+    - Inline editable citation pills (`[cite: key]`) and cross-references (`[ref: key]`, `[eq: key]`).
+    - Word-style ribbon: Undo/Redo, Section level dropdown (`p`, `h1`, `h2`, `h3`), Bold, Italic, Underline, Strikethrough, and Text Alignment.
+    - Insert tools: 3x3 editable tables (`\begin{tabular}`), Figure cards (`\begin{figure}`), Hyperlinks (`\href`), Abstract block, and 24-symbol math/Greek letter picker.
   - **LaTeX Code**: Monaco Editor featuring full syntax highlighting, auto-completion, linting, diagnostics, and LaTeX Language Service (LSP).
   - **Split View**: Synchronized side-by-side editing with live PDF preview.
 - **📚 Research Library (Dashboard & Workspace)**:

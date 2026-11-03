@@ -3,6 +3,7 @@ export interface DashboardViewOptions {
     onOpenProject: (project: ProjectItem) => void;
     onToggleTheme: () => void;
     isDarkMode: () => boolean;
+    onLogout?: () => void;
 }
 export declare class DashboardView {
     private container;

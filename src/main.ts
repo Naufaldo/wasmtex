@@ -14,6 +14,8 @@ import { VersionHistoryDialog } from './features/version-history'
 import { CommentsPanel } from './features/comments-panel'
 import { ReviewManager } from './features/review-manager'
 import { DashboardView } from './projects/dashboard-view'
+import { HomeView } from './ui/home-view'
+import { getCurrentUser } from './auth/auth-store'
 import { type ProjectItem, getProject, saveProject } from './projects/project-store'
 import { unzipLatexProject } from './fs/unzip'
 import './styles.css'
@@ -127,6 +129,7 @@ function persistActiveProject(): void {
       const c = editorRef!.getFile(f)
       if (typeof c === 'string') filesMap[f] = c
     }
+    const curUser = getCurrentUser()
     const title =
       (document.getElementById('doc-title-input') as HTMLInputElement)?.value ||
       existing?.title ||
@@ -134,14 +137,15 @@ function persistActiveProject(): void {
     const proj: ProjectItem = {
       id: activeProjectId,
       title,
-      owner: existing?.owner || 'You',
+      owner: existing?.owner || curUser?.name || curUser?.username || 'You',
+      ownerId: existing?.ownerId || curUser?.userId || 'usr_admin',
       lastModified: Date.now(),
       tags: existing?.tags || [],
       files: filesMap,
     }
     if (existing?.archived !== undefined) proj.archived = existing.archived
     if (existing?.trashed !== undefined) proj.trashed = existing.trashed
-    saveProject(proj)
+    saveProject(proj, curUser)
   })
 }
 
@@ -682,18 +686,39 @@ async function start() {
     diagDrawer?.classList.remove('open')
   })
 
-  // Dashboard & Workspace Navigation
+  // Views & Page Navigation (Home / Dashboard / Workspace)
+  const viewHome = document.getElementById('view-home')!
   const viewDashboard = document.getElementById('view-dashboard')!
   const viewWorkspace = document.getElementById('view-workspace')!
 
+  let dashboardView: DashboardView
+
+  const showHome = () => {
+    viewHome.classList.add('active')
+    viewDashboard.classList.remove('active')
+    viewWorkspace.classList.remove('active')
+    homeView.init()
+  }
+
   const showDashboard = () => {
+    const user = getCurrentUser()
+    if (!user) {
+      showHome()
+      return
+    }
+    viewHome.classList.remove('active')
     viewDashboard.classList.add('active')
     viewWorkspace.classList.remove('active')
     dashboardView.init()
   }
 
   const showWorkspace = (proj: ProjectItem) => {
-    activeProjectId = proj.id
+    const user = getCurrentUser()
+    if (!user) {
+      showHome()
+      return
+    }
+    viewHome.classList.remove('active')
     viewDashboard.classList.remove('active')
     viewWorkspace.classList.add('active')
 
@@ -712,13 +737,30 @@ async function start() {
     editor.compile()
   }
 
-  const dashboardContainer = document.getElementById('dashboard-container')!
-  const dashboardView = new DashboardView(dashboardContainer, {
-    onOpenProject: showWorkspace,
+  const homeContainer = document.getElementById('home-container')!
+  const homeView = new HomeView(homeContainer, {
+    onLoginSuccess: (_session) => {
+      showDashboard()
+    },
     onToggleTheme: () => applyTheme(!isDark),
     isDarkMode: () => isDark,
   })
-  dashboardView.init()
+
+  const dashboardContainer = document.getElementById('dashboard-container')!
+  dashboardView = new DashboardView(dashboardContainer, {
+    onOpenProject: showWorkspace,
+    onToggleTheme: () => applyTheme(!isDark),
+    isDarkMode: () => isDark,
+    onLogout: () => showHome(),
+  })
+
+  // Mandatory Login Gate Check
+  const activeUser = getCurrentUser()
+  if (activeUser) {
+    showDashboard()
+  } else {
+    showHome()
+  }
 
   document.getElementById('btn-back-dashboard')?.addEventListener('click', showDashboard)
 

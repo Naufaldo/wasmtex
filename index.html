@@ -10,8 +10,13 @@
 </head>
 <body>
   <div id="app" class="app-root theme-light">
-    <!-- View 1: Overleaf-style Dashboard -->
-    <div id="view-dashboard" class="app-page-view active">
+    <!-- View 0: Public Home & Promotional Showcase (Mandatory unauthenticated view) -->
+    <div id="view-home" class="app-page-view active">
+      <div id="home-container" class="home-container"></div>
+    </div>
+
+    <!-- View 1: Overleaf-style Dashboard (Accessible only after login) -->
+    <div id="view-dashboard" class="app-page-view">
       <div id="dashboard-container" class="dashboard-container"></div>
     </div>
 

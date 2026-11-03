@@ -1,5 +1,15 @@
 import { OVERLEAF_ICONS } from '../ui/logo'
-import { getCurrentUser, loginUser, logoutUser } from '../auth/auth-store'
+import {
+  changePassword,
+  changeUsername,
+  createUser,
+  deleteUser,
+  getAllUsers,
+  getCurrentUser,
+  logoutUser,
+  updateUserProfile,
+  type UserRole,
+} from '../auth/auth-store'
 import { unzipLatexProject } from '../fs/unzip'
 import {
   addPaperToProjectBibtex,
@@ -21,6 +31,7 @@ export interface DashboardViewOptions {
   onOpenProject: (project: ProjectItem) => void
   onToggleTheme: () => void
   isDarkMode: () => boolean
+  onLogout?: () => void
 }
 
 export class DashboardView {
@@ -29,7 +40,7 @@ export class DashboardView {
   private projects: ProjectItem[] = []
   private papers: ResearchPaper[] = []
   private selectedLibraryProject = 'all'
-  private currentFilter: 'all' | 'library' | 'archived' | 'trash' | string = 'all'
+  private currentFilter: 'all' | 'all_iam' | 'library' | 'archived' | 'trash' | string = 'all'
 
   constructor(container: HTMLElement, options: DashboardViewOptions) {
     this.container = container
@@ -37,7 +48,8 @@ export class DashboardView {
   }
 
   async init(): Promise<void> {
-    this.projects = await getAllProjects()
+    const currentUser = getCurrentUser()
+    this.projects = await getAllProjects(currentUser, this.currentFilter === 'all_iam')
     this.papers = await getAllPapers()
     this.render()
   }
@@ -76,8 +88,16 @@ export class DashboardView {
 
           <nav class="tactical-nav-center">
             <button class="tactical-nav-btn ${this.currentFilter === 'all' ? 'active' : ''}" data-filter="all">
-              [ ALL PROJECTS (${activeCount}) ]
+              [ PROYEK SAYA (${activeCount}) ]
             </button>
+            ${
+              currentUser?.role === 'admin'
+                ? `
+            <button class="tactical-nav-btn ${this.currentFilter === 'all_iam' ? 'active' : ''}" data-filter="all_iam" title="Tampilkan seluruh proyek lintas user dalam sistem IAM">
+              [ 🌐 SEMUA PROYEK (IAM) ]
+            </button>`
+                : ''
+            }
             <button class="tactical-nav-btn ${this.currentFilter === 'library' ? 'active' : ''}" data-filter="library">
               [ 📚 RESEARCH LIBRARY (${this.papers.length}) ]
             </button>
@@ -101,19 +121,20 @@ export class DashboardView {
               currentUser
                 ? `
               <div class="tactical-user-wrap">
-                <span class="tactical-user-tag">
+                <button id="dash-account-settings-btn" class="tactical-user-tag-btn" title="Kelola Profil & Akun (@${escapeHtml(currentUser.username)})">
                   <span class="user-bracket">&lt;</span>
-                  <span class="user-text">OPERATOR // ${escapeHtml(currentUser.name.toUpperCase())}</span>
+                  <span class="user-text">OPERATOR // ${escapeHtml(currentUser.username.toUpperCase())} [${escapeHtml(currentUser.role.toUpperCase())}]</span>
                   <span class="user-bracket">&gt;</span>
-                </span>
+                </button>
+                ${
+                  currentUser.role === 'admin'
+                    ? `<button id="dash-iam-mgmt-btn" class="tactical-btn-action iam-pill-btn" style="font-size:10px; padding:3px 8px; margin-left:4px; border-color:#FF4D2D; color:#FF4D2D; font-weight:700;" title="Konsol IAM & Manajemen Pengguna">🛡️ IAM CONSOLE</button>`
+                    : ''
+                }
                 <button id="dash-logout-btn" class="tactical-btn-action" style="font-size:10.5px; padding:3px 8px; margin-left:4px;" title="Keluar / Logout">LOGOUT</button>
               </div>
             `
-                : `
-              <button id="dash-login-btn" class="tactical-login-btn" title="Login ke CorTeX Studio">
-                [ 👤 LOGIN ]
-              </button>
-            `
+                : ''
             }
           </div>
         </header>
@@ -136,6 +157,9 @@ export class DashboardView {
                 </p>
 
                 <div class="hero-action-row">
+                  ${
+                    currentUser?.role !== 'viewer'
+                      ? `
                   <button id="dash-new-project-btn" class="tactical-cta-btn cta-orange" title="Mulai buat dokumen LaTeX baru dari template awal">
                     <span class="bracket-corner tl"></span>
                     <span class="bracket-corner tr"></span>
@@ -152,6 +176,13 @@ export class DashboardView {
                     <span class="cta-inner">⬆ IMPORT LATEX / ZIP</span>
                     <input type="file" id="dash-import-file-input" accept=".tex,.bib,.txt,.zip" style="display:none;" />
                   </label>
+                  `
+                      : `
+                  <div class="viewer-notice-box" style="padding:8px 12px; background:var(--bg-secondary); border:1px solid var(--border-color); font-family:var(--font-mono); font-size:11px; color:var(--text-secondary);">
+                    👁️ MODE BACA (VIEWER): AKUN HANYA-BACA, KOMPILASI &amp; REVIEW AKTIF
+                  </div>
+                  `
+                  }
 
                   <button id="dash-goto-library-btn" class="tactical-cta-btn cta-secondary" title="Kelola katalog referensi literatur dan sitasi BibTeX">
                     <span class="bracket-corner tl"></span>
@@ -354,35 +385,134 @@ export class DashboardView {
           </div>
         </footer>
 
-        <!-- Simple Login Modal Dialog -->
-        <dialog id="tactical-login-dialog" class="tactical-login-modal">
-          <div class="tactical-modal-frame">
+        <!-- Account Settings & Credential Management Dialog -->
+        <dialog id="tactical-account-dialog" class="tactical-login-modal">
+          <div class="tactical-modal-frame" style="max-width: 520px; width: 92vw;">
             <span class="bracket-corner tl"></span>
             <span class="bracket-corner tr"></span>
             <span class="bracket-corner bl"></span>
             <span class="bracket-corner br"></span>
             <div class="tactical-modal-header">
-              <span class="modal-spec-tag">[ IDENTITY AUTHENTICATION // CORTEX CORE ]</span>
-              <button type="button" class="modal-close-x" id="modal-login-close" title="Tutup">✕</button>
+              <span class="modal-spec-tag">[ KREDENSIAL &amp; PROFIL AKUN // IAM IDENTITY ]</span>
+              <button type="button" class="modal-close-x" id="modal-account-close" title="Tutup">✕</button>
             </div>
-            <form id="tactical-login-form" class="tactical-modal-body">
-              <div class="form-field-group">
-                <label for="login-operator-id" class="form-field-label">OPERATOR ID / EMAIL</label>
-                <input type="text" id="login-operator-id" class="tactical-form-input" placeholder="e.g. researcher@cortex.ai atau Nama Operator" required autofocus />
+            <div class="tactical-modal-body">
+              <div class="acc-meta-card" style="padding:10px 14px; background:var(--bg-secondary); border:1px solid var(--border-color); margin-bottom:14px; font-family:var(--font-mono); font-size:11px;">
+                <div style="display:flex; justify-content:space-between; margin-bottom:4px;">
+                  <span>USER ID: <code id="acc-info-id">...</code></span>
+                  <span>ROLE: <span id="acc-info-role" class="role-badge">...</span></span>
+                </div>
+                <div style="color:var(--text-secondary); font-size:10px;">PROYEK ANDA TERISOLASI SECARA PENUH PADA SANDBOX PENGGUNA INI</div>
               </div>
-              <div class="form-field-group">
-                <label for="login-passphrase" class="form-field-label">SECURITY PASSPHRASE / ACCESS KEY</label>
-                <input type="password" id="login-passphrase" class="tactical-form-input" placeholder="••••••••••••" required />
+
+              <!-- Section 1: Change Username -->
+              <div class="form-sub-section" style="border:1px solid var(--border-color); padding:12px; margin-bottom:14px; background:var(--bg-primary);">
+                <div class="sub-sec-title" style="font-family:var(--font-mono); font-size:11px; font-weight:700; color:var(--text-primary); margin-bottom:8px;">[ 1. UBAH USERNAME / OPERATOR ID ]</div>
+                <div id="acc-user-msg" class="msg-box" style="display:none; padding:6px 10px; margin-bottom:8px; font-size:11px; font-family:var(--font-mono);"></div>
+                <form id="form-change-username">
+                  <div class="form-field-group">
+                    <label for="acc-input-new-user" class="form-field-label">USERNAME BARU</label>
+                    <input type="text" id="acc-input-new-user" class="tactical-form-input" required />
+                  </div>
+                  <button type="submit" class="tactical-cta-btn cta-secondary" style="padding: 7px 14px; width: 100%; margin-top:6px;">
+                    <span class="cta-inner">SIMPAN USERNAME BARU</span>
+                  </button>
+                </form>
               </div>
-              <div class="form-actions-row">
-                <button type="submit" class="tactical-cta-btn cta-orange" style="padding: 9px 18px;">
-                  <span class="cta-inner">[ ▶ AUTHENTICATE ]</span>
-                </button>
-                <button type="button" id="btn-guest-login" class="tactical-cta-btn cta-secondary" style="padding: 9px 14px;">
-                  <span class="cta-inner">[ GUEST ACCESS ]</span>
-                </button>
+
+              <!-- Section 2: Change Password -->
+              <div class="form-sub-section" style="border:1px solid var(--border-color); padding:12px; background:var(--bg-primary);">
+                <div class="sub-sec-title" style="font-family:var(--font-mono); font-size:11px; font-weight:700; color:var(--text-primary); margin-bottom:8px;">[ 2. UBAH PASSWORD (KATA SANDI) ]</div>
+                <div id="acc-pass-msg" class="msg-box" style="display:none; padding:6px 10px; margin-bottom:8px; font-size:11px; font-family:var(--font-mono);"></div>
+                <form id="form-change-password">
+                  <div class="form-field-group">
+                    <label for="acc-input-old-pass" class="form-field-label">PASSWORD SAAT INI</label>
+                    <input type="password" id="acc-input-old-pass" class="tactical-form-input" required />
+                  </div>
+                  <div class="form-field-group">
+                    <label for="acc-input-new-pass" class="form-field-label">PASSWORD BARU (MIN 6 KARAKTER)</label>
+                    <input type="password" id="acc-input-new-pass" class="tactical-form-input" required />
+                  </div>
+                  <div class="form-field-group">
+                    <label for="acc-input-confirm-pass" class="form-field-label">KONFIRMASI PASSWORD BARU</label>
+                    <input type="password" id="acc-input-confirm-pass" class="tactical-form-input" required />
+                  </div>
+                  <button type="submit" class="tactical-cta-btn cta-orange" style="padding: 7px 14px; width: 100%; margin-top:6px;">
+                    <span class="cta-inner">GANTI PASSWORD</span>
+                  </button>
+                </form>
               </div>
-            </form>
+            </div>
+          </div>
+        </dialog>
+
+        <!-- Admin IAM Console Dialog -->
+        <dialog id="tactical-iam-dialog" class="tactical-login-modal">
+          <div class="tactical-modal-frame" style="max-width: 760px; width: 95vw;">
+            <span class="bracket-corner tl"></span>
+            <span class="bracket-corner tr"></span>
+            <span class="bracket-corner bl"></span>
+            <span class="bracket-corner br"></span>
+            <div class="tactical-modal-header">
+              <span class="modal-spec-tag">[ ENTERPRISE IAM &amp; MANAJEMEN PENGGUNA // MULTI-TENANT RBAC ]</span>
+              <button type="button" class="modal-close-x" id="modal-iam-close" title="Tutup">✕</button>
+            </div>
+            <div class="tactical-modal-body">
+              <div id="iam-feedback-msg" class="msg-box" style="display:none; padding:8px 12px; margin-bottom:12px; font-family:var(--font-mono); font-size:11px;"></div>
+
+              <div class="iam-dialog-table-wrap" style="border:1px solid var(--border-color); padding:10px; background:var(--bg-primary); margin-bottom:14px; max-height:220px; overflow-y:auto;">
+                <div class="sub-sec-title" style="font-family:var(--font-mono); font-size:11px; font-weight:700; margin-bottom:6px;">[ DAFTAR PENGGUNA TERDAFTAR ]</div>
+                <table class="iam-users-table" style="width:100%; font-size:11px; border-collapse:collapse;">
+                  <thead>
+                    <tr style="border-bottom:1px solid var(--border-color); text-align:left; font-family:var(--font-mono);">
+                      <th style="padding:4px 6px;">USERNAME</th>
+                      <th style="padding:4px 6px;">NAMA TAMPILAN</th>
+                      <th style="padding:4px 6px;">ROLE</th>
+                      <th style="padding:4px 6px;">ID</th>
+                      <th style="padding:4px 6px; text-align:right;">AKSI</th>
+                    </tr>
+                  </thead>
+                  <tbody id="iam-users-tbody"></tbody>
+                </table>
+              </div>
+
+              <!-- Form Add User -->
+              <div class="form-sub-section" style="border:1px solid var(--border-color); padding:12px; background:var(--bg-primary);">
+                <div class="sub-sec-title" style="font-family:var(--font-mono); font-size:11px; font-weight:700; margin-bottom:8px;">[ + TAMBAH AKUN PENGGUNA BARU ]</div>
+                <form id="form-create-user" style="display:grid; grid-template-columns: 1fr 1fr; gap: 10px;">
+                  <div class="form-field-group">
+                    <label for="new-user-username" class="form-field-label">USERNAME</label>
+                    <input type="text" id="new-user-username" class="tactical-form-input" placeholder="e.g. researcher2" required />
+                  </div>
+                  <div class="form-field-group">
+                    <label for="new-user-name" class="form-field-label">NAMA LENGKAP</label>
+                    <input type="text" id="new-user-name" class="tactical-form-input" placeholder="e.g. Prof. Budi" required />
+                  </div>
+                  <div class="form-field-group">
+                    <label for="new-user-password" class="form-field-label">PASSWORD (MIN 6)</label>
+                    <input type="password" id="new-user-password" class="tactical-form-input" placeholder="••••••••" required />
+                  </div>
+                  <div class="form-field-group">
+                    <label for="new-user-role" class="form-field-label">HAK AKSES / ROLE</label>
+                    <select id="new-user-role" class="tactical-form-input">
+                      <option value="researcher">Researcher (Proyek Mandiri)</option>
+                      <option value="admin">Admin (Akses Penuh IAM)</option>
+                      <option value="viewer">Viewer (Read-Only Reviewer)</option>
+                    </select>
+                  </div>
+                  <div style="grid-column: 1 / -1; margin-top:4px;">
+                    <button type="submit" class="tactical-cta-btn cta-orange" style="width: 100%; padding: 8px 14px;">
+                      <span class="cta-inner">+ DAFTARKAN AKUN BARU KE SISTEM IAM</span>
+                    </button>
+                  </div>
+                </form>
+              </div>
+
+              <div class="iam-note-box" style="margin-top:12px; padding:8px 12px; background:var(--bg-secondary); border:1px solid var(--border-color); font-family:var(--font-mono); font-size:10.5px; color:var(--text-secondary); display:flex; align-items:center; gap:8px;">
+                <span>🛡️</span>
+                <span><strong>JAMINAN ANTI-BENTROK:</strong> Setiap user memiliki <code>ownerId</code> unik di IndexedDB. Proyek antar pengguna dijamin terisolasi dan tidak akan saling menimpa.</span>
+              </div>
+            </div>
           </div>
         </dialog>
 
@@ -558,43 +688,228 @@ export class DashboardView {
       this.render()
     })
 
-    // Simple Authentication dialog bindings
-    const loginDialog = this.container.querySelector('#tactical-login-dialog') as HTMLDialogElement | null
-    const loginBtn = this.container.querySelector('#dash-login-btn')
-    const loginClose = this.container.querySelector('#modal-login-close')
-    const loginForm = this.container.querySelector('#tactical-login-form')
-    const guestBtn = this.container.querySelector('#btn-guest-login')
+    // Logout button handler
     const logoutBtn = this.container.querySelector('#dash-logout-btn')
-
-    loginBtn?.addEventListener('click', () => {
-      loginDialog?.showModal()
-    })
-
-    loginClose?.addEventListener('click', () => {
-      loginDialog?.close()
-    })
-
     logoutBtn?.addEventListener('click', () => {
-      if (confirm('Keluar dari sesi operator saat ini?')) {
+      if (confirm('Keluar dari sesi operator dan kembali ke halaman utama?')) {
         logoutUser()
-        this.render()
+        if (this.options.onLogout) {
+          this.options.onLogout()
+        } else {
+          window.location.reload()
+        }
       }
     })
 
-    loginForm?.addEventListener('submit', (e) => {
+    // Account settings dialog bindings
+    const accountDialog = this.container.querySelector('#tactical-account-dialog') as HTMLDialogElement | null
+    const accountSettingsBtn = this.container.querySelector('#dash-account-settings-btn')
+    const accountCloseBtn = this.container.querySelector('#modal-account-close')
+    const formUsername = this.container.querySelector('#form-change-username') as HTMLFormElement | null
+    const formPassword = this.container.querySelector('#form-change-password') as HTMLFormElement | null
+    const accUserMsg = this.container.querySelector('#acc-user-msg') as HTMLElement | null
+    const accPassMsg = this.container.querySelector('#acc-pass-msg') as HTMLElement | null
+
+    accountSettingsBtn?.addEventListener('click', () => {
+      const curUser = getCurrentUser()
+      if (!curUser) return
+      const idEl = this.container.querySelector('#acc-info-id')
+      const roleEl = this.container.querySelector('#acc-info-role')
+      const userInput = this.container.querySelector('#acc-input-new-user') as HTMLInputElement | null
+      if (idEl) idEl.textContent = curUser.userId
+      if (roleEl) {
+        roleEl.textContent = curUser.role.toUpperCase()
+        roleEl.className = `role-badge ${curUser.role}`
+      }
+      if (userInput) userInput.value = curUser.username
+      if (accUserMsg) accUserMsg.style.display = 'none'
+      if (accPassMsg) accPassMsg.style.display = 'none'
+      accountDialog?.showModal()
+    })
+
+    accountCloseBtn?.addEventListener('click', () => {
+      accountDialog?.close()
+    })
+
+    formUsername?.addEventListener('submit', (e) => {
       e.preventDefault()
-      const input = (this.container.querySelector('#login-operator-id') as HTMLInputElement)?.value.trim()
-      if (input) {
-        loginUser(input)
-        loginDialog?.close()
-        this.render()
+      const curUser = getCurrentUser()
+      if (!curUser) return
+      const newUsername = (this.container.querySelector('#acc-input-new-user') as HTMLInputElement)?.value.trim()
+      const res = changeUsername(curUser.userId, newUsername)
+      if (accUserMsg) {
+        accUserMsg.style.display = 'block'
+        if (res.success) {
+          accUserMsg.style.color = '#22C55E'
+          accUserMsg.textContent = `✓ Username berhasil diubah menjadi "${newUsername}".`
+          setTimeout(() => {
+            this.init()
+          }, 800)
+        } else {
+          accUserMsg.style.color = '#EF4444'
+          accUserMsg.textContent = res.error || 'Gagal mengubah username.'
+        }
       }
     })
 
-    guestBtn?.addEventListener('click', () => {
-      loginUser('operator@cortex.ai', 'Operator')
-      loginDialog?.close()
-      this.render()
+    formPassword?.addEventListener('submit', (e) => {
+      e.preventDefault()
+      const curUser = getCurrentUser()
+      if (!curUser) return
+      const oldPass = (this.container.querySelector('#acc-input-old-pass') as HTMLInputElement)?.value
+      const newPass = (this.container.querySelector('#acc-input-new-pass') as HTMLInputElement)?.value
+      const confirmPass = (this.container.querySelector('#acc-input-confirm-pass') as HTMLInputElement)?.value
+
+      if (newPass !== confirmPass) {
+        if (accPassMsg) {
+          accPassMsg.style.display = 'block'
+          accPassMsg.style.color = '#EF4444'
+          accPassMsg.textContent = 'Konfirmasi password baru tidak cocok.'
+        }
+        return
+      }
+
+      const res = changePassword(curUser.userId, oldPass, newPass)
+      if (accPassMsg) {
+        accPassMsg.style.display = 'block'
+        if (res.success) {
+          accPassMsg.style.color = '#22C55E'
+          accPassMsg.textContent = '✓ Password berhasil diperbarui!'
+          formPassword.reset()
+        } else {
+          accPassMsg.style.color = '#EF4444'
+          accPassMsg.textContent = res.error || 'Gagal mengubah password.'
+        }
+      }
+    })
+
+    // IAM Management dialog bindings (Admin only)
+    const iamDialog = this.container.querySelector('#tactical-iam-dialog') as HTMLDialogElement | null
+    const iamBtn = this.container.querySelector('#dash-iam-mgmt-btn')
+    const iamCloseBtn = this.container.querySelector('#modal-iam-close')
+    const formCreateUser = this.container.querySelector('#form-create-user') as HTMLFormElement | null
+    const iamMsg = this.container.querySelector('#iam-feedback-msg') as HTMLElement | null
+
+    const renderIamUsersList = () => {
+      const tbody = this.container.querySelector('#iam-users-tbody')
+      if (!tbody) return
+      const users = getAllUsers()
+      const curUser = getCurrentUser()
+
+      tbody.innerHTML = users
+        .map(
+          (u) => `
+        <tr style="border-bottom: 1px solid var(--border-color);">
+          <td style="padding:6px 6px;"><strong>${escapeHtml(u.username)}</strong></td>
+          <td style="padding:6px 6px;">${escapeHtml(u.name)}</td>
+          <td style="padding:6px 6px;"><span class="role-badge ${u.role}">${escapeHtml(u.role.toUpperCase())}</span></td>
+          <td style="padding:6px 6px;"><code style="font-size:10px;">${escapeHtml(u.id)}</code></td>
+          <td style="padding:6px 6px; text-align:right;">
+            <div style="display:inline-flex; gap:4px; align-items:center;">
+              <select class="iam-role-select" data-id="${u.id}" style="padding:2px 4px; font-size:10px; background:var(--bg-secondary); color:var(--text-primary); border:1px solid var(--border-color);">
+                <option value="admin" ${u.role === 'admin' ? 'selected' : ''}>Admin</option>
+                <option value="researcher" ${u.role === 'researcher' ? 'selected' : ''}>Researcher</option>
+                <option value="viewer" ${u.role === 'viewer' ? 'selected' : ''}>Viewer</option>
+              </select>
+              <button class="tactical-btn-action btn-iam-reset-pass" data-id="${u.id}" style="font-size:10px; padding:2px 6px;" title="Reset password pengguna">RESET PASS</button>
+              ${
+                u.id !== curUser?.userId && u.id !== 'usr_admin'
+                  ? `<button class="tactical-btn-action btn-iam-del-user" data-id="${u.id}" style="font-size:10px; padding:2px 6px; color:#EF4444; border-color:#EF4444;" title="Hapus pengguna">✕</button>`
+                  : ''
+              }
+            </div>
+          </td>
+        </tr>
+      `
+        )
+        .join('')
+
+      tbody.querySelectorAll('.iam-role-select').forEach((sel) => {
+        sel.addEventListener('change', (e) => {
+          const target = e.currentTarget as HTMLSelectElement
+          const targetUserId = target.getAttribute('data-id')
+          const newRole = target.value as UserRole
+          if (targetUserId) {
+            updateUserProfile(targetUserId, { role: newRole })
+            if (iamMsg) {
+              iamMsg.style.display = 'block'
+              iamMsg.style.color = '#22C55E'
+              iamMsg.textContent = `✓ Role pengguna berhasil diubah ke ${newRole.toUpperCase()}.`
+            }
+            renderIamUsersList()
+          }
+        })
+      })
+
+      tbody.querySelectorAll('.btn-iam-reset-pass').forEach((btn) => {
+        btn.addEventListener('click', (e) => {
+          const target = e.currentTarget as HTMLElement
+          const targetUserId = target.getAttribute('data-id')
+          if (!targetUserId) return
+          const newPass = prompt('Masukkan password baru untuk pengguna ini (minimal 6 karakter):')
+          if (newPass) {
+            const res = changePassword(targetUserId, null, newPass, true)
+            if (res.success) {
+              alert('✓ Password pengguna berhasil direset!')
+            } else {
+              alert(res.error || 'Gagal mereset password.')
+            }
+          }
+        })
+      })
+
+      tbody.querySelectorAll('.btn-iam-del-user').forEach((btn) => {
+        btn.addEventListener('click', (e) => {
+          const target = e.currentTarget as HTMLElement
+          const targetUserId = target.getAttribute('data-id')
+          if (!targetUserId) return
+          if (confirm('Yakin ingin menghapus akun pengguna ini dari sistem IAM?')) {
+            const res = deleteUser(targetUserId, curUser?.userId)
+            if (res.success) {
+              if (iamMsg) {
+                iamMsg.style.display = 'block'
+                iamMsg.style.color = '#22C55E'
+                iamMsg.textContent = '✓ Akun pengguna berhasil dihapus dari IAM.'
+              }
+              renderIamUsersList()
+            } else {
+              alert(res.error || 'Gagal menghapus user.')
+            }
+          }
+        })
+      })
+    }
+
+    iamBtn?.addEventListener('click', () => {
+      renderIamUsersList()
+      if (iamMsg) iamMsg.style.display = 'none'
+      iamDialog?.showModal()
+    })
+
+    iamCloseBtn?.addEventListener('click', () => {
+      iamDialog?.close()
+    })
+
+    formCreateUser?.addEventListener('submit', (e) => {
+      e.preventDefault()
+      const userInput = (this.container.querySelector('#new-user-username') as HTMLInputElement)?.value
+      const passInput = (this.container.querySelector('#new-user-password') as HTMLInputElement)?.value
+      const nameInput = (this.container.querySelector('#new-user-name') as HTMLInputElement)?.value
+      const roleInput = (this.container.querySelector('#new-user-role') as HTMLSelectElement)?.value as UserRole
+
+      const res = createUser(userInput, passInput, nameInput, roleInput)
+      if (iamMsg) {
+        iamMsg.style.display = 'block'
+        if (res.success) {
+          iamMsg.style.color = '#22C55E'
+          iamMsg.textContent = `✓ Pengguna "${userInput}" berhasil didaftarkan sebagai ${roleInput.toUpperCase()}. Proyek terisolasi siap digunakan.`
+          formCreateUser.reset()
+          renderIamUsersList()
+        } else {
+          iamMsg.style.color = '#EF4444'
+          iamMsg.textContent = res.error || 'Gagal membuat pengguna baru.'
+        }
+      }
     })
 
     const r2Btn = this.container.querySelector('#dash-r2-sync')
@@ -668,8 +983,12 @@ export class DashboardView {
         }
       }
 
-      await saveProject(newProj)
-      this.projects = await getAllProjects()
+      const curUser = getCurrentUser()
+      newProj.owner = curUser?.username || authorName
+      newProj.ownerId = curUser?.userId || 'usr_admin'
+
+      await saveProject(newProj, curUser)
+      this.projects = await getAllProjects(curUser, this.currentFilter === 'all_iam')
       this.options.onOpenProject(newProj)
     })
   }
@@ -785,6 +1104,17 @@ export class DashboardView {
       row.addEventListener('click', (e) => {
         if ((e.target as HTMLElement).closest('.tactical-btn-action') || (e.target as HTMLElement).closest('.btn-add-tag')) return
         const id = row.getAttribute('data-id')!
+        const found = this.projects.find((p) => p.id === id)
+        if (found) {
+          this.options.onOpenProject(found)
+        }
+      })
+    })
+
+    tbody.querySelectorAll('.tactical-btn-open').forEach((btn) => {
+      btn.addEventListener('click', (e) => {
+        e.stopPropagation()
+        const id = btn.getAttribute('data-id')!
         const found = this.projects.find((p) => p.id === id)
         if (found) {
           this.options.onOpenProject(found)
@@ -1024,12 +1354,14 @@ export class DashboardView {
     const tagInput = prompt('Tag / Kategori (opsional, kosongkan jika tidak ada, pisahkan koma):', '')
     const tags = tagInput ? tagInput.split(',').map((t) => t.trim()).filter(Boolean) : []
 
-    const authorName = getCurrentUser()?.name || 'Operator'
+    const curUser = getCurrentUser()
+    const authorName = curUser?.username || curUser?.name || 'Operator'
     const id = `proj_${Date.now()}`
     const newProj: ProjectItem = {
       id,
       title,
       owner: authorName,
+      ownerId: curUser?.userId || 'usr_admin',
       lastModified: Date.now(),
       tags,
       files: {
@@ -1050,8 +1382,8 @@ Start writing your manuscript here.
       },
     }
 
-    saveProject(newProj).then(async () => {
-      this.projects = await getAllProjects()
+    saveProject(newProj, curUser).then(async () => {
+      this.projects = await getAllProjects(curUser, this.currentFilter === 'all_iam')
       this.options.onOpenProject(newProj)
     })
   }
