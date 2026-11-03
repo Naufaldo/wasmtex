@@ -378,6 +378,7 @@ export class WasmTex {
 
     this.pdfViewer.setInverseSearchHandler((loc) => {
       this.revealLine(loc.line, loc.file)
+      this.emit('inverseSearch', { file: loc.file, line: loc.line })
     })
 
     if (this.opts.toolbar === false) {

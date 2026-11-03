@@ -14,7 +14,7 @@ import { clampScale, computeRestoredScrollTop, computeTargetOffsetTop } from './
 // Lazy-init: the first PdfViewer.render() call will create the worker if needed.
 let pdfWorker: pdfjsLib.PDFWorker | null = null
 
-function ensurePdfWorker(): pdfjsLib.PDFWorker {
+export function ensurePdfWorker(): pdfjsLib.PDFWorker {
   if (!pdfWorker) {
     if (!pdfjsLib.GlobalWorkerOptions.workerSrc) {
       console.warn(

@@ -2,6 +2,7 @@ import katex from 'katex'
 
 export interface VisualEditorOptions {
   onContentChange: (latex: string) => void
+  onLineClick?: (line: number) => void
 }
 
 function renderMath(latex: string, displayMode: boolean): string {
@@ -255,9 +256,11 @@ export class VisualEditor {
       }
     })
 
-    document.addEventListener('click', () => {
-      if (symMenu) symMenu.style.display = 'none'
-    })
+    if (typeof document !== 'undefined') {
+      document.addEventListener('click', () => {
+        if (symMenu) symMenu.style.display = 'none'
+      })
+    }
 
     symMenu?.querySelectorAll('.ve-sym-item').forEach((item) => {
       item.addEventListener('click', (e) => {
@@ -317,7 +320,7 @@ export class VisualEditor {
       this.triggerChange()
     })
 
-    // Click delegation for equation delete button
+    // Click delegation for equation delete button and bidirectional sync
     editable.addEventListener('click', (e) => {
       const target = e.target as HTMLElement
       if (target.classList.contains('ve-math-del-btn')) {
@@ -325,6 +328,16 @@ export class VisualEditor {
         const container = target.closest('.ve-math-container')
         container?.remove()
         this.triggerChange()
+        return
+      }
+
+      // Bidirectional click from Visual Editor -> jump Code & PDF
+      const blockWithLine = target.closest<HTMLElement>('[data-line]')
+      if (blockWithLine) {
+        const line = parseInt(blockWithLine.getAttribute('data-line') || '0', 10)
+        if (line > 0) {
+          this.options.onLineClick?.(line)
+        }
       }
     })
   }
@@ -362,16 +375,62 @@ export class VisualEditor {
   setLatex(latex: string): void {
     this.isUpdatingFromCode = true
     try {
-      const { preamble, body, postamble } = splitLatex(latex)
+      const { preamble, body, postamble, bodyStartLine } = splitLatex(latex)
       this.preamble = preamble
       this.postamble = postamble
 
       const editable = this.container.querySelector('#ve-editable-body') as HTMLElement
       if (!editable) return
 
-      editable.innerHTML = parseLatexToHtml(body)
+      editable.innerHTML = parseLatexToHtml(body, bodyStartLine)
     } finally {
       this.isUpdatingFromCode = false
+    }
+  }
+
+  /** Jump and visually highlight the corresponding section/paragraph in Visual WYSIWYG editor */
+  revealLine(targetLine: number): void {
+    const editable = this.container.querySelector('#ve-editable-body') as HTMLElement | null
+    if (!editable) return
+
+    const elements = Array.from(editable.querySelectorAll<HTMLElement>('[data-line]'))
+    if (elements.length === 0) return
+
+    let bestMatch: HTMLElement | null = null
+    let minDistance = Infinity
+
+    for (const el of elements) {
+      const startLine = parseInt(el.getAttribute('data-line') || '0', 10)
+      const endLineAttr = el.getAttribute('data-end-line')
+      const endLine = endLineAttr ? parseInt(endLineAttr, 10) : startLine
+
+      if (targetLine >= startLine && targetLine <= endLine) {
+        bestMatch = el
+        break
+      }
+
+      const dist = Math.abs(startLine - targetLine)
+      if (dist < minDistance) {
+        minDistance = dist
+        bestMatch = el
+      }
+    }
+
+    if (!bestMatch) {
+      bestMatch = elements[0] || null
+    }
+
+    if (bestMatch) {
+      editable.querySelectorAll('.ve-synctex-highlight').forEach((el) => {
+        el.classList.remove('ve-synctex-highlight')
+      })
+
+      bestMatch.classList.add('ve-synctex-highlight')
+      bestMatch.scrollIntoView({ behavior: 'smooth', block: 'center' })
+
+      setTimeout(() => {
+        bestMatch?.classList.remove('ve-synctex-highlight')
+      }, 3500)
     }
   }
 
@@ -385,44 +444,51 @@ export class VisualEditor {
   }
 }
 
-function splitLatex(latex: string): { preamble: string; body: string; postamble: string } {
+function splitLatex(latex: string): { preamble: string; body: string; postamble: string; bodyStartLine: number } {
   const docStart = latex.indexOf('\\begin{document}')
   if (docStart === -1) {
-    return { preamble: '', body: latex, postamble: '' }
+    return { preamble: '', body: latex, postamble: '', bodyStartLine: 1 }
   }
 
-  const preamble = latex.slice(0, docStart).trim()
+  const rawPreamble = latex.slice(0, docStart)
+  const preambleLines = rawPreamble.split('\n').length
+  const bodyStartLine = preambleLines + 1
+
+  const preamble = rawPreamble.trim()
   const remainder = latex.slice(docStart + '\\begin{document}'.length)
   const docEnd = remainder.indexOf('\\end{document}')
 
   if (docEnd === -1) {
-    return { preamble, body: remainder.trim(), postamble: '\\end{document}' }
+    return { preamble, body: remainder.trim(), postamble: '\\end{document}', bodyStartLine }
   }
 
   const body = remainder.slice(0, docEnd).trim()
   const postamble = remainder.slice(docEnd).trim()
 
-  return { preamble, body, postamble }
+  return { preamble, body, postamble, bodyStartLine }
 }
 
-function parseLatexToHtml(body: string): string {
+function parseLatexToHtml(body: string, bodyStartLine = 1): string {
   if (!body.trim()) {
-    return '<p><br></p>'
+    return '<p data-line="1"><br></p>'
   }
 
   const lines = body.split('\n')
   const htmlParts: string[] = []
   let inList: 'itemize' | 'enumerate' | null = null
   let inAbstract = false
+  let abstractStartLine = bodyStartLine
   let abstractContent = ''
 
   for (let i = 0; i < lines.length; i++) {
     const rawLine = lines[i]!
     const line = rawLine.trim()
+    const currentLine = bodyStartLine + i
 
     // Abstract
     if (line.includes('\\begin{abstract}')) {
       inAbstract = true
+      abstractStartLine = currentLine
       abstractContent = ''
       continue
     }
@@ -430,7 +496,7 @@ function parseLatexToHtml(body: string): string {
       if (line.includes('\\end{abstract}')) {
         inAbstract = false
         htmlParts.push(`
-          <div class="ve-abstract-card">
+          <div class="ve-abstract-card" data-line="${abstractStartLine}" data-end-line="${currentLine}">
             <div class="ve-abstract-title">Abstract</div>
             <div class="ve-abstract-text">${formatInlineLatex(abstractContent)}</div>
           </div>
@@ -465,7 +531,7 @@ function parseLatexToHtml(body: string): string {
 
     if (inList && line.startsWith('\\item')) {
       const itemContent = line.replace(/^\\item\s*/, '')
-      htmlParts.push(`<li>${formatInlineLatex(itemContent)}</li>`)
+      htmlParts.push(`<li data-line="${currentLine}">${formatInlineLatex(itemContent)}</li>`)
       continue
     }
 
@@ -482,6 +548,7 @@ function parseLatexToHtml(body: string): string {
       line.startsWith('$$')
 
     if (isMathStart) {
+      const eqStartLine = currentLine
       let eqLines = [line]
       while (i + 1 < lines.length) {
         i++
@@ -500,12 +567,13 @@ function parseLatexToHtml(body: string): string {
           break
         }
       }
+      const eqEndLine = bodyStartLine + i
       const rawEq = eqLines
         .join('\n')
         .replace(/\\begin\{(?:equation\*?|align\*?|gather\*?|multline)\}|\\end\{(?:equation\*?|align\*?|gather\*?|multline)\}|\\\[|\\\]|\$\$/g, '')
         .trim()
       htmlParts.push(`
-        <div class="ve-math-container" contenteditable="false" data-latex="${escapeAttr(rawEq)}">
+        <div class="ve-math-container" data-line="${eqStartLine}" data-end-line="${eqEndLine}" contenteditable="false" data-latex="${escapeAttr(rawEq)}">
           <div class="ve-math-top-bar">
             <span class="ve-math-badge">∑ EQUATION</span>
             <input type="text" class="ve-math-inline-input" value="${escapeAttr(rawEq)}" placeholder="Ketik rumus LaTeX di sini..." />
@@ -520,29 +588,33 @@ function parseLatexToHtml(body: string): string {
 
     // Tables
     if (line.includes('\\begin{tabular}')) {
+      const tblStartLine = currentLine
       const tableLines = [line]
       while (i + 1 < lines.length) {
         i++
         tableLines.push(lines[i]!)
         if (lines[i]!.includes('\\end{tabular}')) break
       }
-      htmlParts.push(parseTabularToHtml(tableLines.join('\n')))
+      const tblEndLine = bodyStartLine + i
+      htmlParts.push(parseTabularToHtml(tableLines.join('\n'), tblStartLine, tblEndLine))
       continue
     }
 
     // Figures
     if (line.includes('\\begin{figure}')) {
+      const figStartLine = currentLine
       const figLines = [line]
       while (i + 1 < lines.length) {
         i++
         figLines.push(lines[i]!)
         if (lines[i]!.includes('\\end{figure}')) break
       }
+      const figEndLine = bodyStartLine + i
       const figBlock = figLines.join('\n')
       const capMatch = figBlock.match(/\\caption\{([^}]+)\}/)
       const caption = capMatch ? capMatch[1] : 'Figure description'
       htmlParts.push(`
-        <div class="ve-figure-card" contenteditable="false">
+        <div class="ve-figure-card" data-line="${figStartLine}" data-end-line="${figEndLine}" contenteditable="false">
           <div class="ve-figure-graphic">[ 🖼️ FIGURE / GRAPHIC PLACEHOLDER ]</div>
           <div class="ve-figure-caption">
             <strong>Figure:</strong> <span class="ve-figure-caption-text" contenteditable="true">${escapeHtml(caption!)}</span>
@@ -559,13 +631,13 @@ function parseLatexToHtml(body: string): string {
 
     // Page breaks
     if (line.startsWith('\\newpage') || line.startsWith('\\clearpage')) {
-      htmlParts.push('<div class="ve-page-break" contenteditable="false">─── PAGE BREAK ───</div>')
+      htmlParts.push(`<div class="ve-page-break" data-line="${currentLine}" contenteditable="false">─── PAGE BREAK ───</div>`)
       continue
     }
 
     // Table of contents
     if (line.startsWith('\\tableofcontents')) {
-      htmlParts.push('<div class="ve-toc-box" contenteditable="false">📖 Table of Contents (Disusun otomatis saat kompilasi PDF)</div>')
+      htmlParts.push(`<div class="ve-toc-box" data-line="${currentLine}" contenteditable="false">📖 Table of Contents (Disusun otomatis saat kompilasi PDF)</div>`)
       continue
     }
 
@@ -576,6 +648,7 @@ function parseLatexToHtml(body: string): string {
       line.startsWith('\\begin{proposition}') ||
       line.startsWith('\\begin{example}')
     ) {
+      const thmStartLine = currentLine
       const type = line.match(/\\begin\{([^}]+)\}/)?.[1] || 'Theorem'
       const thmLines: string[] = []
       while (i + 1 < lines.length) {
@@ -583,8 +656,9 @@ function parseLatexToHtml(body: string): string {
         if (lines[i]!.includes(`\\end{${type}}`)) break
         thmLines.push(lines[i]!)
       }
+      const thmEndLine = bodyStartLine + i
       htmlParts.push(`
-        <div class="ve-theorem-box" contenteditable="true" data-type="${type}">
+        <div class="ve-theorem-box" data-line="${thmStartLine}" data-end-line="${thmEndLine}" contenteditable="true" data-type="${type}">
           <span class="ve-theorem-title" contenteditable="false">${type}:</span>
           ${formatInlineLatex(thmLines.join(' '))}
         </div>
@@ -595,17 +669,17 @@ function parseLatexToHtml(body: string): string {
     // Headings
     const secMatch = line.match(/^\\section\*?\{([^}]+)\}/)
     if (secMatch) {
-      htmlParts.push(`<h1>${escapeHtml(secMatch[1]!)}</h1>`)
+      htmlParts.push(`<h1 data-line="${currentLine}">${escapeHtml(secMatch[1]!)}</h1>`)
       continue
     }
     const subsecMatch = line.match(/^\\subsection\*?\{([^}]+)\}/)
     if (subsecMatch) {
-      htmlParts.push(`<h2>${escapeHtml(subsecMatch[1]!)}</h2>`)
+      htmlParts.push(`<h2 data-line="${currentLine}">${escapeHtml(subsecMatch[1]!)}</h2>`)
       continue
     }
     const subsubsecMatch = line.match(/^\\subsubsection\*?\{([^}]+)\}/)
     if (subsubsecMatch) {
-      htmlParts.push(`<h3>${escapeHtml(subsubsecMatch[1]!)}</h3>`)
+      htmlParts.push(`<h3 data-line="${currentLine}">${escapeHtml(subsubsecMatch[1]!)}</h3>`)
       continue
     }
 
@@ -620,13 +694,13 @@ function parseLatexToHtml(body: string): string {
     }
 
     // Paragraph
-    htmlParts.push(`<p>${formatInlineLatex(line)}</p>`)
+    htmlParts.push(`<p data-line="${currentLine}">${formatInlineLatex(line)}</p>`)
   }
 
   return htmlParts.join('\n')
 }
 
-function parseTabularToHtml(tabularBlock: string): string {
+function parseTabularToHtml(tabularBlock: string, startLine = 1, endLine = 1): string {
   const rows = tabularBlock
     .replace(/\\begin\{tabular\}\{[^}]+\}/, '')
     .replace(/\\end\{tabular\}/, '')
@@ -636,7 +710,7 @@ function parseTabularToHtml(tabularBlock: string): string {
     .filter((r) => r.length > 0)
 
   if (rows.length === 0) {
-    return `<div class="ve-table-wrap" contenteditable="false"><table class="ve-table" contenteditable="true"><tbody><tr><td>Data</td></tr></tbody></table></div>`
+    return `<div class="ve-table-wrap" data-line="${startLine}" data-end-line="${endLine}" contenteditable="false"><table class="ve-table" contenteditable="true"><tbody><tr><td>Data</td></tr></tbody></table></div>`
   }
 
   const htmlRows: string[] = []
@@ -648,7 +722,7 @@ function parseTabularToHtml(tabularBlock: string): string {
   })
 
   return `
-    <div class="ve-table-wrap" contenteditable="false">
+    <div class="ve-table-wrap" data-line="${startLine}" data-end-line="${endLine}" contenteditable="false">
       <table class="ve-table" contenteditable="true">
         <tbody>
           ${htmlRows.join('\n')}

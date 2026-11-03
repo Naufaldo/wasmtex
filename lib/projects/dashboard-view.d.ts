@@ -4,6 +4,7 @@ export interface DashboardViewOptions {
     onToggleTheme: () => void;
     isDarkMode: () => boolean;
     onLogout?: () => void;
+    onToggleLang?: () => void;
 }
 export declare class DashboardView {
     private container;

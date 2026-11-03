@@ -3,6 +3,7 @@ export interface HomeViewOptions {
     onLoginSuccess: (session: UserSession) => void;
     onToggleTheme: () => void;
     isDarkMode: () => boolean;
+    onToggleLang?: () => void;
 }
 export declare class HomeView {
     private container;

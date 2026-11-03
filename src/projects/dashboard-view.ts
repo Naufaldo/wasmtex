@@ -1,4 +1,5 @@
 import { OVERLEAF_ICONS } from '../ui/logo'
+import { getLang, t, toggleLang } from '../ui/i18n'
 import {
   changePassword,
   changeUsername,
@@ -32,6 +33,7 @@ export interface DashboardViewOptions {
   onToggleTheme: () => void
   isDarkMode: () => boolean
   onLogout?: () => void
+  onToggleLang?: () => void
 }
 
 export class DashboardView {
@@ -57,6 +59,7 @@ export class DashboardView {
   private render(): void {
     const isDark = this.options.isDarkMode()
     const currentUser = getCurrentUser()
+    const lang = getLang()
     const activeCount = this.projects.filter((p) => !p.trashed && !p.archived).length
     const archivedCount = this.projects.filter((p) => p.archived && !p.trashed).length
     const trashCount = this.projects.filter((p) => p.trashed).length
@@ -67,12 +70,20 @@ export class DashboardView {
         <div class="tactical-top-strip">
           <div class="top-strip-left">
             <span class="strip-bracket">[</span>
-            <span class="strip-text">CLASSIFICATION: OPEN // CORTEX RESEARCH STUDIO // SPEC WASMTEX-V2</span>
+            <span class="strip-text">${t(
+              'KLASIFIKASI: TERBUKA // CORTEX RESEARCH STUDIO // SPEC WASMTEX-V2',
+              'CLASSIFICATION: OPEN // CORTEX RESEARCH STUDIO // SPEC WASMTEX-V2',
+              lang
+            )}</span>
             <span class="strip-bracket">]</span>
           </div>
           <div class="top-strip-right">
             <span class="status-indicator-dot">●</span>
-            <span class="strip-text">ONLINE // WEBASSEMBLY ENGINE // TEX LIVE 2025 // UTC+07</span>
+            <span class="strip-text">${t(
+              'ONLINE // WEBASSEMBLY ENGINE // TEX LIVE 2025-2026 // UTC+07',
+              'ONLINE // WEBASSEMBLY ENGINE // TEX LIVE 2025-2026 // UTC+07',
+              lang
+            )}</span>
           </div>
         </div>
 
@@ -82,35 +93,38 @@ export class DashboardView {
             <div class="tactical-brand-wrap">
               <span class="tactical-brand-logo">CorTeX</span>
               <span class="tactical-brand-reg">®</span>
-              <span class="tactical-brand-spec">/ LATEX RESEARCH STUDIO &amp; WASMTEX CORE</span>
+              <span class="tactical-brand-spec">/ ${t('STUDIO RISET LATEX & WASMTEX CORE', 'LATEX RESEARCH STUDIO & WASMTEX CORE', lang)}</span>
             </div>
           </div>
 
           <nav class="tactical-nav-center">
             <button class="tactical-nav-btn ${this.currentFilter === 'all' ? 'active' : ''}" data-filter="all">
-              [ PROYEK SAYA (${activeCount}) ]
+              [ ${t('PROYEK SAYA', 'MY PROJECTS', lang)} (${activeCount}) ]
             </button>
             ${
               currentUser?.role === 'admin'
                 ? `
-            <button class="tactical-nav-btn ${this.currentFilter === 'all_iam' ? 'active' : ''}" data-filter="all_iam" title="Tampilkan seluruh proyek lintas user dalam sistem IAM">
-              [ 🌐 SEMUA PROYEK (IAM) ]
+            <button class="tactical-nav-btn ${this.currentFilter === 'all_iam' ? 'active' : ''}" data-filter="all_iam" title="${t('Tampilkan seluruh proyek lintas user dalam sistem IAM', 'Show all projects across all users in IAM', lang)}">
+              [ 🌐 ${t('SEMUA PROYEK (IAM)', 'ALL IAM PROJECTS', lang)} ]
             </button>`
                 : ''
             }
             <button class="tactical-nav-btn ${this.currentFilter === 'library' ? 'active' : ''}" data-filter="library">
-              [ 📚 RESEARCH LIBRARY (${this.papers.length}) ]
+              [ 📚 ${t('PUSTAKA RISET', 'RESEARCH LIBRARY', lang)} (${this.papers.length}) ]
             </button>
             <button class="tactical-nav-btn ${this.currentFilter === 'archived' ? 'active' : ''}" data-filter="archived">
-              [ ARCHIVED (${archivedCount}) ]
+              [ ${t('TERARSIP', 'ARCHIVED', lang)} (${archivedCount}) ]
             </button>
             <button class="tactical-nav-btn ${this.currentFilter === 'trash' ? 'active' : ''}" data-filter="trash">
-              [ TRASH (${trashCount}) ]
+              [ ${t('KOTAK SAMPAH', 'TRASH', lang)} (${trashCount}) ]
             </button>
           </nav>
 
           <div class="tactical-nav-right">
-            <button id="dash-r2-sync" class="tactical-icon-toggle" title="Backup ke Cloudflare R2 Bucket">
+            <button id="dash-lang-toggle" class="tactical-icon-toggle" title="${t('Ganti Bahasa (ID / EN)', 'Switch Language (ID / EN)', lang)}">
+              🌐 <span class="toggle-mode-label">${lang.toUpperCase()}</span>
+            </button>
+            <button id="dash-r2-sync" class="tactical-icon-toggle" title="${t('Cadangkan ke Cloudflare R2 Bucket', 'Backup to Cloudflare R2 Bucket', lang)}">
               ☁ <span class="toggle-mode-label">R2 CLOUD</span>
             </button>
             <button id="dash-theme-toggle" class="tactical-icon-toggle" title="Toggle Light / Dark Mode">
@@ -121,17 +135,17 @@ export class DashboardView {
               currentUser
                 ? `
               <div class="tactical-user-wrap">
-                <button id="dash-account-settings-btn" class="tactical-user-tag-btn" title="Kelola Profil & Akun (@${escapeHtml(currentUser.username)})">
+                <button id="dash-account-settings-btn" class="tactical-user-tag-btn" title="${t('Kelola Profil & Akun', 'Manage Profile & Account', lang)} (@${escapeHtml(currentUser.username)})">
                   <span class="user-bracket">&lt;</span>
                   <span class="user-text">OPERATOR // ${escapeHtml(currentUser.username.toUpperCase())} [${escapeHtml(currentUser.role.toUpperCase())}]</span>
                   <span class="user-bracket">&gt;</span>
                 </button>
                 ${
                   currentUser.role === 'admin'
-                    ? `<button id="dash-iam-mgmt-btn" class="tactical-btn-action iam-pill-btn" style="font-size:10px; padding:3px 8px; margin-left:4px; border-color:#FF4D2D; color:#FF4D2D; font-weight:700;" title="Konsol IAM & Manajemen Pengguna">🛡️ IAM CONSOLE</button>`
+                    ? `<button id="dash-iam-mgmt-btn" class="tactical-btn-action iam-pill-btn" style="font-size:10px; padding:3px 8px; margin-left:4px; border-color:#FF4D2D; color:#FF4D2D; font-weight:700;" title="${t('Konsol IAM & Manajemen Pengguna', 'IAM Console & User Management', lang)}">🛡️ IAM CONSOLE</button>`
                     : ''
                 }
-                <button id="dash-logout-btn" class="tactical-btn-action" style="font-size:10.5px; padding:3px 8px; margin-left:4px;" title="Keluar / Logout">LOGOUT</button>
+                <button id="dash-logout-btn" class="tactical-btn-action" style="font-size:10.5px; padding:3px 8px; margin-left:4px;" title="${t('Keluar / Logout', 'Logout', lang)}">${t('LOGOUT', 'LOGOUT', lang)}</button>
               </div>
             `
                 : ''
@@ -686,6 +700,13 @@ export class DashboardView {
     themeToggle?.addEventListener('click', () => {
       this.options.onToggleTheme()
       this.render()
+    })
+
+    const langToggle = this.container.querySelector('#dash-lang-toggle')
+    langToggle?.addEventListener('click', () => {
+      toggleLang()
+      this.render()
+      this.options.onToggleLang?.()
     })
 
     // Logout button handler

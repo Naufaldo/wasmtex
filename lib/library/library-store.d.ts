@@ -17,6 +17,7 @@ export interface ResearchPaper {
     bibtex: string;
     memo: PaperMemo;
     pdfBlob?: Blob;
+    pdfAnnotations?: string | undefined;
     projectId?: string | undefined;
 }
 export declare function getAllPapers(): Promise<ResearchPaper[]>;

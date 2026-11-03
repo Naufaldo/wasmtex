@@ -15,6 +15,7 @@ import { CommentsPanel } from './features/comments-panel'
 import { ReviewManager } from './features/review-manager'
 import { DashboardView } from './projects/dashboard-view'
 import { HomeView } from './ui/home-view'
+import { getLang, t, toggleLang, type Lang } from './ui/i18n'
 import { getCurrentUser } from './auth/auth-store'
 import { type ProjectItem, getProject, saveProject } from './projects/project-store'
 import { unzipLatexProject } from './fs/unzip'
@@ -432,8 +433,19 @@ async function start() {
       }
       editor.compile()
     },
+    onLineClick: (line) => {
+      editor.revealLine(line)
+      editor.getViewer()?.forwardSearch(activeFile, line)
+    },
   })
   visualEditorRef = visualEditor
+
+  // SyncTeX PDF click -> jump and highlight in Visual WYSIWYG Editor
+  editor.on('inverseSearch', ({ line, file }) => {
+    if (!file || file === activeFile || file.endsWith(activeFile) || activeFile.endsWith(file)) {
+      visualEditor.revealLine(line)
+    }
+  })
 
   const syncToVisualEditor = () => {
     if (activeFile.endsWith('.tex')) {
@@ -737,6 +749,52 @@ async function start() {
     editor.compile()
   }
 
+  // Language Management (ID & EN i18n)
+  const applyLang = (lang: Lang) => {
+    const langIcon = document.getElementById('lang-icon')
+    if (langIcon) langIcon.textContent = `🌐 ${lang.toUpperCase()}`
+
+    const backBtn = document.getElementById('btn-back-dashboard')
+    if (backBtn) backBtn.innerHTML = `<span class="back-arrow">&larr;</span> ${t('Proyek', 'Projects', lang)}`
+
+    const tabEditor = document.getElementById('nav-tab-editor')
+    if (tabEditor) tabEditor.textContent = t('✍️ Editor', '✍️ Editor', lang)
+
+    const tabLibrary = document.getElementById('nav-tab-library')
+    if (tabLibrary) tabLibrary.textContent = t('📚 Pustaka Riset', '📚 Research Library', lang)
+
+    const btnReview = document.getElementById('btn-review')
+    if (btnReview) {
+      const badge = document.getElementById('badge-review')
+      btnReview.innerHTML = `<span class="icon-svg">📝</span> ${t('Review', 'Review', lang)} <span id="badge-review" class="topbar-badge" style="${badge?.style.cssText || 'display:none;'}">${badge?.textContent || '0'}</span>`
+    }
+
+    const btnHistory = document.getElementById('btn-history')
+    if (btnHistory) btnHistory.innerHTML = `<span class="icon-svg">🕒</span> ${t('Riwayat', 'History', lang)}`
+
+    const btnRecompile = document.getElementById('recompile-btn')
+    if (btnRecompile) btnRecompile.textContent = `▶ ${t('Kompilasi Ulang', 'Recompile', lang)}`
+
+    const btnDownloadPdf = document.getElementById('download-pdf-btn')
+    if (btnDownloadPdf) btnDownloadPdf.textContent = `⬇ ${t('PDF', 'PDF', lang)}`
+
+    const sidebarFilesLabel = document.querySelector('.sidebar-files-label')
+    if (sidebarFilesLabel) sidebarFilesLabel.textContent = t('BERKAS', 'FILES', lang)
+
+    const outlineHeader = document.querySelector('.outline-header')
+    if (outlineHeader) outlineHeader.textContent = t('OUTLINE', 'OUTLINE', lang)
+
+    const drawerTitle = document.querySelector('.drawer-title')
+    if (drawerTitle) drawerTitle.textContent = t('Diagnostik & Log Kompiler', 'Diagnostics & Compiler Output', lang)
+  }
+
+  document.getElementById('btn-lang-toggle')?.addEventListener('click', () => {
+    const nextLang = toggleLang()
+    applyLang(nextLang)
+  })
+
+  applyLang(getLang())
+
   const homeContainer = document.getElementById('home-container')!
   const homeView = new HomeView(homeContainer, {
     onLoginSuccess: (_session) => {
@@ -744,6 +802,7 @@ async function start() {
     },
     onToggleTheme: () => applyTheme(!isDark),
     isDarkMode: () => isDark,
+    onToggleLang: () => applyLang(getLang()),
   })
 
   const dashboardContainer = document.getElementById('dashboard-container')!
@@ -752,6 +811,7 @@ async function start() {
     onToggleTheme: () => applyTheme(!isDark),
     isDarkMode: () => isDark,
     onLogout: () => showHome(),
+    onToggleLang: () => applyLang(getLang()),
   })
 
   // Mandatory Login Gate Check

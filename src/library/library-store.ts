@@ -19,12 +19,54 @@ export interface ResearchPaper {
   bibtex: string
   memo: PaperMemo
   pdfBlob?: Blob
+  pdfAnnotations?: string | undefined
   projectId?: string | undefined
 }
 
 const DB_NAME = 'wasmtex_research_library'
 const DB_VERSION = 1
 const STORE_NAME = 'papers'
+
+const SAMPLE_PDF_B64 =
+  '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'
+
+function getSamplePdfBlob(): Blob {
+  const bin = atob(SAMPLE_PDF_B64)
+  const bytes = new Uint8Array(bin.length)
+  for (let i = 0; i < bin.length; i++) bytes[i] = bin.charCodeAt(i)
+  return new Blob([bytes], { type: 'application/pdf' })
+}
+
+const DEFAULT_ANNOTATIONS = JSON.stringify({
+  1: [
+    {
+      type: 'highlighter',
+      color: '#FACC1588',
+      lineWidth: 24,
+      points: [
+        { x: 48, y: 55 },
+        { x: 420, y: 55 },
+      ],
+    },
+    {
+      type: 'pen',
+      color: '#EF4444',
+      lineWidth: 2.5,
+      points: [
+        { x: 48, y: 92 },
+        { x: 480, y: 92 },
+      ],
+    },
+    {
+      type: 'text',
+      color: '#FEF08A',
+      lineWidth: 12,
+      text: 'NOTE: Self-Attention eliminates RNN recurrence!',
+      x: 50,
+      y: 112,
+    },
+  ],
+})
 
 function openDB(): Promise<IDBDatabase> {
   return new Promise((resolve, reject) => {
@@ -64,6 +106,8 @@ const DEFAULT_PAPERS: ResearchPaper[] = [
       findings: 'Mencapai skor BLEU 28.4 pada WMT 2014 English-to-German, melampaui ensemble model terbaik sebelumnya dengan waktu training jauh lebih cepat.',
       notes: 'Pondasi utama LLM modern (GPT, BERT, Gemini). Cocok dijadikan sitasi utama di bab pendahuluan/background.',
     },
+    pdfBlob: getSamplePdfBlob(),
+    pdfAnnotations: DEFAULT_ANNOTATIONS,
   },
   {
     id: 'he2016deep',
@@ -104,6 +148,12 @@ export async function getAllPapers(): Promise<ResearchPaper[]> {
           // Initialize default papers
           saveDefaultPapers(db).then(() => resolve(DEFAULT_PAPERS))
         } else {
+          for (const p of results) {
+            if (!p.pdfBlob && p.id === 'vaswani2017attention') {
+              p.pdfBlob = getSamplePdfBlob()
+              if (!p.pdfAnnotations) p.pdfAnnotations = DEFAULT_ANNOTATIONS
+            }
+          }
           resolve(results)
         }
       }

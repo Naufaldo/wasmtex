@@ -1,5 +1,7 @@
 import { SynctexData } from '../synctex/synctex-parser.js';
 import { SourceLocation } from '../synctex/text-mapper.js';
+import * as pdfjsLib from 'pdfjs-dist';
+export declare function ensurePdfWorker(): pdfjsLib.PDFWorker;
 /** Configure the pdfjs-dist worker source.
  *
  *  **Must be called in the consumer's own source code** so that the consumer's

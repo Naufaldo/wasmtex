@@ -1,5 +1,6 @@
 export interface VisualEditorOptions {
     onContentChange: (latex: string) => void;
+    onLineClick?: (line: number) => void;
 }
 export declare class VisualEditor {
     private container;
@@ -15,6 +16,8 @@ export declare class VisualEditor {
     private insertHtmlAtCursor;
     /** Load and parse LaTeX into Visual Editor DOM */
     setLatex(latex: string): void;
+    /** Jump and visually highlight the corresponding section/paragraph in Visual WYSIWYG editor */
+    revealLine(targetLine: number): void;
     /** Serialize Visual Editor DOM back into full LaTeX document */
     private serializeToLatex;
 }

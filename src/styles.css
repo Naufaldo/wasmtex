@@ -1279,7 +1279,69 @@ body {
 }
 
 /* ==========================================================================
-   Research Library View
+   SyncTeX Visual WYSIWYG Highlight & Reticle Indicator
+   ========================================================================== */
+@keyframes veHighlightPulse {
+  0% {
+    box-shadow: 0 0 0 3px rgba(255, 77, 45, 0.6);
+    background-color: rgba(255, 77, 45, 0.18);
+  }
+  40% {
+    box-shadow: 0 0 0 6px rgba(255, 77, 45, 0.3);
+    background-color: rgba(255, 77, 45, 0.12);
+  }
+  100% {
+    box-shadow: 0 0 0 0 transparent;
+    background-color: transparent;
+  }
+}
+
+@keyframes fadeOutBadge {
+  0% { opacity: 1; transform: translateY(0); }
+  70% { opacity: 1; transform: translateY(0); }
+  100% { opacity: 0; transform: translateY(-4px); }
+}
+
+.ve-synctex-highlight {
+  position: relative !important;
+  outline: 2px solid #FF4D2D !important;
+  border-left: 4px solid #FF4D2D !important;
+  border-radius: 2px;
+  animation: veHighlightPulse 2.5s ease-out forwards;
+  transition: all 0.2s ease;
+}
+
+.ve-synctex-highlight::before {
+  content: '📍 PDF ➔ VISUAL SYNC';
+  position: absolute;
+  top: -24px;
+  left: 0;
+  background: #FF4D2D;
+  color: #FFFFFF;
+  font-family: var(--font-mono, monospace);
+  font-size: 10px;
+  font-weight: 800;
+  padding: 2px 7px;
+  border-radius: 2px;
+  letter-spacing: 0.06em;
+  pointer-events: none;
+  z-index: 20;
+  box-shadow: 0 2px 5px rgba(0, 0, 0, 0.3);
+  animation: fadeOutBadge 3.2s forwards;
+}
+
+/* Hover hint for clickable WYSIWYG blocks */
+.ve-editor-canvas [data-line] {
+  cursor: text;
+  transition: outline 0.15s ease;
+}
+
+.ve-editor-canvas [data-line]:hover {
+  outline: 1px dashed rgba(255, 77, 45, 0.35);
+}
+
+/* ==========================================================================
+   Research Library View (Tactical Brutalism Standard)
    ========================================================================== */
 .library-container {
   width: 100%;
@@ -1291,21 +1353,27 @@ body {
   display: flex;
   width: 100%;
   height: 100%;
-  background: #ffffff;
+  background: var(--bg-primary);
+  color: var(--text-primary);
+  font-family: var(--font-sans);
+  overflow: hidden;
 }
 
+/* Sidebar: Paper List */
 .lib-sidebar {
   width: 320px;
   flex-shrink: 0;
-  border-right: 1px solid #e5e7eb;
+  border-right: 1.5px solid var(--border-color);
   display: flex;
   flex-direction: column;
-  background: #f8f9fa;
+  background: var(--bg-tertiary);
+  box-sizing: border-box;
 }
 
 .lib-sidebar-header {
-  padding: 16px;
-  border-bottom: 1px solid #e5e7eb;
+  padding: 14px 16px;
+  border-bottom: 1.5px solid var(--border-color);
+  background: var(--bg-primary);
 }
 
 .lib-title-row {
@@ -1315,71 +1383,103 @@ body {
 }
 
 .lib-title {
-  font-size: 16px;
+  font-family: var(--font-mono);
+  font-size: 13px;
   font-weight: 700;
-  color: #111827;
+  letter-spacing: 0.06em;
+  color: var(--text-primary);
+  text-transform: uppercase;
+}
+
+.lib-search-wrap {
+  position: relative;
+  display: flex;
+  align-items: center;
+  margin-top: 10px;
+}
+
+.lib-search-prompt {
+  position: absolute;
+  left: 10px;
+  font-family: var(--font-mono);
+  font-size: 12px;
+  color: var(--accent-orange);
+  pointer-events: none;
 }
 
 .lib-search {
   width: 100%;
-  margin-top: 10px;
-  padding: 8px 12px;
-  border: 1px solid #d1d5db;
-  border-radius: 6px;
-  font-size: 13px;
+  padding: 7px 10px 7px 28px;
+  border: 1px solid var(--border-color);
+  border-radius: 0;
+  font-family: var(--font-mono);
+  font-size: 11.5px;
   outline: none;
-  background: #ffffff;
+  background: var(--bg-tertiary);
+  color: var(--text-primary);
+  transition: border-color 0.1s ease;
 }
 
 .lib-search:focus {
-  border-color: #0d6efd;
+  border-color: var(--accent-orange);
+  background: var(--bg-primary);
 }
 
 .lib-paper-list {
   flex: 1;
   overflow-y: auto;
-  padding: 12px;
+  padding: 10px;
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
 }
 
 .lib-paper-card {
   padding: 12px 14px;
-  border: 1px solid #e5e7eb;
-  border-radius: 8px;
-  margin-bottom: 10px;
-  background: #ffffff;
+  border: 1.5px solid var(--border-color);
+  border-left: 3px solid transparent;
+  border-radius: 0;
+  background: var(--bg-primary);
   cursor: pointer;
-  transition: all 0.15s ease;
+  transition: all 0.12s ease;
+  user-select: none;
 }
 
 .lib-paper-card:hover {
-  border-color: #93c5fd;
-  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.05);
+  border-color: var(--text-muted);
+  background: var(--bg-secondary);
 }
 
 .lib-paper-card.active {
-  border-color: #3b82f6;
-  background: #eff6ff;
-  box-shadow: inset 3px 0 0 #3b82f6;
+  border-color: var(--accent-orange);
+  border-left: 4px solid var(--accent-orange);
+  box-shadow: 2px 2px 0 var(--border-color);
+  background: var(--bg-secondary);
 }
 
 .lib-card-year-venue {
-  font-size: 11px;
-  font-weight: 600;
-  color: #6b7280;
+  font-family: var(--font-mono);
+  font-size: 10px;
+  font-weight: 700;
+  color: var(--text-muted);
+  letter-spacing: 0.05em;
   text-transform: uppercase;
 }
 
 .lib-card-title {
-  font-size: 14px;
+  font-family: var(--font-serif);
+  font-size: 15px;
   font-weight: 700;
-  color: #111827;
+  color: var(--text-primary);
   margin: 4px 0;
-  line-height: 1.3;
+  line-height: 1.25;
 }
 
 .lib-card-authors {
-  font-size: 12px;
-  color: #4b5563;
+  font-family: var(--font-mono);
+  font-size: 11px;
+  color: var(--text-secondary);
+  line-height: 1.35;
 }
 
 .lib-card-tags {
@@ -1390,95 +1490,191 @@ body {
 }
 
 .lib-tag {
-  font-size: 10px;
-  background: #e5e7eb;
-  color: #374151;
-  padding: 2px 6px;
-  border-radius: 4px;
-  font-weight: 500;
+  font-family: var(--font-mono);
+  font-size: 9.5px;
+  background: var(--bg-tertiary);
+  color: var(--text-muted);
+  border: 1px solid var(--border-color);
+  padding: 1px 5px;
+  border-radius: 0;
+  font-weight: 600;
+  letter-spacing: 0.04em;
 }
 
+/* Center: Paper Reader View */
 .lib-reader-panel {
   flex: 1;
   display: flex;
   flex-direction: column;
   min-width: 0;
-  border-right: 1px solid #e5e7eb;
+  border-right: 1.5px solid var(--border-color);
+  background: var(--bg-secondary);
 }
 
 .lib-panel-header {
   height: 48px;
-  border-bottom: 1px solid #e5e7eb;
+  border-bottom: 1.5px solid var(--border-color);
   display: flex;
   align-items: center;
   justify-content: space-between;
-  padding: 0 18px;
-  background: #ffffff;
+  padding: 0 16px;
+  background: var(--bg-primary);
   flex-shrink: 0;
+  gap: 8px;
+  box-sizing: border-box;
 }
 
 .lib-panel-title {
-  font-size: 14px;
+  font-family: var(--font-mono);
+  font-size: 11.5px;
   font-weight: 700;
-  color: #111827;
+  letter-spacing: 0.08em;
+  color: var(--text-primary);
+  text-transform: uppercase;
+  display: flex;
+  align-items: center;
+  gap: 6px;
+}
+
+.lib-reader-actions {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  flex-wrap: wrap;
+}
+
+/* PDF Annotation Ribbon Toolbar */
+.lib-annot-toolbar {
+  height: 40px;
+  background: var(--bg-tertiary);
+  border-bottom: 1px dashed var(--border-color);
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 0 14px;
+  font-family: var(--font-mono);
+  font-size: 11px;
+  flex-shrink: 0;
+  box-sizing: border-box;
+}
+
+.lib-annot-group {
+  display: flex;
+  align-items: center;
+  gap: 4px;
+}
+
+.lib-annot-btn {
+  background: var(--bg-primary);
+  border: 1px solid var(--border-color);
+  color: var(--text-primary);
+  font-family: var(--font-mono);
+  font-size: 10.5px;
+  font-weight: 700;
+  padding: 3px 8px;
+  border-radius: 0;
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  gap: 4px;
+  transition: all 0.1s ease;
+}
+
+.lib-annot-btn:hover {
+  background: var(--accent-orange);
+  color: #FFFFFF;
+  border-color: var(--accent-orange);
+}
+
+.lib-annot-btn.active {
+  background: var(--accent-orange);
+  color: #FFFFFF;
+  border-color: var(--accent-orange);
 }
 
 .lib-reader-content {
   flex: 1;
-  overflow-y: auto;
-  padding: 28px;
-  background: #f9fafb;
+  overflow: auto;
+  padding: 24px;
+  background: var(--bg-secondary);
+  display: flex;
+  justify-content: center;
+  align-items: flex-start;
 }
 
-.lib-pdf-iframe {
-  width: 100%;
-  height: 100%;
-  border: none;
+/* PDF Page Canvas & Overlay Wrapper */
+.lib-pdf-viewport {
+  position: relative;
+  box-shadow: 4px 4px 0 rgba(0, 0, 0, 0.25);
+  border: 1.5px solid var(--border-color);
+  background: #FFFFFF;
+  display: inline-block;
+  user-select: none;
 }
 
+.lib-pdf-canvas {
+  display: block;
+}
+
+.lib-annot-canvas {
+  position: absolute;
+  top: 0;
+  left: 0;
+  z-index: 5;
+  cursor: crosshair;
+}
+
+/* Reader Fallback Text (When No PDF is uploaded) */
 .lib-reader-text {
-  max-width: 800px;
-  margin: 0 auto;
-  background: #ffffff;
+  max-width: 760px;
+  width: 100%;
+  background: var(--bg-primary);
   padding: 36px 40px;
-  border-radius: 8px;
-  border: 1px solid #e5e7eb;
-  box-shadow: 0 2px 10px rgba(0, 0, 0, 0.04);
+  border-radius: 0;
+  border: 1.5px solid var(--border-color);
+  box-shadow: 4px 4px 0 var(--border-color);
 }
 
 .lib-reader-header-box {
-  border-bottom: 1px solid #e5e7eb;
-  padding-bottom: 20px;
+  border-bottom: 1.5px solid var(--border-color);
+  padding-bottom: 16px;
   margin-bottom: 20px;
 }
 
 .lib-reader-badge {
   display: inline-block;
-  background: #e0e7ff;
-  color: #3730a3;
-  font-size: 11px;
+  background: var(--bg-tertiary);
+  color: var(--accent-orange);
+  font-family: var(--font-mono);
+  font-size: 10.5px;
   font-weight: 700;
-  padding: 3px 8px;
-  border-radius: 4px;
+  padding: 2px 8px;
+  border: 1px solid var(--border-color);
+  border-radius: 0;
   margin-bottom: 8px;
+  letter-spacing: 0.05em;
 }
 
 .lib-reader-h1 {
-  font-size: 24px;
+  font-family: var(--font-serif);
+  font-size: 26px;
   font-weight: 700;
-  color: #111827;
-  line-height: 1.3;
-  margin-bottom: 8px;
+  color: var(--text-primary);
+  line-height: 1.25;
+  margin: 0 0 8px 0;
 }
 
 .lib-reader-authors {
-  font-size: 14px;
-  color: #4b5563;
-  margin-bottom: 6px;
+  font-family: var(--font-mono);
+  font-size: 12.5px;
+  color: var(--text-secondary);
+  margin-bottom: 8px;
 }
 
 .lib-reader-doi a {
-  color: #0d6efd;
+  color: var(--accent-cyan);
+  font-family: var(--font-mono);
+  font-size: 11.5px;
   text-decoration: none;
 }
 
@@ -1487,124 +1683,150 @@ body {
 }
 
 .lib-reader-abstract-p {
+  font-family: var(--font-serif);
   font-size: 15px;
-  line-height: 1.7;
-  color: #374151;
+  line-height: 1.65;
+  color: var(--text-primary);
 }
 
-.lib-reader-notice {
+.lib-reader-dropzone {
   margin-top: 24px;
-  padding: 12px 16px;
-  background: #f0fdf4;
-  border: 1px solid #bbf7d0;
-  border-radius: 6px;
-  color: #166534;
-  font-size: 13px;
+  padding: 24px;
+  background: var(--bg-tertiary);
+  border: 1.5px dashed var(--border-color);
+  border-radius: 0;
+  text-align: center;
+  font-family: var(--font-mono);
+  font-size: 12px;
+  color: var(--text-secondary);
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 8px;
 }
 
+/* Right: Paper Analysis & Memo */
 .lib-memo-panel {
-  width: 380px;
+  width: 360px;
   flex-shrink: 0;
   display: flex;
   flex-direction: column;
-  background: #ffffff;
+  background: var(--bg-primary);
+  box-sizing: border-box;
 }
 
 .lib-memo-content {
   flex: 1;
   overflow-y: auto;
-  padding: 18px;
+  padding: 16px;
 }
 
 .lib-memo-form {
   display: flex;
   flex-direction: column;
-  gap: 14px;
+  gap: 12px;
 }
 
 .lib-memo-section {
   display: flex;
   flex-direction: column;
+  gap: 5px;
 }
 
 .lib-memo-label {
-  font-size: 12px;
+  font-family: var(--font-mono);
+  font-size: 10.5px;
   font-weight: 700;
-  color: #374151;
-  margin-bottom: 5px;
+  color: var(--text-muted);
+  letter-spacing: 0.05em;
+  text-transform: uppercase;
 }
 
 .lib-textarea {
   width: 100%;
   padding: 8px 10px;
-  border: 1px solid #d1d5db;
-  border-radius: 6px;
-  font-size: 13px;
-  font-family: inherit;
+  border: 1px solid var(--border-color);
+  border-radius: 0;
+  font-size: 12.5px;
+  font-family: var(--font-sans);
+  line-height: 1.45;
   resize: vertical;
   outline: none;
-  background: #ffffff;
-  color: #111827;
+  background: var(--bg-tertiary);
+  color: var(--text-primary);
+  box-sizing: border-box;
+  transition: border-color 0.1s ease;
 }
 
 .lib-textarea:focus {
-  border-color: #0d6efd;
+  border-color: var(--accent-orange);
+  background: var(--bg-primary);
 }
 
 .lib-textarea.lib-code {
-  font-family: "Menlo", "Consolas", monospace;
-  font-size: 12px;
-  background: #f8fafc;
+  font-family: var(--font-mono);
+  font-size: 11px;
+  line-height: 1.4;
+  background: var(--bg-tertiary);
 }
 
 .lib-bibtex-header {
   display: flex;
   align-items: center;
   justify-content: space-between;
-  margin-bottom: 5px;
+  margin-bottom: 4px;
 }
 
 .lib-btn {
-  font-size: 12px;
-  font-weight: 600;
-  padding: 6px 12px;
-  border-radius: 6px;
+  font-family: var(--font-mono);
+  font-size: 11px;
+  font-weight: 700;
+  padding: 5px 12px;
+  border-radius: 0;
   cursor: pointer;
-  border: none;
-  transition: all 0.15s ease;
+  border: 1px solid var(--border-color);
+  letter-spacing: 0.05em;
+  transition: all 0.12s ease;
 }
 
 .lib-btn-primary {
-  background: #0d6efd;
-  color: #ffffff;
+  background: var(--accent-orange);
+  color: #FFFFFF;
+  border-color: var(--accent-orange);
 }
+
 .lib-btn-primary:hover {
-  background: #0b5ed7;
+  background: #E03818;
 }
 
 .lib-btn-outline {
-  background: #ffffff;
-  color: #374151;
-  border: 1px solid #d1d5db;
+  background: var(--bg-primary);
+  color: var(--text-primary);
+  border: 1px solid var(--border-color);
 }
+
 .lib-btn-outline:hover {
-  background: #f9fafb;
+  background: var(--bg-tertiary);
 }
 
 .lib-btn-success {
-  background: #198754;
-  color: #ffffff;
+  background: #15803D;
+  color: #FFFFFF;
+  border-color: #15803D;
 }
+
 .lib-btn-success:hover {
-  background: #157347;
+  background: #166534;
 }
 
 .lib-btn-danger {
-  background: #dc3545;
-  color: #ffffff;
+  background: #B91C1C;
+  color: #FFFFFF;
+  border-color: #B91C1C;
 }
+
 .lib-btn-danger:hover {
-  background: #bb2d3b;
+  background: #991B1B;
 }
 
 .lib-btn-sm {

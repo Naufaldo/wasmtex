@@ -149,4 +149,9 @@ export interface WasmTexEventMap {
             newText: string;
         }>;
     };
+    /** Triggered on PDF inverse search (clicking PDF jumps to source) */
+    inverseSearch: {
+        file: string;
+        line: number;
+    };
 }

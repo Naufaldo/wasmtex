@@ -3,12 +3,14 @@ import {
   DEFAULT_ACCOUNTS,
   type UserSession,
 } from '../auth/auth-store'
+import { getLang, t, toggleLang } from './i18n'
 import { OVERLEAF_ICONS } from './logo'
 
 export interface HomeViewOptions {
   onLoginSuccess: (session: UserSession) => void
   onToggleTheme: () => void
   isDarkMode: () => boolean
+  onToggleLang?: () => void
 }
 
 export class HomeView {
@@ -28,6 +30,7 @@ export class HomeView {
 
   private render(): void {
     const isDark = this.options.isDarkMode()
+    const lang = getLang()
 
     this.container.innerHTML = `
       <div class="cortex-home-root">
@@ -35,12 +38,20 @@ export class HomeView {
         <div class="tactical-top-strip">
           <div class="top-strip-left">
             <span class="strip-bracket">[</span>
-            <span class="strip-text">CLASSIFICATION: PUBLIC SHOWCASE // SPEC WASMTEX-V2</span>
+            <span class="strip-text">${t(
+              'KLASIFIKASI: SHOWCASE PUBLIK // SPESIFIKASI WASMTEX-V2',
+              'CLASSIFICATION: PUBLIC SHOWCASE // SPEC WASMTEX-V2',
+              lang
+            )}</span>
             <span class="strip-bracket">]</span>
           </div>
           <div class="top-strip-right">
             <span class="status-indicator-dot">●</span>
-            <span class="strip-text">ENGINE: WEBASSEMBLY // ZERO-SERVER COMPILATION // TEX LIVE 2025-2026</span>
+            <span class="strip-text">${t(
+              'ENGINE: WEBASSEMBLY // KOMPILASI ZERO-SERVER // TEX LIVE 2025-2026',
+              'ENGINE: WEBASSEMBLY // ZERO-SERVER COMPILATION // TEX LIVE 2025-2026',
+              lang
+            )}</span>
           </div>
         </div>
 
@@ -50,24 +61,27 @@ export class HomeView {
             <div class="tactical-brand-wrap">
               <span class="tactical-brand-logo">CorTeX</span>
               <span class="tactical-brand-reg">®</span>
-              <span class="tactical-brand-spec">/ WEBASSEMBLY LATEX STUDIO &amp; RESEARCH SUITE</span>
+              <span class="tactical-brand-spec">/ ${t('STUDIO LATEX WEBASSEMBLY & RISET ILMIAH', 'WEBASSEMBLY LATEX STUDIO & RESEARCH SUITE', lang)}</span>
             </div>
           </div>
 
           <nav class="tactical-nav-center home-nav-links">
-            <a href="#home-features" class="tactical-nav-btn">[ FITUR UTAMA ]</a>
-            <a href="#home-showcase" class="tactical-nav-btn">[ SCREENSHOT &amp; TUR ]</a>
-            <a href="#home-iam" class="tactical-nav-btn">[ SISTEM IAM ]</a>
-            <a href="#home-login-sec" class="tactical-nav-btn">[ AKSES MASUK ]</a>
+            <a href="#home-features" class="tactical-nav-btn">${t('[ FITUR UTAMA ]', '[ KEY FEATURES ]', lang)}</a>
+            <a href="#home-showcase" class="tactical-nav-btn">${t('[ SCREENSHOT & TUR ]', '[ SCREENSHOTS & TOUR ]', lang)}</a>
+            <a href="#home-iam" class="tactical-nav-btn">${t('[ SISTEM IAM ]', '[ IAM SYSTEM ]', lang)}</a>
+            <a href="#home-login-sec" class="tactical-nav-btn">${t('[ AKSES MASUK ]', '[ ACCESS LOGIN ]', lang)}</a>
           </nav>
 
           <div class="tactical-nav-right">
+            <button id="home-lang-toggle" class="tactical-icon-toggle" title="${t('Ganti Bahasa (ID / EN)', 'Switch Language (ID / EN)', lang)}">
+              🌐 <span class="toggle-mode-label">${lang.toUpperCase()}</span>
+            </button>
             <button id="home-theme-toggle" class="tactical-icon-toggle" title="Toggle Light / Dark Mode">
               ${isDark ? OVERLEAF_ICONS.themeSun : OVERLEAF_ICONS.themeMoon}
               <span class="toggle-mode-label">${isDark ? 'LIGHT' : 'DARK'}</span>
             </button>
             <a href="#home-login-sec" class="tactical-login-btn" style="text-decoration:none;">
-              [ 👤 MASUK / LOGIN ]
+              ${t('[ 👤 MASUK / LOGIN ]', '[ 👤 SIGN IN / LOGIN ]', lang)}
             </a>
           </div>
         </header>
@@ -79,16 +93,22 @@ export class HomeView {
             <div class="home-hero-glow"></div>
             <div class="home-hero-content">
               <div class="unit-classification-tag">
-                SPECIFICATION: IN-BROWSER HIGH-PERFORMANCE LATEX SDK &amp; RESEARCH STUDIO
+                ${t(
+                  'SPESIFIKASI: SDK LATEX & STUDIO RISET BERPERFORMA TINGGI DI BROWSER',
+                  'SPECIFICATION: IN-BROWSER HIGH-PERFORMANCE LATEX SDK & RESEARCH STUDIO',
+                  lang
+                )}
               </div>
               <h1 class="home-hero-title">
-                Kompilasi LaTeX Standar Jurnal<br />
-                <span class="hero-highlight">100% di Browser</span> Tanpa Server Backend
+                ${t('Kompilasi Dokumen LaTeX Standar Jurnal', 'International Journal LaTeX Compilation', lang)}<br />
+                <span class="hero-highlight">${t('100% di Browser Client', '100% In Client Browser', lang)}</span> ${t('Tanpa Ketergantungan Server', 'Without Server Dependencies', lang)}
               </h1>
               <p class="home-hero-desc">
-                CorTeX WasmTex mengintegrasikan engine TeX Live 2025/2026 bertenaga WebAssembly langsung di peramban Anda. 
-                Nikmati penulisan naskah saintifik dengan Visual KaTeX Editor, Monaco Code Editor dengan syntax highlighting, 
-                SyncTeX 2-arah interaktif, Research Library dengan auto-sync BibTeX, serta <strong>sistem IAM Multi-Akun terisolasi</strong> yang menjamin proyek tidak saling bentrok.
+                ${t(
+                  'CorTeX WasmTex mengintegrasikan engine TeX Live 2025/2026 bertenaga WebAssembly langsung di peramban Anda. Nikmati penulisan naskah saintifik dengan Visual KaTeX Editor, Monaco Code Editor dengan syntax highlighting, SyncTeX 2-arah interaktif, Research Library dengan auto-sync BibTeX, serta <strong>sistem IAM Multi-Akun terisolasi</strong> yang menjamin proyek tidak saling bentrok.',
+                  'CorTeX WasmTex embeds the WebAssembly-powered TeX Live 2025/2026 engine directly in your client browser. Experience scientific authoring with Visual KaTeX Equation editor, Monaco Code Editor with syntax highlighting, interactive 2-way SyncTeX, Research Library with automated BibTeX sync, and isolated Multi-Account IAM ensuring zero project collision.',
+                  lang
+                )}
               </p>
 
               <!-- Quick Demo CTA Bar -->
@@ -98,10 +118,10 @@ export class HomeView {
                   <span class="bracket-corner tr"></span>
                   <span class="bracket-corner bl"></span>
                   <span class="bracket-corner br"></span>
-                  <span class="cta-inner">🚀 MASUK KE DASHBOARD</span>
+                  <span class="cta-inner">${t('🚀 MASUK KE DASHBOARD', '🚀 ACCESS DASHBOARD', lang)}</span>
                 </a>
 
-                <button class="tactical-cta-btn cta-secondary btn-quick-demo" data-user="admin" title="Login instan dengan akun Master Admin">
+                <button class="tactical-cta-btn cta-secondary btn-quick-demo" data-user="admin" title="${t('Login instan sebagai Master Admin', 'Instant login as Master Admin', lang)}">
                   <span class="bracket-corner tl"></span>
                   <span class="bracket-corner tr"></span>
                   <span class="bracket-corner bl"></span>
@@ -109,7 +129,7 @@ export class HomeView {
                   <span class="cta-inner">⚡ DEMO: ADMIN</span>
                 </button>
 
-                <button class="tactical-cta-btn cta-secondary btn-quick-demo" data-user="researcher" title="Login instan dengan akun Peneliti">
+                <button class="tactical-cta-btn cta-secondary btn-quick-demo" data-user="researcher" title="${t('Login instan sebagai Peneliti', 'Instant login as Lead Researcher', lang)}">
                   <span class="bracket-corner tl"></span>
                   <span class="bracket-corner tr"></span>
                   <span class="bracket-corner bl"></span>
@@ -122,15 +142,15 @@ export class HomeView {
               <div class="home-badge-row">
                 <div class="home-badge-pill">
                   <span class="badge-dot">●</span>
-                  <strong>ZERO SERVER COMPILATION</strong>: Privasi total dokumen
+                  <strong>ZERO SERVER COMPILATION</strong>: ${t('Privasi total dokumen Anda', '100% client-side privacy', lang)}
                 </div>
                 <div class="home-badge-pill">
                   <span class="badge-dot cyan">●</span>
-                  <strong>TEX LIVE 2025 &amp; 2026</strong>: PDFTeX &amp; XeTeX Engine
+                  <strong>TEX LIVE 2025 &amp; 2026</strong>: ${t('Engine PDFTeX & XeTeX', 'PDFTeX & XeTeX Engine', lang)}
                 </div>
                 <div class="home-badge-pill">
                   <span class="badge-dot orange">●</span>
-                  <strong>IAM ISOLATION</strong>: Multi-user mandiri anti-bentrok
+                  <strong>IAM ISOLATION</strong>: ${t('Multi-user mandiri anti-bentrok', 'Multi-tenant sandboxing', lang)}
                 </div>
                 <div class="home-badge-pill">
                   <span class="badge-dot">●</span>
@@ -685,11 +705,21 @@ export class HomeView {
   }
 
   private bindEvents(): void {
+    // Language toggle
+    const langBtn = this.container.querySelector('#home-lang-toggle')
+    langBtn?.addEventListener('click', () => {
+      toggleLang()
+      this.render()
+      this.bindEvents()
+      this.options.onToggleLang?.()
+    })
+
     // Theme toggle
     const themeBtn = this.container.querySelector('#home-theme-toggle')
     themeBtn?.addEventListener('click', () => {
       this.options.onToggleTheme()
       this.render()
+      this.bindEvents()
     })
 
     // Showcase tab switcher
