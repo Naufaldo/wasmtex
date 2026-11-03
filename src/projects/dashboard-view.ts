@@ -18,7 +18,6 @@ import {
   deleteProject,
   getAllProjects,
   type ProjectItem,
-  restoreProject,
   saveProject,
 } from './project-store'
 import { backupProjectToR2, checkR2StorageAvailable } from './r2-storage'
@@ -60,8 +59,6 @@ export class DashboardView {
     const lang = getLang()
     const activeProjects = this.projects.filter((p) => !p.trashed && !p.archived)
     const activeCount = activeProjects.length
-    const archivedCount = this.projects.filter((p) => p.archived && !p.trashed).length
-    const trashCount = this.projects.filter((p) => p.trashed).length
 
     const journalCount = activeProjects.filter((p) => {
       const lt = p.tags?.map((t) => t.toLowerCase()) || []
@@ -151,12 +148,6 @@ export class DashboardView {
             <button class="tactical-nav-btn ${this.currentFilter === 'library' ? 'active' : ''}" data-filter="library">
               [ 📚 ${t('PUSTAKA RISET', 'RESEARCH LIBRARY', lang)} (${this.papers.length}) ]
             </button>
-            <button class="tactical-nav-btn ${this.currentFilter === 'archived' ? 'active' : ''}" data-filter="archived">
-              [ ${t('TERARSIP', 'ARCHIVED', lang)} (${archivedCount}) ]
-            </button>
-            <button class="tactical-nav-btn ${this.currentFilter === 'trash' ? 'active' : ''}" data-filter="trash">
-              [ ${t('KOTAK SAMPAH', 'TRASH', lang)} (${trashCount}) ]
-            </button>
           </nav>
 
           <div class="tactical-nav-right">
@@ -189,145 +180,6 @@ export class DashboardView {
 
         <!-- Main Scrollable Dashboard Content -->
         <div class="tactical-scroll-content">
-          <!-- Split Screen Hero Section (Compact & Eye-Friendly) -->
-          <section class="tactical-hero-section">
-            <!-- Left Pitch Column -->
-            <div class="tactical-hero-left">
-              <div>
-                <div class="unit-classification-tag">
-                  PURPOSE: BROWSER-NATIVE SCIENTIFIC PUBLISHING &amp; LATEX WORKSPACE
-                </div>
-                <h1 class="hero-headline-serif">
-                  Scaling Academic<span class="headline-reg">®</span> Research &amp; LaTeX Intelligence
-                </h1>
-                <p class="hero-description-mono">
-                  Pusat kerja terpadu untuk penulisan naskah LaTeX, kompilasi WebAssembly sub-detik, sinkronisasi AST, dan manajemen referensi sitasi riset tanpa instalasi lokal.
-                </p>
-
-                <div class="hero-action-row">
-                  ${
-                    currentUser?.role !== 'viewer'
-                      ? `
-                  <button id="dash-new-project-btn" class="tactical-cta-btn cta-orange" title="Mulai buat dokumen LaTeX baru dari template awal">
-                    <span class="bracket-corner tl"></span>
-                    <span class="bracket-corner tr"></span>
-                    <span class="bracket-corner bl"></span>
-                    <span class="bracket-corner br"></span>
-                    <span class="cta-inner">+ NEW MANUSCRIPT</span>
-                  </button>
-
-                  <label for="dash-import-file-input" class="tactical-cta-btn cta-secondary" title="Impor file .tex tunggal atau .zip proyek (otomatis diekstrak)">
-                    <span class="bracket-corner tl"></span>
-                    <span class="bracket-corner tr"></span>
-                    <span class="bracket-corner bl"></span>
-                    <span class="bracket-corner br"></span>
-                    <span class="cta-inner">⬆ IMPORT LATEX / ZIP</span>
-                    <input type="file" id="dash-import-file-input" accept=".tex,.bib,.txt,.zip" style="display:none;" />
-                  </label>
-                  `
-                      : `
-                  <div class="viewer-notice-box" style="padding:8px 12px; background:var(--bg-secondary); border:1px solid var(--border-color); font-family:var(--font-mono); font-size:11px; color:var(--text-secondary);">
-                    👁️ MODE BACA (VIEWER): AKUN HANYA-BACA, KOMPILASI &amp; REVIEW AKTIF
-                  </div>
-                  `
-                  }
-
-                  <button id="dash-goto-templates-btn" class="tactical-cta-btn cta-secondary" title="${t('Jelajahi galeri template dokumen', 'Browse document templates catalog', lang)}">
-                    <span class="bracket-corner tl"></span>
-                    <span class="bracket-corner tr"></span>
-                    <span class="bracket-corner bl"></span>
-                    <span class="bracket-corner br"></span>
-                    <span class="cta-inner">🎨 ${t('PILIH TEMPLATE', 'CHOOSE TEMPLATE', lang)} (${TEMPLATES.length})</span>
-                  </button>
-
-                  <button id="dash-goto-library-btn" class="tactical-cta-btn cta-secondary" title="Kelola katalog referensi literatur dan sitasi BibTeX">
-                    <span class="bracket-corner tl"></span>
-                    <span class="bracket-corner tr"></span>
-                    <span class="bracket-corner bl"></span>
-                    <span class="bracket-corner br"></span>
-                    <span class="cta-inner">📚 RESEARCH LIBRARY</span>
-                  </button>
-                </div>
-              </div>
-
-              <!-- Metric Card: 99.8% Box (Compact) -->
-              <div class="hero-metric-card">
-                <div class="metric-num-box">99.8%</div>
-                <div class="metric-text-box">
-                  <div class="metric-title">ACCURACY IN AST-LATEX SYNCHRONIZATION</div>
-                  <div class="metric-subtitle">SUB-SECOND WASM ENGINE COMPILATION &amp; REAL-TIME PREVIEW</div>
-                </div>
-              </div>
-            </div>
-
-            <!-- Right Telemetry & Radar Column -->
-            <div class="tactical-hero-right">
-              <div class="tactical-radar-instrument">
-                <span class="bracket-corner tl"></span>
-                <span class="bracket-corner tr"></span>
-                <span class="bracket-corner bl"></span>
-                <span class="bracket-corner br"></span>
-
-                <!-- Left & Right Vertical Side Bands -->
-                <div class="radar-side-tab tab-left">
-                  TEX LIVE 2025 — 2026
-                </div>
-                <div class="radar-side-tab tab-right">
-                  WASM CORE ENGINE: 64MB HEAP
-                </div>
-
-                <!-- Instrument Top Bar -->
-                <div class="radar-hud-header">
-                  <div class="hud-box-log">
-                    <div class="hud-log-title">[ SYSTEM LOG ]</div>
-                    <div class="hud-log-content">
-                      &gt; WASM_INIT: READY (HEAP 64M)<br/>
-                      &gt; AST_SYNC: NOMINAL<br/>
-                      &gt; TEXMF_DIST: 2025 CACHED
-                    </div>
-                  </div>
-                  <div class="hud-box-freq">
-                    <div class="freq-label">LATENCY BUDGET</div>
-                    <div class="freq-value">&lt; 142 MS</div>
-                  </div>
-                </div>
-
-                <!-- Center Concentric Radar Visual -->
-                <div class="radar-visual-viewport">
-                  <svg class="radar-svg" viewBox="0 0 340 340" fill="none" xmlns="http://www.w3.org/2000/svg">
-                    <!-- Outer Orange Ring -->
-                    <circle cx="170" cy="170" r="145" stroke="#FF4D2D" stroke-width="1.5" stroke-dasharray="3 4" class="radar-circle-outer" />
-                    <!-- Mid Contrast Ring -->
-                    <circle cx="170" cy="180" r="110" stroke="currentColor" stroke-width="1.5" class="radar-circle-mid" />
-                    <!-- Inner Cyan Ring -->
-                    <circle cx="170" cy="190" r="70" stroke="#38BDF8" stroke-width="1.8" stroke-dasharray="4 3" class="radar-circle-cyan" />
-                    <!-- Center Ring -->
-                    <circle cx="170" cy="200" r="30" stroke="currentColor" stroke-width="1.2" />
-                    <circle cx="170" cy="200" r="4" fill="#FF4D2D" />
-
-                    <!-- Reticle Lines -->
-                    <line x1="170" y1="25" x2="170" y2="315" stroke="currentColor" stroke-width="0.8" stroke-opacity="0.35" stroke-dasharray="2 3" />
-                    <line x1="25" y1="200" x2="315" y2="200" stroke="currentColor" stroke-width="0.8" stroke-opacity="0.35" stroke-dasharray="2 3" />
-                    
-                    <!-- Plus Center -->
-                    <path d="M162 200H178M170 192V208" stroke="#FF4D2D" stroke-width="1.5" />
-                    
-                    <text x="35" y="44" class="radar-coord-text">FORMAT: PDFLATEX</text>
-                    <text x="35" y="58" class="radar-coord-text">ENGINE: WASM-V2</text>
-                    <text x="225" y="44" class="radar-coord-text">SYNC: ACTIVE</text>
-                    <text x="225" y="58" class="radar-coord-text">AST: ~0-LATENCY</text>
-                  </svg>
-                </div>
-
-                <!-- Instrument Bottom Bar -->
-                <div class="radar-hud-footer">
-                  <div class="hud-mode-code">MODE: CORTEX-PRO // WASMTEX-V2</div>
-                  <div class="hud-security-badge">[ AES-512 SECURE ]</div>
-                </div>
-              </div>
-            </div>
-          </section>
-
           ${
             this.currentFilter === 'library'
               ? `
@@ -430,11 +282,54 @@ export class DashboardView {
           </section>
           `
               : `
+          <!-- Compact Action Toolbar for My Projects -->
+          <div class="dash-action-toolbar" style="padding: 18px 36px 14px 36px; background: var(--bg-primary); border-bottom: 1.5px solid var(--border-color); display: flex; align-items: center; justify-content: space-between; gap: 16px; flex-wrap: wrap;">
+            <div style="display: flex; align-items: center; gap: 12px; flex-wrap: wrap;">
+              ${
+                currentUser?.role !== 'viewer'
+                  ? `
+              <button id="dash-new-project-btn" class="tactical-cta-btn cta-orange" style="padding: 10px 20px;" title="${t('Buat naskah baru dari awal', 'Create new manuscript from scratch', lang)}">
+                <span class="bracket-corner tl"></span>
+                <span class="bracket-corner tr"></span>
+                <span class="bracket-corner bl"></span>
+                <span class="bracket-corner br"></span>
+                <span class="cta-inner">+ ${t('BUAT NASKAH BARU', 'NEW MANUSCRIPT', lang)}</span>
+              </button>
+
+              <label for="dash-import-file-input" class="tactical-cta-btn cta-secondary" style="padding: 10px 18px;" title="${t('Impor file .tex atau .zip proyek', 'Import .tex or .zip project', lang)}">
+                <span class="bracket-corner tl"></span>
+                <span class="bracket-corner tr"></span>
+                <span class="bracket-corner bl"></span>
+                <span class="bracket-corner br"></span>
+                <span class="cta-inner">⬆ ${t('IMPOR LATEX / ZIP', 'IMPORT LATEX / ZIP', lang)}</span>
+                <input type="file" id="dash-import-file-input" accept=".tex,.bib,.txt,.zip" style="display:none;" />
+              </label>
+              `
+                  : ''
+              }
+
+              <button id="dash-goto-templates-btn" class="tactical-cta-btn cta-secondary" style="padding: 10px 18px;" title="${t('Pilih dari 12 template naskah akademik siap-pakai', 'Choose from 12 ready-to-use academic templates', lang)}">
+                <span class="bracket-corner tl"></span>
+                <span class="bracket-corner tr"></span>
+                <span class="bracket-corner bl"></span>
+                <span class="bracket-corner br"></span>
+                <span class="cta-inner">🎨 ${t('PILIH TEMPLATE', 'CHOOSE TEMPLATE', lang)} (${TEMPLATES.length})</span>
+              </button>
+            </div>
+
+            <!-- Telemetry Indicator Pills -->
+            <div style="display: flex; align-items: center; gap: 8px; font-family: var(--font-mono); font-size: 11px;">
+              <span class="tactical-badge" style="color: var(--accent-orange); font-weight: 700;">● ${activeCount} ${t('PROYEK SAYA', 'MY PROJECTS', lang)}</span>
+              <span class="tactical-badge">[ WASM 64M HEAP ]</span>
+              <span class="tactical-badge">[ TEX LIVE 2025/2026 ]</span>
+            </div>
+          </div>
+
           <!-- Project Archive & Management Section -->
           <section class="tactical-archive-section">
             <div class="archive-section-header">
               <div class="archive-title-wrap">
-                <span class="archive-index">[ 02 ]</span>
+                <span class="archive-index">[ 📁 ]</span>
                 <div>
                   <div class="archive-heading">${t('MANAJER DOKUMEN & FOLDER PROYEK', 'DOCUMENT MANAGER & PROJECT FOLDERS', lang)}</div>
                   <div style="font-family: var(--font-mono); font-size: 12px; color: var(--text-secondary); margin-top: 2px;">
@@ -1147,12 +1042,10 @@ export class DashboardView {
   private renderProjectRows(searchQuery = ''): void {
     const tbody = this.container.querySelector('#dash-table-body')
     if (!tbody) return
+    const lang = getLang()
 
     let list = this.projects.filter((p) => {
-      if (this.currentFilter === 'trash') return p.trashed === true
-      if (p.trashed) return false
-      if (this.currentFilter === 'archived') return p.archived === true
-      if (p.archived) return false
+      if (p.trashed || p.archived) return false
       if (this.currentFilter === 'folder:journal') {
         const lowerTags = p.tags?.map((t) => t.toLowerCase()) || []
         const titleLower = p.title.toLowerCase()
@@ -1249,11 +1142,7 @@ export class DashboardView {
               <button class="tactical-btn-open" data-id="${proj.id}" title="Open Document">
                 OPEN ↗
               </button>
-              ${
-                proj.trashed
-                  ? `<button class="tactical-btn-action btn-restore" data-id="${proj.id}" title="Restore Document">↺</button>`
-                  : `<button class="tactical-btn-action btn-delete" data-id="${proj.id}" title="Move to Trash">✕</button>`
-              }
+              <button class="tactical-btn-action btn-delete" data-id="${proj.id}" title="${t('Hapus naskah', 'Delete manuscript', lang)}">✕</button>
             </div>
           </td>
         </tr>
@@ -1305,27 +1194,15 @@ export class DashboardView {
       btn.addEventListener('click', (e) => {
         e.stopPropagation()
         const id = (btn as HTMLElement).getAttribute('data-id')!
-        if (confirm('Pindahkan manuskrip ini ke Trash?')) {
+        const found = this.projects.find((p) => p.id === id)
+        const docTitle = found?.title || 'manuskrip'
+        if (confirm(t(`Hapus manuskrip "${docTitle}" secara permanen?`, `Permanently delete manuscript "${docTitle}"?`, lang))) {
           const curUser = getCurrentUser()
-          deleteProject(id, false, curUser).then(async () => {
+          deleteProject(id, true, curUser).then(async () => {
             this.projects = await getAllProjects(curUser)
-            this.renderTags()
-            this.renderProjectRows(searchQuery)
+            this.render()
           })
         }
-      })
-    })
-
-    tbody.querySelectorAll('.btn-restore').forEach((btn) => {
-      btn.addEventListener('click', (e) => {
-        e.stopPropagation()
-        const id = (btn as HTMLElement).getAttribute('data-id')!
-        restoreProject(id).then(async () => {
-          const curUser = getCurrentUser()
-          this.projects = await getAllProjects(curUser)
-          this.renderTags()
-          this.renderProjectRows(searchQuery)
-        })
       })
     })
   }
