@@ -14,7 +14,7 @@ import { VersionHistoryDialog } from './features/version-history'
 import { CommentsPanel } from './features/comments-panel'
 import { ReviewManager } from './features/review-manager'
 import { DashboardView } from './projects/dashboard-view'
-import { type ProjectItem, saveProject } from './projects/project-store'
+import { type ProjectItem, getProject, saveProject } from './projects/project-store'
 import './styles.css'
 
 // Start warmup immediately — fetches TeX Live files in parallel while
@@ -118,11 +118,37 @@ function loadSampleProject(): Promise<Record<string, string | Uint8Array>> {
   return Promise.all(loaders).then(() => files)
 }
 
+function persistActiveProject(): void {
+  if (!activeProjectId || !editorRef) return
+  getProject(activeProjectId).then((existing) => {
+    const filesMap: Record<string, string> = {}
+    for (const f of editorRef!.listFiles()) {
+      const c = editorRef!.getFile(f)
+      if (typeof c === 'string') filesMap[f] = c
+    }
+    const title =
+      (document.getElementById('doc-title-input') as HTMLInputElement)?.value ||
+      existing?.title ||
+      'Untitled Manuscript'
+    const proj: ProjectItem = {
+      id: activeProjectId,
+      title,
+      owner: existing?.owner || 'You',
+      lastModified: Date.now(),
+      tags: existing?.tags || [],
+      files: filesMap,
+    }
+    if (existing?.archived !== undefined) proj.archived = existing.archived
+    if (existing?.trashed !== undefined) proj.trashed = existing.trashed
+    saveProject(proj)
+  })
+}
+
 function renderFileList(files: string[]): void {
   const normalized = [...new Set(files)].sort((a, b) => a.localeCompare(b))
 
   if (normalized.length === 0) {
-    fileTreeContainer.innerHTML = '<div class="file-item">No files</div>'
+    fileTreeContainer.innerHTML = '<div class="file-item" style="color: var(--text-muted); font-style: italic;">No files</div>'
     return
   }
 
@@ -137,7 +163,9 @@ function renderFileList(files: string[]): void {
     const item = document.createElement('div')
 
     item.className = `file-item${filePath === activeFile ? ' active' : ''}`
-    item.textContent = filePath
+    const isFolder = filePath.includes('/')
+    const icon = isFolder ? '📁 ' : '📄 '
+    item.textContent = `${icon}${filePath}`
     item.title = filePath
 
     item.addEventListener('click', () => {
@@ -158,14 +186,18 @@ function renderFileList(files: string[]): void {
       const del = document.createElement('button')
 
       del.className = 'delete-btn'
-      del.textContent = 'x'
+      del.textContent = '✕'
       del.title = `Delete ${filePath}`
       del.addEventListener('click', (event) => {
         event.stopPropagation()
 
-        if (!confirm(`Delete ${filePath}?`)) return
+        if (!confirm(`Hapus file "${filePath}"?`)) return
 
-        if (editorRef) editorRef.deleteFile(filePath)
+        if (editorRef) {
+          editorRef.deleteFile(filePath)
+          renderFileList(editorRef.listFiles())
+          persistActiveProject()
+        }
       })
 
       item.appendChild(del)
@@ -672,21 +704,7 @@ async function start() {
   // Document Title update
   const docTitleInput = document.getElementById('doc-title-input') as HTMLInputElement
   docTitleInput?.addEventListener('change', () => {
-    if (activeProjectId && activeProjectId !== 'default') {
-      const filesMap: Record<string, string> = {}
-      for (const f of editor.listFiles()) {
-        const c = editor.getFile(f)
-        if (typeof c === 'string') filesMap[f] = c
-      }
-      saveProject({
-        id: activeProjectId,
-        title: docTitleInput.value,
-        owner: 'You',
-        lastModified: Date.now(),
-        files: filesMap,
-        tags: ['Custom'],
-      })
-    }
+    persistActiveProject()
   })
 
   // Sidebar File upload & Folder creation
@@ -702,18 +720,26 @@ async function start() {
       editor.setFile(file.name, text)
     }
     renderFileList(editor.listFiles())
+    persistActiveProject()
   })
 
   document.getElementById('add-folder-btn')?.addEventListener('click', () => {
-    const folder = prompt('Folder name:')
+    const folder = prompt('Nama folder baru (contoh: "chapters", "sections", "figures"):')
     if (folder) {
-      editor.setFile(`${folder.replace(/\/$/, '')}/placeholder.tex`, '% Folder placeholder')
-      renderFileList(editor.listFiles())
+      const clean = folder.replace(/^\/+|\/+$/g, '')
+      if (clean) {
+        editor.setFile(`${clean}/placeholder.tex`, '% Folder placeholder\n')
+        renderFileList(editor.listFiles())
+        persistActiveProject()
+      }
     }
   })
 
   addFileButton.addEventListener('click', () => {
-    const decision = resolveAddFile(prompt('New file path'), (p) => editor.getFile(p) !== null)
+    const decision = resolveAddFile(
+      prompt('Path file baru (contoh: "notes.tex" atau "chapters/section1.tex"):'),
+      (p) => editor.getFile(p) !== null,
+    )
     if (decision.action === 'cancel') return
     // Only create writes content; opening an existing file must not overwrite it.
     if (decision.action === 'create') {
@@ -722,6 +748,7 @@ async function start() {
     activeFile = decision.path
     editor.openFile(decision.path)
     renderFileList(editor.listFiles())
+    persistActiveProject()
   })
 
   // E2E backward compat: expose globals

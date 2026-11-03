@@ -1,15 +1,9 @@
 export const APP_LOGO_SVG = `
 <svg width="28" height="28" viewBox="0 0 32 32" fill="none" xmlns="http://www.w3.org/2000/svg" class="app-brand-icon">
-  <rect width="32" height="32" rx="7" fill="url(#logo_grad)" />
-  <!-- Stylized TeX / Delta / Sigma geometric symbol -->
-  <path d="M8 9H24M16 9V24M10 24H22" stroke="white" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round" />
-  <circle cx="23" cy="9" r="2.5" fill="#4ade80" />
-  <defs>
-    <linearGradient id="logo_grad" x1="0" y1="0" x2="32" y2="32" gradientUnits="userSpaceOnUse">
-      <stop stop-color="#059669" />
-      <stop offset="1" stop-color="#0284c7" />
-    </linearGradient>
-  </defs>
+  <rect width="32" height="32" fill="#111111" stroke="#111111" stroke-width="1.5" />
+  <!-- Stylized TeX / Delta / Sigma geometric symbol in high contrast -->
+  <path d="M6 7H26M16 7V25M9 25H23" stroke="#5BC0EB" stroke-width="2.5" stroke-linecap="square" />
+  <rect x="22" y="6" width="4" height="4" fill="#FF4D2D" />
 </svg>
 `
 

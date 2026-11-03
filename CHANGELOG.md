@@ -11,6 +11,30 @@ breaking changes are called out under **Changed** with a ⚠️ marker.
 
 ## [Unreleased]
 
+## [0.1.0] - 2026-11-03
+
+### Added
+- **Tactical Brutalist UI (CorTeX Style)**: Complete UI overhaul inspired by high-contrast technical defense and intelligence systems, featuring editorial serif typography, monospaced telemetry data, radar frequency instruments, and zero-radius industrial layout.
+- **CorTeX Branding & Naming**: Replaced external lab placeholder branding with native CorTeX & WasmTex Studio academic research studio identity.
+- **Dynamic File, Folder, & Tag Architecture**:
+  - Clean slate for user projects: folders and files start empty and can be dynamically created and removed by the user.
+  - Visual hierarchy in sidebar: folders tagged with `📁`, root files with `📄`, and individual deletion actions.
+  - Single official engine tutorial project: `Tutorial — Getting Started with LaTeX & WasmTex` containing math, algebra, analysis, and linear algebra references.
+  - Automatic persistence to IndexedDB whenever files, folders, titles, or tags are updated.
+- **Dynamic Tags Management**:
+  - Filter chips bar that dynamically reflects user-created tags.
+  - In-row `+ TAG` button to add or modify project tags on the fly.
+  - Clean initial state with no hardcoded dummy tags.
+- **Cloudflare R2 Private Document Storage**:
+  - R2 bucket bindings (`MY_BUCKET` & `DOCUMENTS_BUCKET`) in `wrangler.jsonc` and `STORAGE_PREFIX` variable.
+  - Worker endpoints for `/api/storage/<key>` supporting `PUT`, `GET`, `DELETE`, and `LIST` with full CORS headers.
+  - Client-side R2 backup helper (`src/projects/r2-storage.ts`) and navbar `☁ R2 CLOUD` sync trigger.
+
+### Fixed
+- **Linux CI Build `EBADPLATFORM` Error**: Removed hardcoded Windows binary `@biomejs/cli-win32-x64` from root `devDependencies` in `package.json`, allowing cross-platform `npm clean-install` / `npm ci` on Cloudflare Pages, Docker, and Linux environments.
+- **Editor Visual Card Contrast**: Fixed white-on-white text contrast bug in `.ve-abstract-card` and `.ve-math-block` under dark and light modes.
+- **Zero-Radius Industrial Styling**: Enforced crisp 1.5px borders and zero border-radius across all UI controls, buttons, drawers, and status indicators.
+
 ### Fixed
 
 - Keep chapter previews for a chapter that starts past the page limit. Such a
