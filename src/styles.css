@@ -123,24 +123,30 @@ body {
 }
 
 .le-status-bar {
-  height: 24px;
-  background: #007acc;
-  color: white;
+  height: 26px;
+  background: #0E1116;
+  border-top: 1px solid var(--border-color);
+  color: #94A3B8;
   display: flex;
   align-items: center;
   justify-content: space-between;
-  padding: 0 10px;
-  font-size: 12px;
+  padding: 0 12px;
+  font-family: var(--font-mono);
+  font-size: 11px;
+  letter-spacing: 0.04em;
   flex-shrink: 0;
 }
 
 #status {
   display: inline-flex;
+  font-weight: 700;
+  color: #4ADE80;
 }
 
 #status-detail {
-  color: rgba(255, 255, 255, 0.85);
+  color: #64748B;
   font-size: 11px;
+  margin-left: 6px;
 }
 
 .le-status-group,
@@ -576,7 +582,10 @@ body {
   padding: 5px 12px;
   border-radius: 0;
   outline: none;
-  width: 240px;
+  width: 100%;
+  min-width: 240px;
+  max-width: 480px;
+  flex: 1;
   transition: all 0.15s ease;
   letter-spacing: 0.02em;
 }
@@ -817,18 +826,39 @@ body {
 
 .ve-paper {
   width: 100%;
-  max-width: 780px;
+  max-width: 800px;
   min-height: 980px;
   background: var(--bg-primary);
   border: 1.5px solid var(--border-color);
   border-radius: 0;
   box-shadow: 4px 4px 0 rgba(0, 0, 0, 0.25);
   padding: 48px 56px;
-  outline: none;
-  font-family: "Times New Roman", Times, Georgia, serif;
-  font-size: 15px;
-  line-height: 1.7;
+  outline: none !important;
+  font-family: var(--font-serif);
+  font-size: 16px;
+  line-height: 1.65;
   color: var(--text-primary);
+}
+
+.ve-paper * {
+  outline: none !important;
+}
+
+.ve-paper p {
+  margin-bottom: 14px;
+  line-height: 1.65;
+  color: var(--text-primary);
+}
+
+.ve-inline-math {
+  font-family: var(--font-mono);
+  font-size: 0.95em;
+  color: var(--accent-cyan);
+  background: rgba(91, 192, 235, 0.08);
+  padding: 1px 4px;
+  border-radius: 0;
+  border: 1px solid rgba(91, 192, 235, 0.25);
+  margin: 0 1px;
 }
 
 .ve-paper h1 {
@@ -923,12 +953,15 @@ body {
   color: var(--accent-orange);
   border: 1px solid var(--border-color);
   border-radius: 0;
-  padding: 2px 8px;
+  padding: 1px 6px;
   font-size: 11px;
   font-family: var(--font-mono);
   font-weight: 700;
+  letter-spacing: 0.04em;
   display: inline-block;
   user-select: none;
+  vertical-align: baseline;
+  margin: 0 2px;
 }
 
 .ve-ref-pill {
@@ -1796,6 +1829,7 @@ body {
   background: var(--bg-primary);
   color: var(--text-primary);
   overflow: hidden;
+  overflow-x: hidden;
   font-family: var(--font-sans);
 }
 
@@ -1838,16 +1872,16 @@ body {
   font-size: 10px;
 }
 
-/* Cyan Solid Tactical Navbar */
+/* Eye-Friendly High-Contrast Tactical Navbar */
 .tactical-navbar {
   height: 52px;
-  background: #5BC0EB;
-  border-bottom: 1.5px solid #111111;
+  background: #111419;
+  border-bottom: 1.5px solid var(--border-color);
   display: flex;
   align-items: center;
   justify-content: space-between;
   padding: 0 20px;
-  color: #111111;
+  color: #FFFFFF;
   flex-shrink: 0;
   box-sizing: border-box;
 }
@@ -1863,7 +1897,7 @@ body {
   font-size: 26px;
   font-weight: 800;
   font-style: italic;
-  color: #111111;
+  color: #FFFFFF;
   letter-spacing: -0.5px;
 }
 
@@ -1871,7 +1905,7 @@ body {
   font-size: 13px;
   font-weight: 700;
   vertical-align: super;
-  color: #111111;
+  color: var(--accent-orange);
 }
 
 .tactical-brand-spec {
@@ -1880,8 +1914,8 @@ body {
   font-weight: 700;
   letter-spacing: 0.05em;
   margin-left: 8px;
-  color: #111111;
-  opacity: 0.85;
+  color: var(--accent-cyan);
+  opacity: 0.9;
 }
 
 .tactical-nav-center {
@@ -1892,11 +1926,11 @@ body {
 
 .tactical-nav-btn {
   font-family: var(--font-mono);
-  font-size: 12px;
+  font-size: 11.5px;
   font-weight: 700;
   letter-spacing: 0.05em;
   background: transparent;
-  color: #111111;
+  color: #CBD5E1;
   border: 1px solid transparent;
   border-radius: 0;
   padding: 6px 12px;
@@ -1905,20 +1939,21 @@ body {
 }
 
 .tactical-nav-btn:hover {
-  background: rgba(0, 0, 0, 0.08);
-  border-color: #111111;
+  background: rgba(255, 255, 255, 0.08);
+  border-color: rgba(255, 255, 255, 0.2);
+  color: #FFFFFF;
 }
 
 .tactical-nav-btn.active {
-  background: #111111;
+  background: #1E232B;
   color: #FFFFFF;
-  border-color: #111111;
+  border: 1px solid var(--accent-orange);
 }
 
 .tactical-nav-right {
   display: flex;
   align-items: center;
-  gap: 12px;
+  gap: 10px;
 }
 
 .tactical-icon-toggle {
@@ -1926,9 +1961,9 @@ body {
   font-size: 11px;
   font-weight: 700;
   letter-spacing: 0.05em;
-  background: #111111;
+  background: #181C24;
   color: #FFFFFF;
-  border: 1px solid #111111;
+  border: 1px solid rgba(255, 255, 255, 0.2);
   border-radius: 0;
   padding: 5px 10px;
   display: flex;
@@ -1939,22 +1974,48 @@ body {
 }
 
 .tactical-icon-toggle:hover {
-  background: #222222;
+  background: #252B38;
 }
 
 .toggle-mode-label {
   font-size: 10px;
 }
 
+.tactical-login-btn {
+  font-family: var(--font-mono);
+  font-size: 11.5px;
+  font-weight: 700;
+  letter-spacing: 0.06em;
+  background: var(--accent-orange);
+  color: #FFFFFF;
+  border: 1px solid var(--accent-orange);
+  border-radius: 0;
+  padding: 5px 12px;
+  cursor: pointer;
+  transition: transform 0.1s ease, background 0.12s ease;
+}
+
+.tactical-login-btn:hover {
+  background: #E03818;
+  transform: translate(-1px, -1px);
+}
+
+.tactical-user-wrap {
+  display: flex;
+  align-items: center;
+  gap: 4px;
+}
+
 .tactical-user-tag {
   font-family: var(--font-mono);
   font-size: 11px;
   font-weight: 700;
-  color: #111111;
+  color: #E2E8F0;
   letter-spacing: 0.05em;
 }
 
 .user-bracket {
+  color: var(--accent-cyan);
   font-weight: 800;
 }
 
@@ -1962,28 +2023,31 @@ body {
 .tactical-scroll-content {
   flex: 1;
   overflow-y: auto;
+  overflow-x: hidden;
   display: flex;
   flex-direction: column;
 }
 
-/* Split Screen Hero Section */
+/* Split Screen Hero Section (Comfortable Compact Height) */
 .tactical-hero-section {
   display: grid;
-  grid-template-columns: 1.15fr 0.85fr;
+  grid-template-columns: 1.25fr 0.75fr;
   border-bottom: 1.5px solid var(--border-color);
-  min-height: 490px;
+  min-height: 320px;
+  max-height: 380px;
   background: var(--bg-primary);
 }
 
-@media (max-width: 768px) {
+@media (max-width: 900px) {
   .tactical-hero-section {
     grid-template-columns: 1fr;
+    max-height: none;
   }
 }
 
 /* Hero Left Pitch Column */
 .tactical-hero-left {
-  padding: 44px 48px 0 48px;
+  padding: 24px 36px 0 36px;
   display: flex;
   flex-direction: column;
   justify-content: space-between;
@@ -1993,22 +2057,22 @@ body {
 
 .unit-classification-tag {
   font-family: var(--font-mono);
-  font-size: 12px;
+  font-size: 11px;
   font-weight: 700;
-  letter-spacing: 0.12em;
+  letter-spacing: 0.1em;
   color: var(--text-muted);
-  margin-bottom: 14px;
+  margin-bottom: 8px;
   text-transform: uppercase;
 }
 
 .hero-headline-serif {
   font-family: var(--font-serif);
-  font-size: 48px;
-  line-height: 1.08;
+  font-size: 34px;
+  line-height: 1.15;
   font-weight: 700;
   color: var(--text-primary);
-  margin: 0 0 20px 0;
-  letter-spacing: -0.5px;
+  margin: 0 0 10px 0;
+  letter-spacing: -0.3px;
 }
 
 .headline-reg {
@@ -2018,23 +2082,24 @@ body {
   margin-left: 2px;
   margin-right: 4px;
   font-weight: 700;
+  color: var(--accent-orange);
 }
 
 .hero-description-mono {
-  font-family: var(--font-mono);
-  font-size: 13.5px;
-  line-height: 1.65;
+  font-family: var(--font-sans);
+  font-size: 13px;
+  line-height: 1.5;
   color: var(--text-secondary);
-  margin: 0 0 28px 0;
-  max-width: 580px;
+  margin: 0 0 16px 0;
+  max-width: 620px;
 }
 
 /* Action CTA Buttons with Corner Brackets */
 .hero-action-row {
   display: flex;
   align-items: center;
-  gap: 16px;
-  margin-bottom: 32px;
+  gap: 12px;
+  margin-bottom: 16px;
 }
 
 .tactical-cta-btn {
@@ -2115,7 +2180,7 @@ body {
   color: var(--bg-primary);
 }
 
-/* Metric Card 98% Box */
+/* Metric Card 99.8% Box (Compact & Balanced) */
 .hero-metric-card {
   display: flex;
   align-items: stretch;
@@ -2130,10 +2195,10 @@ body {
 
 .metric-num-box {
   font-family: var(--font-serif);
-  font-size: 54px;
+  font-size: 36px;
   font-weight: 800;
   line-height: 1;
-  padding: 16px 24px;
+  padding: 10px 18px;
   background: #000000;
   display: flex;
   align-items: center;
@@ -2143,28 +2208,28 @@ body {
 }
 
 .metric-text-box {
-  padding: 14px 20px;
+  padding: 8px 16px;
   display: flex;
   flex-direction: column;
   justify-content: center;
-  gap: 4px;
+  gap: 2px;
   font-family: var(--font-mono);
 }
 
 .metric-title {
-  font-size: 13px;
+  font-size: 11.5px;
   font-weight: 700;
-  letter-spacing: 0.08em;
+  letter-spacing: 0.05em;
   color: #5BC0EB;
 }
 
 .metric-subtitle {
-  font-size: 10px;
+  font-size: 9px;
   color: #94A3B8;
-  letter-spacing: 0.05em;
+  letter-spacing: 0.04em;
 }
 
-/* Hero Right Radar Column - Flush Fit */
+/* Hero Right Radar Column - Flush Fit & Compact */
 .tactical-hero-right {
   padding: 0;
   display: flex;
@@ -2180,7 +2245,7 @@ body {
   max-width: none;
   border: none;
   background: var(--bg-primary);
-  padding: 24px 32px;
+  padding: 14px 24px;
   display: flex;
   flex-direction: column;
   justify-content: space-between;
@@ -2195,8 +2260,8 @@ body {
   background: #111111;
   color: #E2E8F0;
   font-family: var(--font-mono);
-  font-size: 8.5px;
-  letter-spacing: 0.15em;
+  font-size: 8px;
+  letter-spacing: 0.12em;
   writing-mode: vertical-rl;
   display: flex;
   align-items: center;
@@ -2224,20 +2289,20 @@ body {
   align-items: flex-start;
   gap: 12px;
   border-bottom: 1px dashed var(--border-color);
-  padding-bottom: 10px;
+  padding-bottom: 8px;
 }
 
 .hud-box-log {
   font-family: var(--font-mono);
-  font-size: 10.5px;
-  line-height: 1.4;
+  font-size: 10px;
+  line-height: 1.35;
   color: var(--text-secondary);
 }
 
 .hud-log-title {
   font-weight: 700;
   color: var(--text-primary);
-  margin-bottom: 4px;
+  margin-bottom: 2px;
 }
 
 .hud-box-freq {
@@ -2246,13 +2311,13 @@ body {
 }
 
 .freq-label {
-  font-size: 9.5px;
+  font-size: 9px;
   color: var(--text-muted);
   letter-spacing: 0.05em;
 }
 
 .freq-value {
-  font-size: 13px;
+  font-size: 12px;
   font-weight: 700;
   color: var(--accent-orange);
 }
@@ -2262,12 +2327,12 @@ body {
   display: flex;
   align-items: center;
   justify-content: center;
-  padding: 8px 0;
+  padding: 4px 0;
 }
 
 .radar-svg {
-  width: 260px;
-  height: 260px;
+  width: 190px;
+  height: 190px;
   color: var(--text-primary);
 }
 
@@ -2626,6 +2691,106 @@ body {
   user-select: none;
 }
 
+/* Tactical Login Modal Dialog */
+.tactical-login-modal {
+  padding: 0;
+  border: none;
+  background: transparent;
+  color: var(--text-primary);
+  max-width: 440px;
+  width: 90vw;
+}
+
+.tactical-login-modal::backdrop {
+  background: rgba(0, 0, 0, 0.75);
+  backdrop-filter: blur(2px);
+}
+
+.tactical-modal-frame {
+  position: relative;
+  background: var(--bg-primary);
+  border: 1.5px solid var(--border-color);
+  box-shadow: 6px 6px 0 var(--border-color);
+  padding: 24px;
+  display: flex;
+  flex-direction: column;
+  gap: 16px;
+}
+
+.tactical-modal-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  border-bottom: 1px dashed var(--border-color);
+  padding-bottom: 10px;
+}
+
+.modal-spec-tag {
+  font-family: var(--font-mono);
+  font-size: 11px;
+  font-weight: 700;
+  letter-spacing: 0.08em;
+  color: var(--accent-orange);
+}
+
+.modal-close-x {
+  background: transparent;
+  border: none;
+  font-family: var(--font-mono);
+  font-size: 14px;
+  font-weight: 700;
+  cursor: pointer;
+  color: var(--text-muted);
+}
+
+.modal-close-x:hover {
+  color: var(--accent-orange);
+}
+
+.tactical-modal-body {
+  display: flex;
+  flex-direction: column;
+  gap: 14px;
+}
+
+.form-field-group {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+}
+
+.form-field-label {
+  font-family: var(--font-mono);
+  font-size: 10.5px;
+  font-weight: 700;
+  letter-spacing: 0.06em;
+  color: var(--text-muted);
+}
+
+.tactical-form-input {
+  background: var(--bg-tertiary);
+  border: 1px solid var(--border-color);
+  color: var(--text-primary);
+  font-family: var(--font-mono);
+  font-size: 13px;
+  padding: 8px 12px;
+  outline: none;
+  border-radius: 0;
+  transition: border-color 0.1s ease;
+}
+
+.tactical-form-input:focus {
+  border-color: var(--accent-orange);
+  background: var(--bg-primary);
+}
+
+.form-actions-row {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  margin-top: 6px;
+}
+
 /* ==========================================================================
    Editor Topbar Overleaf Style (Unified Tactical Theme)
    ========================================================================== */
@@ -2633,6 +2798,9 @@ body {
   display: flex;
   align-items: center;
   gap: 10px;
+  flex: 1;
+  min-width: 0;
+  max-width: 48%;
 }
 
 .topbar-back-btn {

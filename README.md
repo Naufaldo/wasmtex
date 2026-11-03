@@ -22,7 +22,10 @@ Repository ini merupakan *fork* dari **WasmTex** (oleh Corca AI). Fokus utama fo
 
 ## 🚀 Features
 
-- **🎯 Tactical Brutalist UI (CorTeX Style)**: High-contrast research studio interface inspired by technical intelligence systems (editorial serif typography, monospaced telemetry data, radar frequency instruments, and zero-radius industrial layout).
+- **🎯 Tactical Brutalist UI & Ergonomic Comfort (CorTeX Style)**: High-contrast research studio interface inspired by technical intelligence systems (editorial serif typography, monospaced telemetry data, radar frequency instruments, zero-radius industrial layout, and dark eye-friendly obsidian navbar).
+- **👤 Simple Operator Authentication**:
+  - Modal login dialog with Operator ID/Email and Passphrase or quick Guest Access.
+  - Client-side persistent session (`localStorage`) showing active operator badge and custom authorship on new manuscripts.
 - **📂 Clean & Dynamic Workspace**:
   - Start clean: customize files, folders (`chapters/`, `figures/`), and tags on the fly.
   - Built-in official tutorial: `Tutorial — Getting Started with LaTeX & WasmTex` showcasing math typesetting, BibTeX citations, and multi-file architecture.

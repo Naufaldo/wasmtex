@@ -1,4 +1,5 @@
 import { OVERLEAF_ICONS } from '../ui/logo'
+import { getCurrentUser, loginUser, logoutUser } from '../auth/auth-store'
 import {
   deleteProject,
   getAllProjects,
@@ -32,6 +33,7 @@ export class DashboardView {
 
   private render(): void {
     const isDark = this.options.isDarkMode()
+    const currentUser = getCurrentUser()
     const activeCount = this.projects.filter((p) => !p.trashed && !p.archived).length
     const archivedCount = this.projects.filter((p) => p.archived && !p.trashed).length
     const trashCount = this.projects.filter((p) => p.trashed).length
@@ -51,7 +53,7 @@ export class DashboardView {
           </div>
         </div>
 
-        <!-- Cyan Solid Tactical Navbar -->
+        <!-- High-Contrast Eye-Friendly Tactical Navbar -->
         <header class="tactical-navbar">
           <div class="tactical-nav-left">
             <div class="tactical-brand-wrap">
@@ -81,50 +83,65 @@ export class DashboardView {
               ${isDark ? OVERLEAF_ICONS.themeSun : OVERLEAF_ICONS.themeMoon}
               <span class="toggle-mode-label">${isDark ? 'LIGHT' : 'DARK'}</span>
             </button>
-            <div class="tactical-user-tag">
-              <span class="user-bracket">&lt;</span>
-              <span class="user-text">OPERATOR // YOU</span>
-              <span class="user-bracket">&gt;</span>
-            </div>
+            ${
+              currentUser
+                ? `
+              <div class="tactical-user-wrap">
+                <span class="tactical-user-tag">
+                  <span class="user-bracket">&lt;</span>
+                  <span class="user-text">OPERATOR // ${escapeHtml(currentUser.name.toUpperCase())}</span>
+                  <span class="user-bracket">&gt;</span>
+                </span>
+                <button id="dash-logout-btn" class="tactical-btn-action" style="font-size:10.5px; padding:3px 8px; margin-left:4px;" title="Keluar / Logout">LOGOUT</button>
+              </div>
+            `
+                : `
+              <button id="dash-login-btn" class="tactical-login-btn" title="Login ke CorTeX Studio">
+                [ 👤 LOGIN ]
+              </button>
+            `
+            }
           </div>
         </header>
 
         <!-- Main Scrollable Dashboard Content -->
         <div class="tactical-scroll-content">
-          <!-- Split Screen Hero Section -->
+          <!-- Split Screen Hero Section (Compact & Eye-Friendly) -->
           <section class="tactical-hero-section">
             <!-- Left Pitch Column -->
             <div class="tactical-hero-left">
-              <div class="unit-classification-tag">
-                ACADEMIC RESEARCH LAB / WASMTEX COMPILER CORE
+              <div>
+                <div class="unit-classification-tag">
+                  ACADEMIC RESEARCH LAB / WASMTEX COMPILER CORE
+                </div>
+                <h1 class="hero-headline-serif">
+                  Scaling Academic<span class="headline-reg">®</span> Research &amp; LaTeX Intelligence
+                </h1>
+                <p class="hero-description-mono">
+                  Next-generation browser-native LaTeX compilation core powered by WebAssembly. Sub-second incremental compilation, visual-code AST synchronization, and zero-install client runtime.
+                </p>
+
+                <div class="hero-action-row">
+                  <button id="dash-new-project-btn" class="tactical-cta-btn cta-orange">
+                    <span class="bracket-corner tl"></span>
+                    <span class="bracket-corner tr"></span>
+                    <span class="bracket-corner bl"></span>
+                    <span class="bracket-corner br"></span>
+                    <span class="cta-inner">+ NEW MANUSCRIPT</span>
+                  </button>
+
+                  <label for="dash-import-file-input" class="tactical-cta-btn cta-secondary" title="Upload .tex or .zip">
+                    <span class="bracket-corner tl"></span>
+                    <span class="bracket-corner tr"></span>
+                    <span class="bracket-corner bl"></span>
+                    <span class="bracket-corner br"></span>
+                    <span class="cta-inner">⬆ IMPORT LATEX</span>
+                    <input type="file" id="dash-import-file-input" accept=".tex,.bib,.txt,.zip" style="display:none;" />
+                  </label>
+                </div>
               </div>
-              <h1 class="hero-headline-serif">
-                Scaling Academic<span class="headline-reg">®</span> Research &amp; LaTeX Intelligence
-              </h1>
-              <p class="hero-description-mono">
-                Next-generation browser-native LaTeX compilation core powered by WebAssembly. Sub-second incremental compilation, visual-code AST synchronization, and zero-install client runtime.
-              </p>
 
-              <div class="hero-action-row">
-                <button id="dash-new-project-btn" class="tactical-cta-btn cta-orange">
-                  <span class="bracket-corner tl"></span>
-                  <span class="bracket-corner tr"></span>
-                  <span class="bracket-corner bl"></span>
-                  <span class="bracket-corner br"></span>
-                  <span class="cta-inner">+ NEW MANUSCRIPT</span>
-                </button>
-
-                <label for="dash-import-file-input" class="tactical-cta-btn cta-secondary" title="Upload .tex or .zip">
-                  <span class="bracket-corner tl"></span>
-                  <span class="bracket-corner tr"></span>
-                  <span class="bracket-corner bl"></span>
-                  <span class="bracket-corner br"></span>
-                  <span class="cta-inner">⬆ IMPORT LATEX</span>
-                  <input type="file" id="dash-import-file-input" accept=".tex,.bib,.txt,.zip" style="display:none;" />
-                </label>
-              </div>
-
-              <!-- Metric Card: 99.8% Box -->
+              <!-- Metric Card: 99.8% Box (Compact) -->
               <div class="hero-metric-card">
                 <div class="metric-num-box">99.8%</div>
                 <div class="metric-text-box">
@@ -144,10 +161,10 @@ export class DashboardView {
 
                 <!-- Left & Right Vertical Side Bands -->
                 <div class="radar-side-tab tab-left">
-                  ENGINE RANGE: TEX LIVE 2025 — 2026
+                  TEX LIVE 2025 — 2026
                 </div>
                 <div class="radar-side-tab tab-right">
-                  WASM CORE ENGINE: ACTIVE // 64MB HEAP
+                  WASM CORE ENGINE: 64MB HEAP
                 </div>
 
                 <!-- Instrument Top Bar -->
@@ -169,36 +186,34 @@ export class DashboardView {
                 <!-- Center Concentric Radar Visual -->
                 <div class="radar-visual-viewport">
                   <svg class="radar-svg" viewBox="0 0 340 340" fill="none" xmlns="http://www.w3.org/2000/svg">
-                    <!-- Concentric Circles with Dashes and Colors -->
                     <!-- Outer Orange Ring -->
-                    <circle cx="170" cy="170" r="150" stroke="#FF4D2D" stroke-width="1.5" stroke-dasharray="3 4" class="radar-circle-outer" />
-                    <!-- Mid Black / White Ring -->
-                    <circle cx="170" cy="185" r="115" stroke="currentColor" stroke-width="1.5" class="radar-circle-mid" />
+                    <circle cx="170" cy="170" r="145" stroke="#FF4D2D" stroke-width="1.5" stroke-dasharray="3 4" class="radar-circle-outer" />
+                    <!-- Mid Contrast Ring -->
+                    <circle cx="170" cy="180" r="110" stroke="currentColor" stroke-width="1.5" class="radar-circle-mid" />
                     <!-- Inner Cyan Ring -->
-                    <circle cx="170" cy="195" r="75" stroke="#5BC0EB" stroke-width="1.8" stroke-dasharray="4 3" class="radar-circle-cyan" />
-                    <!-- Innermost Center Ring -->
-                    <circle cx="170" cy="205" r="35" stroke="currentColor" stroke-width="1.2" />
-                    <circle cx="170" cy="205" r="4" fill="#FF4D2D" />
+                    <circle cx="170" cy="190" r="70" stroke="#38BDF8" stroke-width="1.8" stroke-dasharray="4 3" class="radar-circle-cyan" />
+                    <!-- Center Ring -->
+                    <circle cx="170" cy="200" r="30" stroke="currentColor" stroke-width="1.2" />
+                    <circle cx="170" cy="200" r="4" fill="#FF4D2D" />
 
-                    <!-- Center Crosshair Reticle -->
-                    <line x1="170" y1="20" x2="170" y2="320" stroke="currentColor" stroke-width="0.8" stroke-opacity="0.35" stroke-dasharray="2 3" />
-                    <line x1="20" y1="205" x2="320" y2="205" stroke="currentColor" stroke-width="0.8" stroke-opacity="0.35" stroke-dasharray="2 3" />
+                    <!-- Reticle Lines -->
+                    <line x1="170" y1="25" x2="170" y2="315" stroke="currentColor" stroke-width="0.8" stroke-opacity="0.35" stroke-dasharray="2 3" />
+                    <line x1="25" y1="200" x2="315" y2="200" stroke="currentColor" stroke-width="0.8" stroke-opacity="0.35" stroke-dasharray="2 3" />
                     
-                    <!-- Reticle Center Plus -->
-                    <path d="M162 205H178M170 197V213" stroke="#FF4D2D" stroke-width="1.5" />
+                    <!-- Plus Center -->
+                    <path d="M162 200H178M170 192V208" stroke="#FF4D2D" stroke-width="1.5" />
                     
-                    <!-- Tactical Coordinates and Engine Markings -->
-                    <text x="30" y="42" class="radar-coord-text">FORMAT: PDFLATEX</text>
-                    <text x="30" y="56" class="radar-coord-text">ENGINE: WASM-V2</text>
-                    <text x="235" y="42" class="radar-coord-text">SYNC: ACTIVE</text>
-                    <text x="235" y="56" class="radar-coord-text">AST: 0-LATENCY</text>
+                    <text x="35" y="44" class="radar-coord-text">FORMAT: PDFLATEX</text>
+                    <text x="35" y="58" class="radar-coord-text">ENGINE: WASM-V2</text>
+                    <text x="225" y="44" class="radar-coord-text">SYNC: ACTIVE</text>
+                    <text x="225" y="58" class="radar-coord-text">AST: ~0-LATENCY</text>
                   </svg>
                 </div>
 
                 <!-- Instrument Bottom Bar -->
                 <div class="radar-hud-footer">
                   <div class="hud-mode-code">MODE: CORTEX-PRO // WASMTEX-V2</div>
-                  <div class="hud-security-badge">[ AES-512 SECURE WORKSPACE ]</div>
+                  <div class="hud-security-badge">[ AES-512 SECURE ]</div>
                 </div>
               </div>
             </div>
@@ -249,6 +264,38 @@ export class DashboardView {
             CORTEX ACADEMIC STUDIO // WASMTEX SPEC 2025.1 // LOCAL WASM COMPILER // ALL ENGINE SYSTEMS OPERATIONAL
           </div>
         </footer>
+
+        <!-- Simple Login Modal Dialog -->
+        <dialog id="tactical-login-dialog" class="tactical-login-modal">
+          <div class="tactical-modal-frame">
+            <span class="bracket-corner tl"></span>
+            <span class="bracket-corner tr"></span>
+            <span class="bracket-corner bl"></span>
+            <span class="bracket-corner br"></span>
+            <div class="tactical-modal-header">
+              <span class="modal-spec-tag">[ IDENTITY AUTHENTICATION // CORTEX CORE ]</span>
+              <button type="button" class="modal-close-x" id="modal-login-close" title="Tutup">✕</button>
+            </div>
+            <form id="tactical-login-form" class="tactical-modal-body">
+              <div class="form-field-group">
+                <label for="login-operator-id" class="form-field-label">OPERATOR ID / EMAIL</label>
+                <input type="text" id="login-operator-id" class="tactical-form-input" placeholder="e.g. researcher@cortex.ai atau Nama Operator" required autofocus />
+              </div>
+              <div class="form-field-group">
+                <label for="login-passphrase" class="form-field-label">SECURITY PASSPHRASE / ACCESS KEY</label>
+                <input type="password" id="login-passphrase" class="tactical-form-input" placeholder="••••••••••••" required />
+              </div>
+              <div class="form-actions-row">
+                <button type="submit" class="tactical-cta-btn cta-orange" style="padding: 9px 18px;">
+                  <span class="cta-inner">[ ▶ AUTHENTICATE ]</span>
+                </button>
+                <button type="button" id="btn-guest-login" class="tactical-cta-btn cta-secondary" style="padding: 9px 14px;">
+                  <span class="cta-inner">[ GUEST ACCESS ]</span>
+                </button>
+              </div>
+            </form>
+          </div>
+        </dialog>
       </div>
     `
 
@@ -291,6 +338,45 @@ export class DashboardView {
     const themeToggle = this.container.querySelector('#dash-theme-toggle')
     themeToggle?.addEventListener('click', () => {
       this.options.onToggleTheme()
+      this.render()
+    })
+
+    // Simple Authentication dialog bindings
+    const loginDialog = this.container.querySelector('#tactical-login-dialog') as HTMLDialogElement | null
+    const loginBtn = this.container.querySelector('#dash-login-btn')
+    const loginClose = this.container.querySelector('#modal-login-close')
+    const loginForm = this.container.querySelector('#tactical-login-form')
+    const guestBtn = this.container.querySelector('#btn-guest-login')
+    const logoutBtn = this.container.querySelector('#dash-logout-btn')
+
+    loginBtn?.addEventListener('click', () => {
+      loginDialog?.showModal()
+    })
+
+    loginClose?.addEventListener('click', () => {
+      loginDialog?.close()
+    })
+
+    logoutBtn?.addEventListener('click', () => {
+      if (confirm('Keluar dari sesi operator saat ini?')) {
+        logoutUser()
+        this.render()
+      }
+    })
+
+    loginForm?.addEventListener('submit', (e) => {
+      e.preventDefault()
+      const input = (this.container.querySelector('#login-operator-id') as HTMLInputElement)?.value.trim()
+      if (input) {
+        loginUser(input)
+        loginDialog?.close()
+        this.render()
+      }
+    })
+
+    guestBtn?.addEventListener('click', () => {
+      loginUser('operator@cortex.ai', 'Operator')
+      loginDialog?.close()
       this.render()
     })
 
@@ -519,11 +605,12 @@ export class DashboardView {
     const tagInput = prompt('Tag / Kategori (opsional, kosongkan jika tidak ada, pisahkan koma):', '')
     const tags = tagInput ? tagInput.split(',').map((t) => t.trim()).filter(Boolean) : []
 
+    const authorName = getCurrentUser()?.name || 'Operator'
     const id = `proj_${Date.now()}`
     const newProj: ProjectItem = {
       id,
       title,
-      owner: 'You',
+      owner: authorName,
       lastModified: Date.now(),
       tags,
       files: {
@@ -531,7 +618,7 @@ export class DashboardView {
 \\usepackage{amsmath,amssymb}
 
 \\title{${title}}
-\\author{Author}
+\\author{${authorName}}
 \\date{\\today}
 
 \\begin{document}

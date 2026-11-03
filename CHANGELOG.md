@@ -14,7 +14,11 @@ breaking changes are called out under **Changed** with a ⚠️ marker.
 ## [0.1.0] - 2026-11-03
 
 ### Added
-- **Tactical Brutalist UI (CorTeX Style)**: Complete UI overhaul inspired by high-contrast technical defense and intelligence systems, featuring editorial serif typography, monospaced telemetry data, radar frequency instruments, and zero-radius industrial layout.
+- **Simple Identity & Authentication (`src/auth/auth-store.ts`)**:
+  - Modal login dialog with Operator ID/Email and Passphrase or quick Guest Access.
+  - Persistent operator session via `localStorage` with operator badge in top navbar.
+  - Dynamic manuscript authorship assigned to active operator during new document creation.
+- **Tactical Brutalist UI & Ergonomic Polish (CorTeX Style)**: Complete UI overhaul inspired by high-contrast technical defense and intelligence systems, featuring editorial serif typography, monospaced telemetry data, radar frequency instruments, and zero-radius industrial layout.
 - **CorTeX Branding & Naming**: Replaced external lab placeholder branding with native CorTeX & WasmTex Studio academic research studio identity.
 - **Dynamic File, Folder, & Tag Architecture**:
   - Clean slate for user projects: folders and files start empty and can be dynamically created and removed by the user.
@@ -31,6 +35,14 @@ breaking changes are called out under **Changed** with a ⚠️ marker.
   - Client-side R2 backup helper (`src/projects/r2-storage.ts`) and navbar `☁ R2 CLOUD` sync trigger.
 
 ### Fixed
+- **UI/UX Ergonomics & Visual Comfort**:
+  - Dark obsidian navbar (`#111419`) replacing high-saturation cyan to eliminate eye strain in extended sessions.
+  - Compact hero section and telemetry radar allowing manuscript archive to be immediately visible above the fold.
+  - Elimination of horizontal overflow scrollbar leak on 1440px and high-DPI desktop viewports.
+  - Document title input auto-expands with flexible container width to prevent title clipping.
+  - Visual editor typography tuned with comfortable serif reading scale (16px, 1.65 line-height) and subtle citation pills.
+  - Telemetry LED status bar redesign with monospace engine status.
+- **Cloudflare CI Type Declaration Verification**: Generated standalone `./lib/*.d.ts` declaration bundle via `entryRoot: 'src'` and isolated `tsconfig.worker.json`.
 - **Linux CI Build `EBADPLATFORM` Error**: Removed hardcoded Windows binary `@biomejs/cli-win32-x64` from root `devDependencies` in `package.json`, allowing cross-platform `npm clean-install` / `npm ci` on Cloudflare Pages, Docker, and Linux environments.
 - **Editor Visual Card Contrast**: Fixed white-on-white text contrast bug in `.ve-abstract-card` and `.ve-math-block` under dark and light modes.
 - **Zero-Radius Industrial Styling**: Enforced crisp 1.5px borders and zero border-radius across all UI controls, buttons, drawers, and status indicators.
