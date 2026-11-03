@@ -1,0 +1,137 @@
+{
+  "schemaVersion": 2,
+  "buildId": "109065af53f0fc24a36a90e7d80b149b5c33dfeab4b9172adb3c5d5c4a8ddd18",
+  "texliveYear": "2025",
+  "family": "luahbtex",
+  "sourceRevision": "44fecbec927b18fbef660156594289ed92518e08",
+  "texliveSourceCommit": "143f1723353b20202645f241db429b080a8adcdf",
+  "mirror": {
+    "revision": "2025-0d3fc73b65e39905",
+    "provenanceSha256": "f43c385400b1f5ecdc8708ee73519ddcd618a13d649dccfde86ceea6f3534697",
+    "url": "https://texlive.corca.ai/snapshots/2025-0d3fc73b65e39905/2025/"
+  },
+  "toolchain": {
+    "emscriptenVersion": "3.1.46",
+    "emscriptenCommit": "19607820c447a13fd8d0b7680c56148427d6e1b8",
+    "dockerImage": "emscripten/emsdk:3.1.46@sha256:2491bc4bf6caf8c41993660822341bc72759cb577363dfe0781f0a2d05f7d357"
+  },
+  "files": [
+    {
+      "name": "wasmtex-luatex-resolver-evidence.js",
+      "bytes": 589,
+      "sha256": "f42ab09591de3108ac07635f060cc1fca27571f62a852edf5e6307515b83b728"
+    },
+    {
+      "name": "wasmtex-luatex.fmt.gz",
+      "bytes": 3129517,
+      "sha256": "a4be34ba99e674de1ccac776a8fd2ee484818d6ed5990994b03a9f9b5f8052f2"
+    },
+    {
+      "name": "wasmtex-luatex.js",
+      "bytes": 116127,
+      "sha256": "27180a8e34aedb5b0b891d5017da6587551f67816619419092c9305327ab40ed"
+    },
+    {
+      "name": "wasmtex-luatex.wasm",
+      "bytes": 6926033,
+      "sha256": "a7e871eb4a354fb37d41d80e16d1340f01f0ea527f98445f2b2188f70c75e0c7"
+    },
+    {
+      "name": "wasmtex-luatex.worker.js",
+      "bytes": 23573,
+      "sha256": "dbaad9f2414b37a974a776aba92e76a000e801ce28987b8a192ad23a4c129bfb"
+    }
+  ],
+  "generationReceipts": {
+    "engine": {
+      "schemaVersion": 1,
+      "buildId": "ba003874ab1f4319dfbf599a20576668a22e73ac0a9d247617f31daa94fe0566",
+      "texliveYear": "2025",
+      "family": "luahbtex",
+      "sourceRevision": "44fecbec927b18fbef660156594289ed92518e08",
+      "texliveSourceCommit": "143f1723353b20202645f241db429b080a8adcdf",
+      "mirror": {
+        "revision": "2025-0d3fc73b65e39905",
+        "provenanceSha256": "f43c385400b1f5ecdc8708ee73519ddcd618a13d649dccfde86ceea6f3534697",
+        "url": "https://texlive.corca.ai/snapshots/2025-0d3fc73b65e39905/2025/"
+      },
+      "toolchain": {
+        "emscriptenVersion": "3.1.46",
+        "emscriptenCommit": "19607820c447a13fd8d0b7680c56148427d6e1b8",
+        "dockerImage": "emscripten/emsdk:3.1.46@sha256:2491bc4bf6caf8c41993660822341bc72759cb577363dfe0781f0a2d05f7d357"
+      },
+      "files": [
+        {
+          "name": "wasmtex-luatex-resolver-evidence.js",
+          "bytes": 589,
+          "sha256": "f42ab09591de3108ac07635f060cc1fca27571f62a852edf5e6307515b83b728"
+        },
+        {
+          "name": "wasmtex-luatex.fmt.gz",
+          "bytes": 3132498,
+          "sha256": "023eb20ff728d4018aee0581f77959dbbc935bf142e06cc906607825394ec4fb"
+        },
+        {
+          "name": "wasmtex-luatex.js",
+          "bytes": 116127,
+          "sha256": "27180a8e34aedb5b0b891d5017da6587551f67816619419092c9305327ab40ed"
+        },
+        {
+          "name": "wasmtex-luatex.wasm",
+          "bytes": 6926033,
+          "sha256": "a7e871eb4a354fb37d41d80e16d1340f01f0ea527f98445f2b2188f70c75e0c7"
+        },
+        {
+          "name": "wasmtex-luatex.worker.js",
+          "bytes": 23573,
+          "sha256": "dbaad9f2414b37a974a776aba92e76a000e801ce28987b8a192ad23a4c129bfb"
+        }
+      ]
+    },
+    "formats": {
+      "schemaVersion": 1,
+      "buildId": "214d9d80c7202a3be22422a5b2ff59457ad098ffc27c80f5717b5b3eb5cf8241",
+      "texliveYear": "2025",
+      "family": "luahbtex",
+      "sourceRevision": "0dddc924cc6e69bd2a4b4630e02efe414f84515e",
+      "texliveSourceCommit": "143f1723353b20202645f241db429b080a8adcdf",
+      "mirror": {
+        "revision": "2025-0d3fc73b65e39905",
+        "provenanceSha256": "f43c385400b1f5ecdc8708ee73519ddcd618a13d649dccfde86ceea6f3534697",
+        "url": "https://texlive.corca.ai/snapshots/2025-0d3fc73b65e39905/2025/"
+      },
+      "toolchain": {
+        "emscriptenVersion": "3.1.46",
+        "emscriptenCommit": "19607820c447a13fd8d0b7680c56148427d6e1b8",
+        "dockerImage": "emscripten/emsdk:3.1.46@sha256:2491bc4bf6caf8c41993660822341bc72759cb577363dfe0781f0a2d05f7d357"
+      },
+      "files": [
+        {
+          "name": "wasmtex-luatex-resolver-evidence.js",
+          "bytes": 589,
+          "sha256": "f42ab09591de3108ac07635f060cc1fca27571f62a852edf5e6307515b83b728"
+        },
+        {
+          "name": "wasmtex-luatex.fmt.gz",
+          "bytes": 3129517,
+          "sha256": "a4be34ba99e674de1ccac776a8fd2ee484818d6ed5990994b03a9f9b5f8052f2"
+        },
+        {
+          "name": "wasmtex-luatex.js",
+          "bytes": 118949,
+          "sha256": "024b509053e338b78f16cc86a59889c34b354fcccb18aa9aa5669921b72bd360"
+        },
+        {
+          "name": "wasmtex-luatex.wasm",
+          "bytes": 5650969,
+          "sha256": "9a37d17c2be615bc190fabfe5bd9627c977a31bab22d2ed9ed527e08b4238fb2"
+        },
+        {
+          "name": "wasmtex-luatex.worker.js",
+          "bytes": 21916,
+          "sha256": "ee8d94bf4bfd0f296e28beafea6b984669c83d7886dded94f9579732e99f70a6"
+        }
+      ]
+    }
+  }
+}

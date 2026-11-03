@@ -1,0 +1,35 @@
+{
+  "schemaVersion": 1,
+  "buildId": "02b2413db1d50762f4f792b8745807b5d7d67cb62030fb0f817a488a69911919",
+  "texliveYear": "2025",
+  "family": "makeindex",
+  "sourceRevision": "d017693840ba301a7723305646e5a53862677fa8",
+  "texliveSourceCommit": "143f1723353b20202645f241db429b080a8adcdf",
+  "mirror": {
+    "revision": "2025-0d3fc73b65e39905",
+    "provenanceSha256": "f43c385400b1f5ecdc8708ee73519ddcd618a13d649dccfde86ceea6f3534697",
+    "url": "https://texlive.corca.ai/snapshots/2025-0d3fc73b65e39905/2025/"
+  },
+  "toolchain": {
+    "emscriptenVersion": "3.1.46",
+    "emscriptenCommit": "19607820c447a13fd8d0b7680c56148427d6e1b8",
+    "dockerImage": "emscripten/emsdk:3.1.46@sha256:2491bc4bf6caf8c41993660822341bc72759cb577363dfe0781f0a2d05f7d357"
+  },
+  "files": [
+    {
+      "name": "wasmtex-makeindex.js",
+      "bytes": 77461,
+      "sha256": "58b2731abcb1419017455ad5b873c61570fe0e139668773aa1cac39d4a304029"
+    },
+    {
+      "name": "wasmtex-makeindex.wasm",
+      "bytes": 128375,
+      "sha256": "d285d7621523d9fcd960032c05490552d62f6a5468d4fe3ff6f073f1dab58eb9"
+    },
+    {
+      "name": "wasmtex-makeindex.worker.js",
+      "bytes": 5829,
+      "sha256": "71f9dbbdc8a9d2525d344ea6144ac09946dcabb67c004d2dfd3dfff20fe9797b"
+    }
+  ]
+}

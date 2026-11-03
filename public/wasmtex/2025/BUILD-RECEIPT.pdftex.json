@@ -1,0 +1,182 @@
+{
+  "schemaVersion": 2,
+  "buildId": "a1175ffb50517e1922d6a6e4a80aa69b182f5388a9a35e9de12f478b94587d8d",
+  "texliveYear": "2025",
+  "family": "pdftex",
+  "sourceRevision": "83c08c2d585bfd26eb740b5cbe4de16facd3ba04",
+  "texliveSourceCommit": "143f1723353b20202645f241db429b080a8adcdf",
+  "mirror": {
+    "revision": "2025-0d3fc73b65e39905",
+    "provenanceSha256": "f43c385400b1f5ecdc8708ee73519ddcd618a13d649dccfde86ceea6f3534697",
+    "url": "https://texlive.corca.ai/snapshots/2025-0d3fc73b65e39905/2025/"
+  },
+  "toolchain": {
+    "emscriptenVersion": "3.1.46",
+    "emscriptenCommit": "19607820c447a13fd8d0b7680c56148427d6e1b8",
+    "dockerImage": "emscripten/emsdk:3.1.46@sha256:2491bc4bf6caf8c41993660822341bc72759cb577363dfe0781f0a2d05f7d357"
+  },
+  "files": [
+    {
+      "name": "wasmtex-kpse-resolve.js",
+      "bytes": 3223,
+      "sha256": "0303650d65055961498677e0e109357b061873b86a063cb901800a2a84b4859d"
+    },
+    {
+      "name": "wasmtex-pdftex-checkpoint.js",
+      "bytes": 113801,
+      "sha256": "94b61819bb376b78c681b0a787fe9ed88d5f917cbb939a1ebba7641c67ffdc00"
+    },
+    {
+      "name": "wasmtex-pdftex-checkpoint.wasm",
+      "bytes": 2662041,
+      "sha256": "991735e89db07858aaee41f82422fe58df0fee836310cd7ad9a46ac9267090c3"
+    },
+    {
+      "name": "wasmtex-pdftex-resolver-evidence.js",
+      "bytes": 589,
+      "sha256": "f42ab09591de3108ac07635f060cc1fca27571f62a852edf5e6307515b83b728"
+    },
+    {
+      "name": "wasmtex-pdftex.fmt",
+      "bytes": 3633014,
+      "sha256": "2c84dce536ab2c15d1430225ed6f18a10ef3d191e9c1e528557772ac1a8bf8dc"
+    },
+    {
+      "name": "wasmtex-pdftex.js",
+      "bytes": 107252,
+      "sha256": "1d85da068b7b9cb4aa148910c0c2c80f39c1bb9d44a5dac57a6945f80c3b0eb8"
+    },
+    {
+      "name": "wasmtex-pdftex.wasm",
+      "bytes": 1653719,
+      "sha256": "633873188191c7c2c08a4a0e7793115b710fdd149ed9729ad09051a102fedfb4"
+    },
+    {
+      "name": "wasmtex-pdftex.worker.js",
+      "bytes": 102088,
+      "sha256": "b67b8b1205ee889f2b730a7a88b31b5581e509cca11f8e6eeaa69ae239830ddc"
+    }
+  ],
+  "generationReceipts": {
+    "engine": {
+      "schemaVersion": 1,
+      "buildId": "3c86aa3b873760c1f0421c2ecfb9533906129f6aa678694662585c354ec450c9",
+      "texliveYear": "2025",
+      "family": "pdftex",
+      "sourceRevision": "83c08c2d585bfd26eb740b5cbe4de16facd3ba04",
+      "texliveSourceCommit": "143f1723353b20202645f241db429b080a8adcdf",
+      "mirror": {
+        "revision": "2025-0d3fc73b65e39905",
+        "provenanceSha256": "f43c385400b1f5ecdc8708ee73519ddcd618a13d649dccfde86ceea6f3534697",
+        "url": "https://texlive.corca.ai/snapshots/2025-0d3fc73b65e39905/2025/"
+      },
+      "toolchain": {
+        "emscriptenVersion": "3.1.46",
+        "emscriptenCommit": "19607820c447a13fd8d0b7680c56148427d6e1b8",
+        "dockerImage": "emscripten/emsdk:3.1.46@sha256:2491bc4bf6caf8c41993660822341bc72759cb577363dfe0781f0a2d05f7d357"
+      },
+      "files": [
+        {
+          "name": "wasmtex-kpse-resolve.js",
+          "bytes": 3223,
+          "sha256": "0303650d65055961498677e0e109357b061873b86a063cb901800a2a84b4859d"
+        },
+        {
+          "name": "wasmtex-pdftex-checkpoint.js",
+          "bytes": 113801,
+          "sha256": "94b61819bb376b78c681b0a787fe9ed88d5f917cbb939a1ebba7641c67ffdc00"
+        },
+        {
+          "name": "wasmtex-pdftex-checkpoint.wasm",
+          "bytes": 2662041,
+          "sha256": "991735e89db07858aaee41f82422fe58df0fee836310cd7ad9a46ac9267090c3"
+        },
+        {
+          "name": "wasmtex-pdftex-resolver-evidence.js",
+          "bytes": 589,
+          "sha256": "f42ab09591de3108ac07635f060cc1fca27571f62a852edf5e6307515b83b728"
+        },
+        {
+          "name": "wasmtex-pdftex.fmt",
+          "bytes": 3633022,
+          "sha256": "8359a082ac2f5e2fa109c418d2a7017e268794b837cc18f6d4abad99f4f0ed58"
+        },
+        {
+          "name": "wasmtex-pdftex.js",
+          "bytes": 107252,
+          "sha256": "1d85da068b7b9cb4aa148910c0c2c80f39c1bb9d44a5dac57a6945f80c3b0eb8"
+        },
+        {
+          "name": "wasmtex-pdftex.wasm",
+          "bytes": 1653719,
+          "sha256": "633873188191c7c2c08a4a0e7793115b710fdd149ed9729ad09051a102fedfb4"
+        },
+        {
+          "name": "wasmtex-pdftex.worker.js",
+          "bytes": 102088,
+          "sha256": "b67b8b1205ee889f2b730a7a88b31b5581e509cca11f8e6eeaa69ae239830ddc"
+        }
+      ]
+    },
+    "formats": {
+      "schemaVersion": 1,
+      "buildId": "8201e8c592eb42b85f0daf39c301f6615bb4091bcfb048d9dd8d5d377ee5df8e",
+      "texliveYear": "2025",
+      "family": "pdftex",
+      "sourceRevision": "0dddc924cc6e69bd2a4b4630e02efe414f84515e",
+      "texliveSourceCommit": "143f1723353b20202645f241db429b080a8adcdf",
+      "mirror": {
+        "revision": "2025-0d3fc73b65e39905",
+        "provenanceSha256": "f43c385400b1f5ecdc8708ee73519ddcd618a13d649dccfde86ceea6f3534697",
+        "url": "https://texlive.corca.ai/snapshots/2025-0d3fc73b65e39905/2025/"
+      },
+      "toolchain": {
+        "emscriptenVersion": "3.1.46",
+        "emscriptenCommit": "19607820c447a13fd8d0b7680c56148427d6e1b8",
+        "dockerImage": "emscripten/emsdk:3.1.46@sha256:2491bc4bf6caf8c41993660822341bc72759cb577363dfe0781f0a2d05f7d357"
+      },
+      "files": [
+        {
+          "name": "wasmtex-kpse-resolve.js",
+          "bytes": 3223,
+          "sha256": "0303650d65055961498677e0e109357b061873b86a063cb901800a2a84b4859d"
+        },
+        {
+          "name": "wasmtex-pdftex-checkpoint.js",
+          "bytes": 111651,
+          "sha256": "7b234c8ef04fb59716487ef7f1fd56f0155488aff4d328a3b26e5f8de9decdef"
+        },
+        {
+          "name": "wasmtex-pdftex-checkpoint.wasm",
+          "bytes": 2660657,
+          "sha256": "6ec9bb1830f553f59ea7317e70dd98ed2350386ded559f109708f9220b156a5a"
+        },
+        {
+          "name": "wasmtex-pdftex-resolver-evidence.js",
+          "bytes": 589,
+          "sha256": "f42ab09591de3108ac07635f060cc1fca27571f62a852edf5e6307515b83b728"
+        },
+        {
+          "name": "wasmtex-pdftex.fmt",
+          "bytes": 3633014,
+          "sha256": "2c84dce536ab2c15d1430225ed6f18a10ef3d191e9c1e528557772ac1a8bf8dc"
+        },
+        {
+          "name": "wasmtex-pdftex.js",
+          "bytes": 105102,
+          "sha256": "80da7fce4ad7238271bd5b5c6a7a790fb4f6a527ea84e8193be2721e6646b3c1"
+        },
+        {
+          "name": "wasmtex-pdftex.wasm",
+          "bytes": 1652437,
+          "sha256": "59aaa6da71fec2a26f74b6eab30a07e2024b08a3c35e38e450d2bf495c498320"
+        },
+        {
+          "name": "wasmtex-pdftex.worker.js",
+          "bytes": 77849,
+          "sha256": "2bde4060a105d0e739c506a89ecfa765f0b5ffab8ec91a2577bf7e967b09c7fe"
+        }
+      ]
+    }
+  }
+}

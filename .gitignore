@@ -34,13 +34,8 @@ bloom-filter.bin
 # Engine assets are generated in CI and deployed as versioned release
 # artifacts. Keep only the compliance manifest in Git; this prevents an
 # uncleared binary or format from becoming part of permanent public history.
-/public/wasmtex/*/*
-!/public/wasmtex/*/LICENSE-MANIFEST.json
 /wasm-build/dist*/
 
-# Per-version engine asset manifest — generated from the actual asset set by
-# scripts/gen-asset-manifest.mjs (in CI) and deployed; not committed (would drift).
-/public/wasmtex/*/manifest.json
 
 # Playwright
 test-results/
