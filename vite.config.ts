@@ -48,9 +48,17 @@ export default defineConfig(({ mode }) => {
     // rollupTypes:false (the default) emits one .d.ts per source module — mirroring the
     // preserveModules JS output — so re-exported named symbols are preserved. rollupTypes
     // bundled each entry into a single .d.ts but dropped the barrel's re-exports (#142).
-    plugins: isLibBuild
-      ? [dts({ entryRoot: 'src', outDir: 'lib', exclude: ['**/*.test.ts', 'src/__mocks__/**', 'src/main.ts', 'worker/**'] })]
-      : [legalFilesPlugin()],
+    plugins: [
+      ...(isLibBuild
+        ? [
+            dts({
+              entryRoot: 'src',
+              outDir: 'lib',
+              exclude: ['**/*.test.ts', 'src/__mocks__/**', 'src/main.ts', 'worker/**'],
+            }),
+          ]
+        : [legalFilesPlugin()]),
+    ],
     resolve: {
       alias:
         isLibBuild || isTest

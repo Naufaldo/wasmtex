@@ -64,7 +64,7 @@
     "build": "tsc --noEmit && vite build",
     "build:ui": "vite build",
     "preview": "vite preview",
-    "deploy": "wrangler deploy",
+    "deploy": "wrangler deploy --no-autoconfig",
     "check": "tsc --noEmit && tsc -p tsconfig.worker.json --noEmit",
     "lint": "biome check src/ && npm run lint:workers",
     "lint:fix": "biome check --write src/",
