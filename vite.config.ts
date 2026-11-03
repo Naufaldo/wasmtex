@@ -39,7 +39,7 @@ function legalFilesPlugin(): Plugin {
 
 export default defineConfig(({ mode }) => {
   const env = loadEnv(mode, process.cwd(), '')
-  const isLibBuild = env.BUILD_MODE === 'lib'
+  const isLibBuild = env.BUILD_MODE === 'lib' || mode === 'lib'
   const isTest = mode === 'test'
 
   return {
@@ -49,7 +49,7 @@ export default defineConfig(({ mode }) => {
     // preserveModules JS output — so re-exported named symbols are preserved. rollupTypes
     // bundled each entry into a single .d.ts but dropped the barrel's re-exports (#142).
     plugins: isLibBuild
-      ? [dts({ exclude: ['**/*.test.ts', 'src/__mocks__/**', 'src/main.ts'] })]
+      ? [dts({ entryRoot: 'src', outDir: 'lib', exclude: ['**/*.test.ts', 'src/__mocks__/**', 'src/main.ts', 'worker/**'] })]
       : [legalFilesPlugin()],
     resolve: {
       alias:
@@ -89,7 +89,10 @@ export default defineConfig(({ mode }) => {
               // `wasmtex/headless` + `wasmtex/node` bundles importable under Node.
               preserveModules: true,
               preserveModulesRoot: 'src',
-              assetFileNames: '[name][extname]',
+              assetFileNames: (assetInfo) =>
+                assetInfo.names?.some((n) => n.endsWith('.css')) || assetInfo.name?.endsWith('.css')
+                  ? 'wasmtex.css'
+                  : '[name][extname]',
               globals: {
                 'monaco-editor': 'monaco',
                 'pdfjs-dist': 'pdfjsLib',
