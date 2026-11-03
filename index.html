@@ -3,39 +3,92 @@
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>WasmTex</title>
+  <title>CorTeX Personal Workspace — LaTeX & Research Studio</title>
 </head>
 <body>
   <div id="app" class="le-root">
-    <div class="le-main">
-      <aside id="file-tree-panel" class="le-left-panel panel">
-        <div class="le-file-tree">
-          <div class="file-tree-header">
-            <span>Files</span>
-            <div class="file-tree-btns">
-              <button id="add-file-btn" title="New file">+</button>
+    <!-- Top Application Header -->
+    <header class="app-topbar">
+      <div class="topbar-brand">
+        <span class="brand-logo">📐</span>
+        <span class="brand-title">CorTeX Studio</span>
+        <input type="text" id="doc-title-input" class="doc-title-input" value="Academic Paper Manuscript" title="Click to rename document" />
+      </div>
+
+      <!-- Navigation Tabs -->
+      <nav class="topbar-nav">
+        <button id="nav-tab-editor" class="topbar-nav-tab active">✍️ Editor</button>
+        <button id="nav-tab-library" class="topbar-nav-tab">📚 Research Library</button>
+      </nav>
+
+      <!-- Editor Mode Controls & Actions -->
+      <div class="topbar-actions">
+        <div class="editor-mode-toggle" id="editor-mode-toggle">
+          <button id="btn-mode-visual" class="mode-btn active" title="Visual WYSIWYG Mode">Visual</button>
+          <button id="btn-mode-code" class="mode-btn" title="LaTeX Code Mode">Code</button>
+          <button id="btn-mode-split" class="mode-btn" title="Split Dual Mode">Split</button>
+        </div>
+
+        <button id="recompile-btn" class="topbar-btn topbar-btn-primary" title="Recompile LaTeX PDF">
+          ▶ Recompile
+        </button>
+        <button id="download-pdf-btn" class="topbar-btn topbar-btn-outline" title="Download compiled PDF">
+          ⬇ PDF
+        </button>
+      </div>
+    </header>
+
+    <!-- Main Workspace Container -->
+    <main class="app-main-view">
+      <!-- 1. Editor View -->
+      <div id="view-editor" class="view-panel active">
+        <aside id="file-tree-panel" class="le-left-panel panel">
+          <div class="le-file-tree">
+            <div class="file-tree-header">
+              <span>Project Files</span>
+              <div class="file-tree-btns">
+                <button id="add-file-btn" title="New file">+</button>
+              </div>
             </div>
+            <div id="file-tree-list"></div>
           </div>
-          <div id="file-tree-list"></div>
+          <div class="le-outline">
+            <div class="outline-header">Document Outline</div>
+            <div id="outline-list"></div>
+          </div>
+        </aside>
+
+        <div class="divider"></div>
+
+        <!-- Center Editor Area (Supports Visual, Code, and Split modes) -->
+        <div id="editor-wrapper" class="editor-wrapper mode-visual">
+          <div id="visual-editor-container" class="visual-editor-container"></div>
+          <div id="editor-container" class="le-editor panel"></div>
         </div>
-        <div class="le-outline">
-          <div class="outline-header">Outline</div>
-          <div id="outline-list"></div>
-        </div>
-      </aside>
-      <div class="divider"></div>
-      <div id="editor-container" class="le-editor panel"></div>
-      <div class="divider"></div>
-      <div id="preview-container" class="le-viewer panel"></div>
-    </div>
+
+        <div class="divider"></div>
+
+        <!-- Right Preview Area -->
+        <div id="preview-container" class="le-viewer panel"></div>
+      </div>
+
+      <!-- 2. Research Library View -->
+      <div id="view-library" class="view-panel">
+        <div id="library-container" class="library-container"></div>
+      </div>
+    </main>
+
+    <!-- Error Diagnostics Panel -->
     <div id="error-log-panel" class="le-error-log">
       <div class="log-header">
-        <span>Diagnostics</span>
+        <span>Diagnostics & Compiler Output</span>
         <span id="error-count" class="badge">0</span>
       </div>
       <div id="error-log-list"></div>
     </div>
-    <div id="status-bar" class="le-status-bar">
+
+    <!-- Status Bar -->
+    <footer id="status-bar" class="le-status-bar">
       <div class="le-status-group">
         <span id="status">Initializing...</span>
         <span id="status-detail"></span>
@@ -56,7 +109,7 @@
           </select>
         </div>
       </div>
-    </div>
+    </footer>
   </div>
   <script type="module" src="/src/main.ts"></script>
 </body>

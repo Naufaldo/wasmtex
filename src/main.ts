@@ -8,6 +8,8 @@ import type { AppStatus, WarmupCache } from './types'
 import { hasErrorsOrWarnings } from './ui/diagnostics-panel'
 import { configurePdfjsWorker } from './viewer/pdf-viewer'
 import { WasmTex } from './wasmtex'
+import { VisualEditor } from './editor/visual-editor'
+import { LibraryView } from './library/library-view'
 import './styles.css'
 
 // Start warmup immediately — fetches TeX Live files in parallel while
@@ -38,6 +40,7 @@ const projectSelect = document.getElementById('project-select') as HTMLSelectEle
 const statusElement = document.getElementById('status') as HTMLSpanElement
 const statusDetailElement = document.getElementById('status-detail') as HTMLSpanElement
 let editorRef: WasmTex | null = null
+let visualEditorRef: VisualEditor | null = null
 let lastCompileErrors: PanelDiagnostic[] = []
 // Static (LSP/lint) diagnostics, kept so a compile re-renders the union instead of
 // clobbering them out of the panel.
@@ -140,6 +143,12 @@ function renderFileList(files: string[]): void {
 
       editorRef.openFile(filePath)
       renderFileList(editorRef.listFiles())
+      if (filePath.endsWith('.tex') && visualEditorRef) {
+        const content = editorRef.getFile(filePath)
+        if (typeof content === 'string') {
+          visualEditorRef.setLatex(content)
+        }
+      }
     })
 
     if (filePath !== 'main.tex') {
@@ -345,6 +354,138 @@ async function start() {
   renderFileList(editor.listFiles())
   renderOutline([])
   renderDiagnostics([])
+
+  // Initialize Visual Editor
+  const visualEditorContainer = document.getElementById('visual-editor-container')!
+  const visualEditor = new VisualEditor(visualEditorContainer, {
+    onContentChange: (latex) => {
+      editor.setFile(activeFile, latex)
+      const monaco = editor.getMonacoEditor()
+      if (monaco) {
+        const model = monaco.getModel()
+        if (model && model.getValue() !== latex) {
+          model.setValue(latex)
+        }
+      }
+      editor.compile()
+    },
+  })
+  visualEditorRef = visualEditor
+
+  const syncToVisualEditor = () => {
+    if (activeFile.endsWith('.tex')) {
+      const content = editor.getFile(activeFile)
+      if (typeof content === 'string') {
+        visualEditor.setLatex(content)
+      }
+    }
+  }
+
+  // Initial sync
+  syncToVisualEditor()
+
+  const monaco = editor.getMonacoEditor()
+  monaco?.onDidChangeModelContent(() => {
+    const val = monaco.getValue()
+    if (activeFile.endsWith('.tex')) {
+      visualEditor.setLatex(val)
+    }
+  })
+
+  // Initialize Research Library
+  const libraryContainer = document.getElementById('library-container')!
+  const libraryView = new LibraryView(libraryContainer, {
+    onInsertBibtex: (bibtex) => {
+      const existing = (editor.getFile('refs.bib') as string) || ''
+      const updated = existing.trim() ? `${existing.trim()}\n\n${bibtex}\n` : `${bibtex}\n`
+      editor.setFile('refs.bib', updated)
+      editor.openFile('refs.bib')
+      renderFileList(editor.listFiles())
+      alert('Entri BibTeX berhasil disisipkan ke refs.bib!')
+    },
+  })
+  libraryView.init()
+
+  // Navigation Tabs: Editor vs Library
+  const navTabEditor = document.getElementById('nav-tab-editor')!
+  const navTabLibrary = document.getElementById('nav-tab-library')!
+  const viewEditor = document.getElementById('view-editor')!
+  const viewLibrary = document.getElementById('view-library')!
+
+  navTabEditor.addEventListener('click', () => {
+    navTabEditor.classList.add('active')
+    navTabLibrary.classList.remove('active')
+    viewEditor.classList.add('active')
+    viewLibrary.classList.remove('active')
+  })
+
+  navTabLibrary.addEventListener('click', () => {
+    navTabLibrary.classList.add('active')
+    navTabEditor.classList.remove('active')
+    viewLibrary.classList.add('active')
+    viewEditor.classList.remove('active')
+  })
+
+  // Mode Toggles (Visual vs Code vs Split)
+  const editorWrapper = document.getElementById('editor-wrapper')!
+  const btnModeVisual = document.getElementById('btn-mode-visual')!
+  const btnModeCode = document.getElementById('btn-mode-code')!
+  const btnModeSplit = document.getElementById('btn-mode-split')!
+
+  btnModeVisual.addEventListener('click', () => {
+    editorWrapper.className = 'editor-wrapper mode-visual'
+    btnModeVisual.classList.add('active')
+    btnModeCode.classList.remove('active')
+    btnModeSplit.classList.remove('active')
+    syncToVisualEditor()
+  })
+
+  btnModeCode.addEventListener('click', () => {
+    editorWrapper.className = 'editor-wrapper mode-code'
+    btnModeCode.classList.add('active')
+    btnModeVisual.classList.remove('active')
+    btnModeSplit.classList.remove('active')
+    monaco?.layout()
+  })
+
+  btnModeSplit.addEventListener('click', () => {
+    editorWrapper.className = 'editor-wrapper mode-split'
+    btnModeSplit.classList.add('active')
+    btnModeVisual.classList.remove('active')
+    btnModeCode.classList.remove('active')
+    syncToVisualEditor()
+    monaco?.layout()
+  })
+
+  // Recompile Button
+  const recompileBtn = document.getElementById('recompile-btn')
+  recompileBtn?.addEventListener('click', () => {
+    editor.compile()
+  })
+
+  // Download PDF Button
+  let latestPdfBytes: Uint8Array | null = null
+  editor.on('compile', ({ result }) => {
+    if (result.pdf) {
+      latestPdfBytes = result.pdf
+    }
+  })
+
+  const downloadPdfBtn = document.getElementById('download-pdf-btn')
+  downloadPdfBtn?.addEventListener('click', () => {
+    if (!latestPdfBytes) {
+      alert('PDF belum siap. Klik Recompile terlebih dahulu.')
+      return
+    }
+    const blob = new Blob([latestPdfBytes.buffer as ArrayBuffer], { type: 'application/pdf' })
+    const url = URL.createObjectURL(blob)
+    const a = document.createElement('a')
+    a.href = url
+    const docTitle = (document.getElementById('doc-title-input') as HTMLInputElement)?.value || 'manuscript'
+    a.download = `${docTitle.trim().replace(/[^a-z0-9_-]/gi, '_')}.pdf`
+    a.click()
+    URL.revokeObjectURL(url)
+  })
 
   addFileButton.addEventListener('click', () => {
     const decision = resolveAddFile(prompt('New file path'), (p) => editor.getFile(p) !== null)
