@@ -1,5 +1,6 @@
 import { OVERLEAF_ICONS } from '../ui/logo'
 import { getCurrentUser, loginUser, logoutUser } from '../auth/auth-store'
+import { unzipLatexProject } from '../fs/unzip'
 import {
   deleteProject,
   getAllProjects,
@@ -409,25 +410,46 @@ export class DashboardView {
       })
     })
 
-    // Import file handler
+    // Import file handler (.tex, .bib, or auto-unzip .zip)
     const importInput = this.container.querySelector('#dash-import-file-input') as HTMLInputElement
     importInput?.addEventListener('change', async (e) => {
       const file = (e.target as HTMLInputElement).files?.[0]
       if (!file) return
 
-      const text = await file.text()
-      const title = file.name.replace(/\.[^/.]+$/, '')
+      const authorName = getCurrentUser()?.name || 'Operator'
       const id = `proj_${Date.now()}`
-      const newProj: ProjectItem = {
-        id,
-        title: title || 'Imported Document',
-        owner: 'You',
-        lastModified: Date.now(),
-        tags: ['Imported', 'LaTeX'],
-        files: {
-          'main.tex': text,
-          'refs.bib': '',
-        },
+      let newProj: ProjectItem
+
+      if (file.name.toLowerCase().endsWith('.zip')) {
+        try {
+          const buf = await file.arrayBuffer()
+          const unzipped = await unzipLatexProject(buf, file.name)
+          newProj = {
+            id,
+            title: unzipped.suggestedTitle,
+            owner: authorName,
+            lastModified: Date.now(),
+            tags: ['Imported', 'ZIP'],
+            files: unzipped.files,
+          }
+        } catch (err: any) {
+          alert(`Gagal mengekstrak arsip ZIP: ${err?.message || err}`)
+          return
+        }
+      } else {
+        const text = await file.text()
+        const title = file.name.replace(/\.[^/.]+$/, '')
+        newProj = {
+          id,
+          title: title || 'Imported Document',
+          owner: authorName,
+          lastModified: Date.now(),
+          tags: ['Imported', 'LaTeX'],
+          files: {
+            'main.tex': text,
+            'refs.bib': '',
+          },
+        }
       }
 
       await saveProject(newProj)

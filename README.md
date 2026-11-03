@@ -26,6 +26,10 @@ Repository ini merupakan *fork* dari **WasmTex** (oleh Corca AI). Fokus utama fo
 - **👤 Simple Operator Authentication**:
   - Modal login dialog with Operator ID/Email and Passphrase or quick Guest Access.
   - Client-side persistent session (`localStorage`) showing active operator badge and custom authorship on new manuscripts.
+- **📦 Zero-Dependency ZIP Auto-Unzip**:
+  - Import complete LaTeX archives (`.zip` from Overleaf, arXiv, journals) with automatic client-side extraction via native browser `DecompressionStream('deflate-raw')`.
+  - Automatic directory hierarchy creation, `main.tex` discovery, and document title extraction.
+  - Supported directly on the dashboard (`⬆ IMPORT LATEX`) and inside the workspace sidebar (`⬆`).
 - **📂 Clean & Dynamic Workspace**:
   - Start clean: customize files, folders (`chapters/`, `figures/`), and tags on the fly.
   - Built-in official tutorial: `Tutorial — Getting Started with LaTeX & WasmTex` showcasing math typesetting, BibTeX citations, and multi-file architecture.

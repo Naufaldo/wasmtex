@@ -14,6 +14,12 @@ breaking changes are called out under **Changed** with a ⚠️ marker.
 ## [0.1.0] - 2026-11-03
 
 ### Added
+- **Client-Side ZIP Auto-Unzip Import (`src/fs/unzip.ts`)**:
+  - Full client-side extraction of `.zip` projects (Overleaf exports, arXiv source, local archives) via native browser `DecompressionStream('deflate-raw')` with zero external dependencies.
+  - Automatic detection of `main.tex` and document `\title{...}` for project naming.
+  - Auto-extracts multi-level directories, sub-files, and references.
+  - Integrated into both Dashboard (`⬆ IMPORT LATEX`) and Workspace sidebar (`⬆`).
+  - Hierarchical sidebar tree view with dedicated folder headers (`📁 chapters/`) and indented files.
 - **Simple Identity & Authentication (`src/auth/auth-store.ts`)**:
   - Modal login dialog with Operator ID/Email and Passphrase or quick Guest Access.
   - Persistent operator session via `localStorage` with operator badge in top navbar.

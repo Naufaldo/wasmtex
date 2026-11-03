@@ -15,6 +15,7 @@ import { CommentsPanel } from './features/comments-panel'
 import { ReviewManager } from './features/review-manager'
 import { DashboardView } from './projects/dashboard-view'
 import { type ProjectItem, getProject, saveProject } from './projects/project-store'
+import { unzipLatexProject } from './fs/unzip'
 import './styles.css'
 
 // Start warmup immediately — fetches TeX Live files in parallel while
@@ -158,14 +159,33 @@ function renderFileList(files: string[]): void {
   }
 
   fileTreeContainer.innerHTML = ''
+  const renderedFolders = new Set<string>()
 
   for (const filePath of normalized) {
-    const item = document.createElement('div')
+    if (filePath.includes('/')) {
+      const parts = filePath.split('/')
+      const folderPath = parts.slice(0, -1).join('/')
+      if (!renderedFolders.has(folderPath)) {
+        renderedFolders.add(folderPath)
+        const folderHeader = document.createElement('div')
+        folderHeader.className = 'folder-tree-header'
+        folderHeader.style.cssText =
+          'padding: 5px 10px; font-weight: 700; font-size: 11px; color: var(--text-muted); display: flex; align-items: center; gap: 4px; font-family: var(--font-mono);'
+        folderHeader.textContent = `📁 ${folderPath}/`
+        fileTreeContainer.appendChild(folderHeader)
+      }
+    }
 
+    const item = document.createElement('div')
     item.className = `file-item${filePath === activeFile ? ' active' : ''}`
-    const isFolder = filePath.includes('/')
-    const icon = isFolder ? '📁 ' : '📄 '
-    item.textContent = `${icon}${filePath}`
+    const isSub = filePath.includes('/')
+    const fileName = isSub ? filePath.split('/').pop()! : filePath
+    if (isSub) {
+      item.style.paddingLeft = '22px'
+    }
+
+    const icon = filePath.endsWith('.bib') ? '📚 ' : filePath.endsWith('.tex') ? '📄 ' : '📎 '
+    item.textContent = `${icon}${fileName}`
     item.title = filePath
 
     item.addEventListener('click', () => {
@@ -707,12 +727,27 @@ async function start() {
     persistActiveProject()
   })
 
-  // Sidebar File upload & Folder creation
+  // Sidebar File upload & Folder creation (supports single files and .zip archives)
   const uploadInput = document.getElementById('upload-file-input') as HTMLInputElement
   uploadInput?.addEventListener('change', async (e) => {
     const file = (e.target as HTMLInputElement).files?.[0]
     if (!file) return
-    if (FILE_EXTENSIONS_THAT_ARE_BINARY.test(file.name)) {
+
+    if (file.name.toLowerCase().endsWith('.zip')) {
+      try {
+        const buf = await file.arrayBuffer()
+        const unzipped = await unzipLatexProject(buf, file.name)
+        for (const [filePath, content] of Object.entries(unzipped.files)) {
+          editor.setFile(filePath, content)
+        }
+        if (unzipped.mainFile && editor.listFiles().includes(unzipped.mainFile)) {
+          activeFile = unzipped.mainFile
+          editor.openFile(unzipped.mainFile)
+        }
+      } catch (err: any) {
+        alert(`Gagal mengekstrak ZIP: ${err?.message || err}`)
+      }
+    } else if (FILE_EXTENSIONS_THAT_ARE_BINARY.test(file.name)) {
       const buf = new Uint8Array(await file.arrayBuffer())
       editor.setFile(file.name, buf)
     } else {
