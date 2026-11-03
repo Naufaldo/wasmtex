@@ -1,5 +1,5 @@
 import { OVERLEAF_ICONS } from '../ui/logo'
-import { getLang, t, toggleLang } from '../ui/i18n'
+import { getLang, t, toggleLang, type Lang } from '../ui/i18n'
 import {
   changePassword,
   changeUsername,
@@ -38,7 +38,9 @@ export class DashboardView {
   private projects: ProjectItem[] = []
   private papers: ResearchPaper[] = []
   private selectedLibraryProject = 'all'
-  private currentFilter: 'all' | 'library' | 'archived' | 'trash' | string = 'all'
+  private currentFilter: 'all' | 'templates' | 'library' | 'archived' | 'trash' | string = 'all'
+  private templateCategoryFilter = 'all'
+  private templateSearchQuery = ''
 
   constructor(container: HTMLElement, options: DashboardViewOptions) {
     this.container = container
@@ -140,8 +142,11 @@ export class DashboardView {
           </div>
 
           <nav class="tactical-nav-center">
-            <button class="tactical-nav-btn ${this.currentFilter === 'all' ? 'active' : ''}" data-filter="all">
-              [ ${t('PROYEK SAYA', 'MY PROJECTS', lang)} (${activeCount}) ]
+            <button class="tactical-nav-btn ${this.currentFilter === 'all' || this.currentFilter.startsWith('folder:') || this.currentFilter.startsWith('tag:') ? 'active' : ''}" data-filter="all">
+              [ 📁 ${t('PROYEK SAYA', 'MY PROJECTS', lang)} (${activeCount}) ]
+            </button>
+            <button class="tactical-nav-btn ${this.currentFilter === 'templates' ? 'active' : ''}" data-filter="templates">
+              [ 🎨 ${t('TEMPLATE DOKUMEN', 'TEMPLATES', lang)} (${TEMPLATES.length}) ]
             </button>
             <button class="tactical-nav-btn ${this.currentFilter === 'library' ? 'active' : ''}" data-filter="library">
               [ 📚 ${t('PUSTAKA RISET', 'RESEARCH LIBRARY', lang)} (${this.papers.length}) ]
@@ -226,6 +231,14 @@ export class DashboardView {
                   </div>
                   `
                   }
+
+                  <button id="dash-goto-templates-btn" class="tactical-cta-btn cta-secondary" title="${t('Jelajahi galeri template dokumen', 'Browse document templates catalog', lang)}">
+                    <span class="bracket-corner tl"></span>
+                    <span class="bracket-corner tr"></span>
+                    <span class="bracket-corner bl"></span>
+                    <span class="bracket-corner br"></span>
+                    <span class="cta-inner">🎨 ${t('PILIH TEMPLATE', 'CHOOSE TEMPLATE', lang)} (${TEMPLATES.length})</span>
+                  </button>
 
                   <button id="dash-goto-library-btn" class="tactical-cta-btn cta-secondary" title="Kelola katalog referensi literatur dan sitasi BibTeX">
                     <span class="bracket-corner tl"></span>
@@ -374,56 +387,49 @@ export class DashboardView {
             </div>
           </section>
           `
-              : `
-          <!-- Starter Templates Gallery Section -->
-          <section class="tactical-templates-section">
+              : this.currentFilter === 'templates'
+              ? `
+          <!-- Dedicated Starter Templates Gallery Section -->
+          <section class="tactical-templates-section" style="padding-top: 28px;">
             <div class="archive-section-header">
               <div class="archive-title-wrap">
-                <span class="archive-index">[ 01 ]</span>
+                <span class="archive-index">[ 🎨 ]</span>
                 <div>
-                  <div class="archive-heading">${t('KATALOG TEMPLATE & STARTER NASKAH ILMIAH', 'STARTER TEMPLATES & MANUSCRIPT CATALOG', lang)}</div>
-                  <div style="font-family: var(--font-mono); font-size: 11px; color: var(--text-muted); margin-top: 2px;">
+                  <div class="archive-heading">${t('KATALOG TEMPLATE NASKAH ILMIAH', 'SCIENTIFIC MANUSCRIPT TEMPLATES', lang)}</div>
+                  <div style="font-family: var(--font-mono); font-size: 12px; color: var(--text-secondary); margin-top: 2px;">
                     ${t(
-                      'Pilih template standar produksi untuk presentasi seminar (Beamer), naskah jurnal internasional (IEEE / Elsevier / Nature), tesis, atau laporan teknis.',
-                      'Select a production-ready starter template: Conference Slides (Beamer), IEEE / Elsevier / Nature Journals, Thesis, or Technical Report.',
+                      'Pilih template standar produksi untuk presentasi (Beamer), jurnal internasional (IEEE/Elsevier/Nature/ACM), tesis/disertasi, laporan teknis industri, atau CV akademik.',
+                      'Select verified production-ready starter templates: Conference Slides (Beamer), IEEE / Elsevier / Nature / ACM Journals, Thesis, Technical Reports, or Academic CV.',
                       lang
                     )}
                   </div>
                 </div>
               </div>
-              <div class="archive-actions-wrap">
-                <span class="tactical-badge" style="color:var(--accent-orange); border-color:var(--accent-orange); font-weight:700;">[ ${TEMPLATES.length} TEMPLATES READY ]</span>
+              <div class="archive-search-container" style="min-width: 280px;">
+                <span class="search-terminal-prompt">&gt;_</span>
+                <input type="text" id="dash-tpl-search-input" class="tactical-search-input" placeholder="${t('CARI TEMPLATE (NAMA, TAG, KATEGORI)...', 'SEARCH TEMPLATES (TITLE, TAG, CATEGORY)...', lang)}" value="${escapeHtml(this.templateSearchQuery)}" />
+                <button id="dash-tpl-search-clear" class="search-clear-btn" style="${this.templateSearchQuery ? 'display:block;' : 'display:none;'}" title="Clear search">✕</button>
               </div>
             </div>
 
-            <div class="templates-grid">
-              ${TEMPLATES.map(
-                (tpl) => `
-                <div class="template-card">
-                  <div class="template-card-header">
-                    <span class="template-badge">${escapeHtml(tpl.badge)}</span>
-                    <span class="template-cat">${escapeHtml(tpl.category.toUpperCase())}</span>
-                  </div>
-                  <div class="template-title">${escapeHtml(lang === 'en' ? tpl.titleEn : tpl.titleId)}</div>
-                  <div class="template-desc">${escapeHtml(lang === 'en' ? tpl.descriptionEn : tpl.descriptionId)}</div>
-                  <div class="template-tags">
-                    ${tpl.tags.map((tag) => `<span class="t-badge">[ ${escapeHtml(tag)} ]</span>`).join(' ')}
-                  </div>
-                  <div class="template-card-footer">
-                    <button class="tactical-cta-btn cta-orange btn-use-template" data-template-id="${tpl.id}" style="width:100%; padding: 7px 12px;" title="${t('Gunakan template ini untuk membuat dokumen baru', 'Create new document with this template', lang)}">
-                      <span class="bracket-corner tl"></span>
-                      <span class="bracket-corner tr"></span>
-                      <span class="bracket-corner bl"></span>
-                      <span class="bracket-corner br"></span>
-                      <span class="cta-inner">+ ${t('GUNAKAN TEMPLATE', 'USE TEMPLATE', lang)}</span>
-                    </button>
-                  </div>
-                </div>
-              `
-              ).join('')}
+            <!-- Template Categories Navigation Bar -->
+            <div class="tactical-tags-bar" style="margin-top: 8px;">
+              <span class="tags-bar-label">📑 ${t('KATEGORI TEMPLATE:', 'TEMPLATE CATEGORIES:', lang)}</span>
+              <button class="tactical-tag-chip ${this.templateCategoryFilter === 'all' ? 'active' : ''}" data-tpl-cat="all">[ ${t('SEMUA', 'ALL', lang)} (${TEMPLATES.length}) ]</button>
+              <button class="tactical-tag-chip ${this.templateCategoryFilter === 'Journal' ? 'active' : ''}" data-tpl-cat="Journal">[ 📄 ${t('JURNAL & ARTIKEL', 'JOURNALS', lang)} ]</button>
+              <button class="tactical-tag-chip ${this.templateCategoryFilter === 'Presentation' ? 'active' : ''}" data-tpl-cat="Presentation">[ 📊 ${t('PRESENTASI & SLIDES', 'PRESENTATIONS', lang)} ]</button>
+              <button class="tactical-tag-chip ${this.templateCategoryFilter === 'Thesis' ? 'active' : ''}" data-tpl-cat="Thesis">[ 🎓 ${t('TESIS & DISERTASI', 'THESIS', lang)} ]</button>
+              <button class="tactical-tag-chip ${this.templateCategoryFilter === 'Report' ? 'active' : ''}" data-tpl-cat="Report">[ 📋 ${t('LAPORAN & LAB', 'REPORTS', lang)} ]</button>
+              <button class="tactical-tag-chip ${this.templateCategoryFilter === 'Resume' ? 'active' : ''}" data-tpl-cat="Resume">[ 👤 ${t('CV & RESUME', 'CV / RESUME', lang)} ]</button>
+              <button class="tactical-tag-chip ${this.templateCategoryFilter === 'Academic' ? 'active' : ''}" data-tpl-cat="Academic">[ 💡 ${t('AKADEMIK & TUGAS', 'ACADEMIC & PSET', lang)} ]</button>
+            </div>
+
+            <div class="templates-grid" id="dash-templates-grid">
+              ${this.renderTemplateCards(lang)}
             </div>
           </section>
-
+          `
+              : `
           <!-- Project Archive & Management Section -->
           <section class="tactical-archive-section">
             <div class="archive-section-header">
@@ -650,17 +656,71 @@ export class DashboardView {
     this.bindEvents()
     if (this.currentFilter === 'library') {
       this.renderLibraryRows()
+    } else if (this.currentFilter === 'templates') {
+      this.bindTemplateButtons()
     } else {
       this.renderTags()
       this.renderProjectRows()
     }
   }
 
-  private bindEvents(): void {
-    const newBtn = this.container.querySelector('#dash-new-project-btn')
-    newBtn?.addEventListener('click', () => this.promptNewProject())
+  private renderTemplateCards(lang: Lang): string {
+    let list = TEMPLATES
+    if (this.templateCategoryFilter !== 'all') {
+      list = list.filter((t) => t.category.toLowerCase() === this.templateCategoryFilter.toLowerCase())
+    }
+    if (this.templateSearchQuery) {
+      const q = this.templateSearchQuery.toLowerCase()
+      list = list.filter((t) => {
+        return (
+          t.title.toLowerCase().includes(q) ||
+          t.titleId.toLowerCase().includes(q) ||
+          t.titleEn.toLowerCase().includes(q) ||
+          t.category.toLowerCase().includes(q) ||
+          t.tags.some((tag) => tag.toLowerCase().includes(q))
+        )
+      })
+    }
 
-    // Starter template instantiation
+    if (list.length === 0) {
+      return `
+        <div style="grid-column: 1 / -1; padding: 48px 24px; text-align: center; background: var(--bg-primary); border: 1.5px solid var(--border-color);">
+          <div style="font-family: var(--font-mono); font-size: 20px; color: var(--accent-orange); margin-bottom: 8px;">[!]</div>
+          <div style="font-family: var(--font-mono); font-size: 13px; font-weight: 700; color: var(--text-primary);">${t('TIDAK ADA TEMPLATE YANG SESUAI DENGAN PENCARIAN', 'NO TEMPLATES MATCH CURRENT SEARCH', lang)}</div>
+          <div style="font-family: var(--font-mono); font-size: 11px; color: var(--text-muted); margin-top: 4px;">${t('Coba gunakan kata kunci lain atau pilih kategori Semua.', 'Try searching another keyword or select All category.', lang)}</div>
+        </div>
+      `
+    }
+
+    return list
+      .map(
+        (tpl) => `
+        <div class="template-card">
+          <div class="template-card-header">
+            <span class="template-badge">${escapeHtml(tpl.badge)}</span>
+            <span class="template-cat">${escapeHtml(tpl.category.toUpperCase())}</span>
+          </div>
+          <div class="template-title">${escapeHtml(lang === 'en' ? tpl.titleEn : tpl.titleId)}</div>
+          <div class="template-desc">${escapeHtml(lang === 'en' ? tpl.descriptionEn : tpl.descriptionId)}</div>
+          <div class="template-tags">
+            ${tpl.tags.map((tag) => `<span class="t-badge">[ ${escapeHtml(tag)} ]</span>`).join(' ')}
+          </div>
+          <div class="template-card-footer">
+            <button class="tactical-cta-btn cta-orange btn-use-template" data-template-id="${tpl.id}" style="width:100%; padding: 8px 14px;" title="${t('Gunakan template ini untuk membuat dokumen baru', 'Create new document with this template', lang)}">
+              <span class="bracket-corner tl"></span>
+              <span class="bracket-corner tr"></span>
+              <span class="bracket-corner bl"></span>
+              <span class="bracket-corner br"></span>
+              <span class="cta-inner">+ ${t('GUNAKAN TEMPLATE', 'USE TEMPLATE', lang)}</span>
+            </button>
+          </div>
+        </div>
+      `,
+      )
+      .join('')
+  }
+
+  private bindTemplateButtons(): void {
     this.container.querySelectorAll('.btn-use-template').forEach((btn) => {
       btn.addEventListener('click', async (e) => {
         e.stopPropagation()
@@ -674,8 +734,8 @@ export class DashboardView {
             t(
               'Mode Baca: Akun Viewer tidak memiliki izin membuat dokumen baru.',
               'Read-Only Mode: Viewer accounts cannot create new documents.',
-              getLang()
-            )
+              getLang(),
+            ),
           )
           return
         }
@@ -683,7 +743,7 @@ export class DashboardView {
         const defaultTitle = getLang() === 'en' ? tpl.titleEn : tpl.titleId
         const inputTitle = prompt(
           t('Beri judul untuk manuskrip baru ini:', 'Enter a title for this new manuscript:', getLang()),
-          defaultTitle
+          defaultTitle,
         )
         if (inputTitle === null) return
         const finalTitle = inputTitle.trim() || defaultTitle
@@ -703,6 +763,61 @@ export class DashboardView {
         this.projects = await getAllProjects(curUser)
         this.options.onOpenProject(newProj)
       })
+    })
+  }
+
+  private bindEvents(): void {
+    const newBtn = this.container.querySelector('#dash-new-project-btn')
+    newBtn?.addEventListener('click', () => this.promptNewProject())
+
+    this.bindTemplateButtons()
+
+    const gotoTplBtn = this.container.querySelector('#dash-goto-templates-btn')
+    gotoTplBtn?.addEventListener('click', () => {
+      this.currentFilter = 'templates'
+      this.render()
+    })
+
+    this.container.querySelectorAll('[data-tpl-cat]').forEach((btn) => {
+      btn.addEventListener('click', () => {
+        this.templateCategoryFilter = btn.getAttribute('data-tpl-cat') || 'all'
+        const grid = this.container.querySelector('#dash-templates-grid')
+        if (grid) {
+          grid.innerHTML = this.renderTemplateCards(getLang())
+          this.bindTemplateButtons()
+        }
+        this.container.querySelectorAll('[data-tpl-cat]').forEach((b) => b.classList.remove('active'))
+        btn.classList.add('active')
+      })
+    })
+
+    const tplSearchInput = this.container.querySelector('#dash-tpl-search-input') as HTMLInputElement | null
+    const tplSearchClear = this.container.querySelector('#dash-tpl-search-clear') as HTMLButtonElement | null
+
+    tplSearchInput?.addEventListener('input', () => {
+      this.templateSearchQuery = tplSearchInput.value.trim()
+      if (tplSearchClear) {
+        tplSearchClear.style.display = this.templateSearchQuery ? 'block' : 'none'
+      }
+      const grid = this.container.querySelector('#dash-templates-grid')
+      if (grid) {
+        grid.innerHTML = this.renderTemplateCards(getLang())
+        this.bindTemplateButtons()
+      }
+    })
+
+    tplSearchClear?.addEventListener('click', () => {
+      if (tplSearchInput) {
+        tplSearchInput.value = ''
+        this.templateSearchQuery = ''
+        tplSearchClear.style.display = 'none'
+        const grid = this.container.querySelector('#dash-templates-grid')
+        if (grid) {
+          grid.innerHTML = this.renderTemplateCards(getLang())
+          this.bindTemplateButtons()
+        }
+        tplSearchInput.focus()
+      }
     })
 
     const gotoLibBtn = this.container.querySelector('#dash-goto-library-btn')

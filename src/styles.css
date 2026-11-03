@@ -2437,6 +2437,16 @@ body {
   display: flex;
 }
 
+.dashboard-container {
+  width: 100%;
+  height: 100%;
+  flex: 1;
+  min-height: 0;
+  display: flex;
+  flex-direction: column;
+  overflow: hidden;
+}
+
 /* ==========================================================================
    Tactical Defense & Research Studio Dashboard (Atlas Style)
    ========================================================================== */
@@ -2445,10 +2455,11 @@ body {
   flex-direction: column;
   width: 100%;
   height: 100%;
+  flex: 1;
+  min-height: 0;
   background: var(--bg-primary);
   color: var(--text-primary);
   overflow: hidden;
-  overflow-x: hidden;
   font-family: var(--font-sans);
 }
 
@@ -2641,12 +2652,14 @@ body {
 /* Scrollable Container - Full Height Flow */
 .tactical-scroll-content {
   flex: 1;
-  overflow-y: auto;
+  min-height: 0;
+  overflow-y: auto !important;
   overflow-x: hidden;
   display: flex;
   flex-direction: column;
-  padding-bottom: 72px;
+  padding-bottom: 96px;
   scroll-behavior: smooth;
+  -webkit-overflow-scrolling: touch;
 }
 
 /* Split Screen Hero Section */
@@ -2995,11 +3008,11 @@ body {
    ========================================================================== */
 .tactical-templates-section {
   padding: 32px 48px;
-  border-bottom: 1.5px solid var(--border-color);
-  background: var(--bg-secondary);
+  background: var(--bg-primary);
   display: flex;
   flex-direction: column;
   gap: 20px;
+  flex: 1;
 }
 
 .templates-grid {

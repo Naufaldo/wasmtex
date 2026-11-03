@@ -5,7 +5,7 @@ export interface ProjectTemplate {
   titleEn: string
   descriptionId: string
   descriptionEn: string
-  category: 'Presentation' | 'Journal' | 'Thesis' | 'Report'
+  category: 'Presentation' | 'Journal' | 'Thesis' | 'Report' | 'Academic' | 'Resume'
   badge: string
   tags: string[]
   files: Record<string, string>
@@ -424,6 +424,303 @@ All emergency stop circuits are hardwired directly into the VFD STO (Safe Torque
 
 \\section{Conclusion \\& Commissioning Checklist}
 The system is cleared for operational baseline validation testing up to 60Hz variable frequency curves.
+
+\\end{document}`,
+    },
+  },
+  {
+    id: 'tpl_acm',
+    title: 'ACM Conference Proceedings (SIGCONF Format)',
+    titleId: 'Prosiding Konferensi ACM (Format SIGCONF)',
+    titleEn: 'ACM Conference Proceedings (SIGCONF Format)',
+    descriptionId: 'Naskah ilmiah ilmu komputer dan rekayasa perangkat lunak standar Association for Computing Machinery (ACM).',
+    descriptionEn: 'Computer Science and Software Engineering conference format matching Association for Computing Machinery standards.',
+    category: 'Journal',
+    badge: 'ACM // SIGCONF',
+    tags: ['ACM', 'Computer Science', 'Proceedings'],
+    files: {
+      'main.tex': `\\documentclass[sigconf]{article}
+\\usepackage{amsmath,amssymb}
+\\usepackage{booktabs}
+\\usepackage{graphicx}
+\\usepackage{microtype}
+
+\\title{Scalable In-Browser WebAssembly LaTeX Document Execution}
+\\author{Dr. Alex Mercer}
+\\affiliation{Department of Computer Science, University of Technology}
+
+\\begin{document}
+
+\\begin{abstract}
+We present a deterministic in-browser execution model for scientific LaTeX authoring using headless WebAssembly compilation nodes. By streaming TeX Live assets on-demand and leveraging SharedArrayBuffer worker threads, compile times remain strictly under 150ms.
+\\end{abstract}
+
+\\maketitle
+
+\\section{Introduction}
+Modern cloud document collaboration platforms suffer from significant network round-trip overhead and server queue latency. We demonstrate browser-local compilation.
+
+\\section{System Design}
+The architecture separates compilation stages into independent headless workers communicating via SharedArrayBuffer.
+
+\\begin{equation}
+\\mathcal{T}_{\\text{compile}} = \\tau_{\\text{wasm}} + \\tau_{\\text{synctex}} + \\mathcal{O}(1)
+\\end{equation}
+
+\\section{Conclusion}
+Client-side WebAssembly compilers provide reproducible, zero-server document generation.
+
+\\end{document}`,
+    },
+  },
+  {
+    id: 'tpl_cv',
+    title: 'Academic & Researcher Curriculum Vitae (CV / Resume)',
+    titleId: 'Curriculum Vitae Akademik & Peneliti (CV / Resume)',
+    titleEn: 'Academic & Researcher Curriculum Vitae (CV / Resume)',
+    descriptionId: 'Tata letak CV akademik elegan dan bersih untuk lamaran beasiswa, hibah riset, atau posisi dosen/peneliti.',
+    descriptionEn: 'Clean and elegant academic CV layout for fellowship applications, research grants, or faculty positions.',
+    category: 'Resume',
+    badge: 'ACADEMIC // CV',
+    tags: ['CV', 'Resume', 'Academic'],
+    files: {
+      'main.tex': `\\documentclass[11pt,a4paper]{article}
+\\usepackage[margin=2cm]{geometry}
+\\usepackage{titlesec}
+\\usepackage{enumitem}
+
+\\titleformat{\\section}{\\large\\bfseries\\uppercase}{}{0em}{}[\\titlerule]
+\\titlespacing*{\\section}{0pt}{12pt}{6pt}
+
+\\begin{document}
+\\begin{center}
+  {\\LARGE \\textbf{Dr. Aris Thorne, Ph.D.}}\\\\[4pt]
+  Senior Research Scientist \\& Embedded Systems Engineer\\\\[2pt]
+  Jakarta, Indonesia $\\cdot$ contact@cortex-research.org $\\cdot$ ORCID: 0000-0002-1825-0097
+\\end{center}
+
+\\section{Research Focus}
+WebAssembly document runtimes, distributed sensor telemetry, differential metrology, and high-performance embedded systems.
+
+\\section{Education}
+\\textbf{Ph.D. in Computer Science \\& Engineering} \\hfill 2021 -- 2025\\\\
+Institute of Advanced Research \\hfill \\textit{Summa Cum Laude}\\\\
+Dissertation: \\textit{Deterministic Zero-Server LaTeX Compilation Systems}
+
+\\textbf{B.S. in Electrical \\& Control Engineering} \\hfill 2017 -- 2021\\\\
+National Technical University \\hfill \\textit{First Class Honours}
+
+\section{Selected Publications}
+\begin{itemize}[leftmargin=1.5em]
+  \item \textbf{A. Thorne}, E. Rostova. \`\`In-Browser Headless TeX Engines via WebAssembly.'' \textit{IEEE Transactions on Software Engineering}, 2026.
+  \item \textbf{A. Thorne}, M. Tanaka. \`\`Sensor Fusion Repeatability in Benchtop DAC Systems.'' \textit{Elsevier Chemical Engineering Science}, 2025.
+\end{itemize}
+
+\\section{Technical Skills}
+\\textbf{Languages \\& Frameworks:} TypeScript, C/C++, Rust, WebAssembly, LaTeX, Python, MATLAB.\\\\
+\\textbf{Industrial Automation:} Modbus RTU/TCP, EtherCAT, PLC Structured Text, Node-RED, Yaskawa VFDs.
+
+\\end{document}`,
+    },
+  },
+  {
+    id: 'tpl_lab',
+    title: 'Scientific Laboratory Experiment & Metrology Report',
+    titleId: 'Laporan Eksperimen Laboratorium & Metrologi Sensor',
+    titleEn: 'Scientific Laboratory Experiment & Metrology Report',
+    descriptionId: 'Format laporan laboratorium saintifik dengan tabel kalibrasi sensor, estimasi ketidakpastian pengukuran, dan kurva regresi.',
+    descriptionEn: 'Scientific lab report layout with sensor calibration tables, uncertainty budget estimations, and regression analysis.',
+    category: 'Report',
+    badge: 'LAB // METROLOGY',
+    tags: ['Lab', 'Experiment', 'Metrology', 'Report'],
+    files: {
+      'main.tex': `\\documentclass[11pt,a4paper]{article}
+\\usepackage[margin=2.2cm]{geometry}
+\\usepackage{amsmath,amssymb}
+\\usepackage{booktabs}
+\\usepackage{siunitx}
+
+\\title{\\textbf{LABORATORY EXPERIMENT REPORT: DIFFERENTIAL SENSOR METROLOGY AND DRIFT COMPENSATION}}
+\\author{Precision Metrology \\& Instrumentation Lab}
+\\date{\\today}
+
+\\begin{document}
+\\maketitle
+
+\\section{Objective}
+Measure zero-point drift and sensitivity repeatability of dual NDIR gas sensors across a temperature range of 20\\textdegree C to 45\\textdegree C.
+
+\\section{Experimental Setup}
+Two calibrated pressure transmitters (Wingel PCM2052-GP and MicroSensor MPM486) were mounted in a temperature-controlled test chamber with 16-bit ADC data acquisition running at 10Hz.
+
+\\section{Measurement Results}
+\\begin{table}[h]
+  \\centering
+  \\caption{Calibration Uncertainty Budget ($N=500$ samples)}
+  \\begin{tabular}{lcccc}
+    \\toprule
+    Sensor Node & Nominal Range & Mean Drift (\\%) & Repeatability ($R^2$) & Uncertainty ($\\pm\\sigma$) \\\\
+    \\midrule
+    PT-101 (Wingel) & 0--10 bar & 0.042 & 0.9984 & 0.015 bar \\\\
+    PT-201 (MicroSensor) & 0--25 bar & 0.038 & 0.9991 & 0.022 bar \\\\
+    \\bottomrule
+  \\end{tabular}
+\\end{table}
+
+\\section{Discussion}
+Temperature compensation algorithms reduce residual drift by 78.4\\%, meeting precision class 0.1 industrial standards.
+
+\\end{document}`,
+    },
+  },
+  {
+    id: 'tpl_poster',
+    title: 'Academic Research Conference Poster (Portrait / Landscape)',
+    titleId: 'Poster Konferensi Riset Akademik (Format A0 / A1)',
+    titleEn: 'Academic Research Conference Poster',
+    descriptionId: 'Template poster ilmiah 3-kolom dengan blok visual tebal untuk mempresentasikan hasil riset pada simposium internasional.',
+    descriptionEn: '3-column scientific research poster template with bold visual blocks for international conference symposiums.',
+    category: 'Presentation',
+    badge: 'POSTER // SYMPOSIUM',
+    tags: ['Poster', 'Conference', 'Visual'],
+    files: {
+      'main.tex': `\\documentclass[11pt,a4paper]{article}
+\\usepackage[margin=1.8cm]{geometry}
+\\usepackage{amsmath,amssymb}
+\\usepackage{multicol}
+\\usepackage{tcolorbox}
+
+\\title{\\textbf{\\huge Scaling Academic Research: In-Browser LaTeX Intelligence}}
+\\author{\\textbf{Dr. Elena Rostova}, \\textbf{Dr. Aris Thorne} \\\\ CorTeX Scientific Research Group}
+\\date{}
+
+\\begin{document}
+\\maketitle
+
+\\begin{multicols}{2}
+
+\\begin{tcolorbox}[colback=orange!10,colframe=orange!80!black,title=\\textbf{1. PROBLEM STATEMENT}]
+Cloud LaTeX engines suffer from high network latency, queueing bottlenecks, and privacy compliance hurdles.
+\\end{tcolorbox}
+
+\\begin{tcolorbox}[colback=blue!10,colframe=blue!80!black,title=\\textbf{2. PROPOSED SOLUTION}]
+Compile TeX Live directly inside the user's browser threads using WebAssembly (WasmTex core) with zero server latency.
+\\begin{equation}
+\\Delta t_{\\text{render}} \\le 142 \\text{ ms}
+\\end{equation}
+\\end{tcolorbox}
+
+\\begin{tcolorbox}[colback=green!10,colframe=green!80!black,title=\\textbf{3. EXPERIMENTAL FINDINGS}]
+Evaluated over 2,000 document compilations:
+\\begin{itemize}
+  \\item Zero data leakage (100\\% browser privacy).
+  \\item Sub-second turnaround for multi-chapter manuscripts.
+  \\item Seamless SyncTeX bidirectional navigation.
+\\end{itemize}
+\\end{tcolorbox}
+
+\\begin{tcolorbox}[colback=gray!10,colframe=black,title=\\textbf{4. CONCLUSIONS}]
+WebAssembly native execution represents the next frontier of secure, reproducible scientific documentation.
+\\end{tcolorbox}
+
+\\end{multicols}
+
+\\end{document}`,
+    },
+  },
+  {
+    id: 'tpl_assignment',
+    title: 'University Problem Set & Coursework Assignment',
+    titleId: 'Tugas Kuliah & Solusi Problem Set Matematika / Fisika',
+    titleEn: 'University Problem Set & Coursework Assignment',
+    descriptionId: 'Format pengerjaan soal latihan, tugas kuliah, dan problem set dengan blok pertanyaan bernomor dan kotak solusi terpisah.',
+    descriptionEn: 'Structured problem set format with numbered question prompts and boxed step-by-step solutions.',
+    category: 'Academic',
+    badge: 'COURSEWORK // PSET',
+    tags: ['Homework', 'Assignment', 'Math', 'Physics'],
+    files: {
+      'main.tex': `\\documentclass[11pt,a4paper]{article}
+\\usepackage[margin=2.5cm]{geometry}
+\\usepackage{amsmath,amssymb,amsthm}
+
+\\theoremstyle{definition}
+\\newtheorem{problem}{Problem}
+\\newtheorem{solution}{Solution}
+
+\\title{\\textbf{Advanced Applied Mathematics: Problem Set \\#3}}
+\\author{Student Name $\\cdot$ ID: 2026-9041 \\\\ Course: Linear Algebra \\& Differential Equations}
+\\date{Due: November 2026}
+
+\\begin{document}
+\\maketitle
+
+\\begin{problem}
+Consider the linear transformation $T: \\mathbb{R}^3 \\to \\mathbb{R}^3$ defined by the matrix $A$:
+\\begin{equation*}
+A = \\begin{pmatrix} 4 & 1 & -2 \\\\ 1 & 2 & 0 \\\\ -2 & 0 & 3 \\end{pmatrix}
+\\end{equation*}
+Determine the eigenvalues and orthonormal eigenvectors of $A$.
+\\end{problem}
+
+\\begin{solution}
+Since $A$ is symmetric ($A = A^T$), by the Spectral Theorem all eigenvalues are real and the eigenvectors can be chosen orthonormal. We solve $\\det(A - \\lambda I) = 0$:
+\\begin{equation*}
+\\det \\begin{pmatrix} 4 - \\lambda & 1 & -2 \\\\ 1 & 2 - \\lambda & 0 \\\\ -2 & 0 & 3 - \\lambda \\end{pmatrix} = 0
+\\end{equation*}
+Expanding along the second row yields the characteristic polynomial.
+\\end{solution}
+
+\\end{document}`,
+    },
+  },
+  {
+    id: 'tpl_math_paper',
+    title: 'Pure Mathematics & Theorem-Proof Manuscript',
+    titleId: 'Naskah Matematika Murni & Teorema-Bukti (AMS-LaTeX)',
+    titleEn: 'Pure Mathematics & Theorem-Proof Manuscript',
+    descriptionId: 'Format artikel matematika teoritis dengan lingkungan Teorema, Lemma, Proposisi, dan Q.E.D. proofs standar AMS.',
+    descriptionEn: 'Theoretical mathematics paper with standard AMS Theorem, Lemma, Proposition, and Proof environments.',
+    category: 'Academic',
+    badge: 'MATH // THEOREMS',
+    tags: ['Mathematics', 'Preprint', 'Theorems', 'AMS'],
+    files: {
+      'main.tex': `\\documentclass[11pt,reqno]{article}
+\\usepackage[margin=2.8cm]{geometry}
+\\usepackage{amsmath,amssymb,amsthm}
+
+\\newtheorem{theorem}{Theorem}[section]
+\\newtheorem{lemma}[theorem]{Lemma}
+\\newtheorem{proposition}[theorem]{Proposition}
+\\theoremstyle{definition}
+\\newtheorem{definition}[theorem]{Definition}
+\\newtheorem{remark}[theorem]{Remark}
+
+\\title{\\textbf{On the Existence and Uniqueness of Solutions in Functional Banach Manifolds}}
+\\author{CorTeX Mathematical Sciences Institute}
+\\date{\\today}
+
+\\begin{document}
+\\maketitle
+
+\\begin{abstract}
+We establish global existence criteria for nonlinear differential operators on complete Riemannian manifolds, extending classical Sobolev embedding inequalities to compact boundary conditions.
+\\end{abstract}
+
+\\section{Fundamental Definitions}
+Let $(\\mathcal{M}, g)$ be a complete connected Riemannian manifold of dimension $n \\ge 3$.
+
+\\begin{definition}
+A functional $\\mathcal{E}: H^1(\\mathcal{M}) \\to \\mathbb{R}$ is coercive if $\\lim_{\\|u\\| \\to \\infty} \\mathcal{E}(u) = +\\infty$.
+\\end{definition}
+
+\\section{Main Results}
+\\begin{theorem}
+Every weakly continuous and strictly convex functional on a reflexive Banach space attains a unique global minimum.
+\\end{theorem}
+
+\\begin{proof}
+Let $\\{u_k\\}$ be a minimizing sequence such that $\\lim_{k \\to \\infty} \\mathcal{E}(u_k) = \\inf_{u \\in X} \\mathcal{E}(u)$. Since $\\mathcal{E}$ is coercive, the sequence $\\{u_k\\}$ is bounded. By reflexivity of $X$, there exists a weakly convergent subsequence $u_{k_j} \\rightharpoonup u^*$. Weak lower semicontinuity implies $\\mathcal{E}(u^*) \\le \\liminf \\mathcal{E}(u_{k_j})$, establishing the minimum. Strict convexity guarantees uniqueness.
+\\end{proof}
 
 \\end{document}`,
     },
