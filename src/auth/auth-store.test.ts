@@ -13,6 +13,7 @@ import {
   getCurrentUser,
   initAccounts,
   logoutUser,
+  registerAccount,
   type UserSession,
 } from './auth-store'
 
@@ -122,6 +123,22 @@ describe('Auth Store & IAM Multi-Account System', () => {
     const delResearcherRes = deleteUser('usr_researcher')
     expect(delResearcherRes.success).toBe(true)
     expect(getAllUsers().some((u) => u.id === 'usr_researcher')).toBe(false)
+  })
+
+  it('supports self-service registration of new accounts', () => {
+    const regRes = registerAccount('novice_user', 'mypassword123', 'Novice User')
+    expect(regRes.success).toBe(true)
+    expect(regRes.session?.username).toBe('novice_user')
+    expect(regRes.session?.userId).toMatch(/^usr_/)
+
+    // Immediately logged in as active user
+    const cur = getCurrentUser()
+    expect(cur?.username).toBe('novice_user')
+
+    // Cannot register with existing username
+    const dupRes = registerAccount('novice_user', 'otherpass', 'Other')
+    expect(dupRes.success).toBe(false)
+    expect(dupRes.error).toContain('sudah digunakan')
   })
 
   it('enforces RBAC permissions correctly', () => {

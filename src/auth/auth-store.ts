@@ -254,7 +254,7 @@ export function updateUserProfile(
     return { success: false, error: 'Akun user tidak ditemukan.' }
   }
 
-  if (updates.name && updates.name.trim()) {
+  if (updates.name?.trim()) {
     user.name = updates.name.trim()
   }
   if (updates.role) {
@@ -308,6 +308,19 @@ export function createUser(
   users.push(newUser)
   localStorage.setItem(ACCOUNTS_STORAGE_KEY, JSON.stringify(users))
   return { success: true, user: newUser }
+}
+
+export function registerAccount(
+  username: string,
+  pass: string,
+  name?: string
+): { success: boolean; session?: UserSession | undefined; error?: string | undefined } {
+  const res = createUser(username, pass, name || username, 'researcher')
+  if (!res.success || !res.user) {
+    return { success: false, error: res.error }
+  }
+  const session = loginUser(res.user)
+  return { success: true, session }
 }
 
 export function deleteUser(

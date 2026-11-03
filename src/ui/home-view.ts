@@ -1,9 +1,9 @@
 import {
   authenticate,
-  DEFAULT_ACCOUNTS,
+  registerAccount,
   type UserSession,
 } from '../auth/auth-store'
-import { getLang, t, toggleLang } from './i18n'
+import { getLang, t, toggleLang, type Lang } from './i18n'
 import { OVERLEAF_ICONS } from './logo'
 
 export interface HomeViewOptions {
@@ -16,7 +16,8 @@ export interface HomeViewOptions {
 export class HomeView {
   private container: HTMLElement
   private options: HomeViewOptions
-  private activeTourTab: 'workspace' | 'dashboard' | 'library' | 'iam' = 'workspace'
+  private activeTourTab: 'workspace' | 'dashboard' | 'library' = 'workspace'
+  private authTab: 'login' | 'register' = 'login'
 
   constructor(container: HTMLElement, options: HomeViewOptions) {
     this.container = container
@@ -68,7 +69,6 @@ export class HomeView {
           <nav class="tactical-nav-center home-nav-links">
             <a href="#home-features" class="tactical-nav-btn">${t('[ FITUR UTAMA ]', '[ KEY FEATURES ]', lang)}</a>
             <a href="#home-showcase" class="tactical-nav-btn">${t('[ SCREENSHOT & TUR ]', '[ SCREENSHOTS & TOUR ]', lang)}</a>
-            <a href="#home-iam" class="tactical-nav-btn">${t('[ SISTEM IAM ]', '[ IAM SYSTEM ]', lang)}</a>
             <a href="#home-login-sec" class="tactical-nav-btn">${t('[ AKSES MASUK ]', '[ ACCESS LOGIN ]', lang)}</a>
           </nav>
 
@@ -105,37 +105,21 @@ export class HomeView {
               </h1>
               <p class="home-hero-desc">
                 ${t(
-                  'CorTeX WasmTex mengintegrasikan engine TeX Live 2025/2026 bertenaga WebAssembly langsung di peramban Anda. Nikmati penulisan naskah saintifik dengan Visual KaTeX Editor, Monaco Code Editor dengan syntax highlighting, SyncTeX 2-arah interaktif, Research Library dengan auto-sync BibTeX, serta <strong>sistem IAM Multi-Akun terisolasi</strong> yang menjamin proyek tidak saling bentrok.',
-                  'CorTeX WasmTex embeds the WebAssembly-powered TeX Live 2025/2026 engine directly in your client browser. Experience scientific authoring with Visual KaTeX Equation editor, Monaco Code Editor with syntax highlighting, interactive 2-way SyncTeX, Research Library with automated BibTeX sync, and isolated Multi-Account IAM ensuring zero project collision.',
+                  'CorTeX WasmTex mengintegrasikan engine TeX Live 2025/2026 bertenaga WebAssembly langsung di peramban Anda. Nikmati penulisan naskah saintifik dengan Visual KaTeX Editor, Monaco Code Editor dengan syntax highlighting, SyncTeX 2-arah interaktif, Research Library dengan auto-sync BibTeX, serta <strong>sistem Multi-Akun terisolasi</strong> yang menjamin dokumen setiap pengguna aman mandiri.',
+                  'CorTeX WasmTex embeds the WebAssembly-powered TeX Live 2025/2026 engine directly in your client browser. Experience scientific authoring with Visual KaTeX Equation editor, Monaco Code Editor with syntax highlighting, interactive 2-way SyncTeX, Research Library with automated BibTeX sync, and isolated Multi-Account workspace ensuring private projects for each user.',
                   lang
                 )}
               </p>
 
-              <!-- Quick Demo CTA Bar -->
+              <!-- Main Hero Action Button -->
               <div class="home-hero-actions">
-                <a href="#home-login-sec" class="tactical-cta-btn cta-orange">
+                <a href="#home-login-sec" class="tactical-cta-btn cta-orange" style="padding: 10px 24px;">
                   <span class="bracket-corner tl"></span>
                   <span class="bracket-corner tr"></span>
                   <span class="bracket-corner bl"></span>
                   <span class="bracket-corner br"></span>
-                  <span class="cta-inner">${t('🚀 MASUK KE DASHBOARD', '🚀 ACCESS DASHBOARD', lang)}</span>
+                  <span class="cta-inner" style="font-size: 13px;">🚀 ${t('MASUK KE DASHBOARD & PROYEK', 'ACCESS DASHBOARD & PROJECTS', lang)}</span>
                 </a>
-
-                <button class="tactical-cta-btn cta-secondary btn-quick-demo" data-user="admin" title="${t('Login instan sebagai Master Admin', 'Instant login as Master Admin', lang)}">
-                  <span class="bracket-corner tl"></span>
-                  <span class="bracket-corner tr"></span>
-                  <span class="bracket-corner bl"></span>
-                  <span class="bracket-corner br"></span>
-                  <span class="cta-inner">⚡ DEMO: ADMIN</span>
-                </button>
-
-                <button class="tactical-cta-btn cta-secondary btn-quick-demo" data-user="researcher" title="${t('Login instan sebagai Peneliti', 'Instant login as Lead Researcher', lang)}">
-                  <span class="bracket-corner tl"></span>
-                  <span class="bracket-corner tr"></span>
-                  <span class="bracket-corner bl"></span>
-                  <span class="bracket-corner br"></span>
-                  <span class="cta-inner">⚡ DEMO: RESEARCHER</span>
-                </button>
               </div>
 
               <!-- Metric & Capability Badges -->
@@ -150,7 +134,7 @@ export class HomeView {
                 </div>
                 <div class="home-badge-pill">
                   <span class="badge-dot orange">●</span>
-                  <strong>IAM ISOLATION</strong>: ${t('Multi-user mandiri anti-bentrok', 'Multi-tenant sandboxing', lang)}
+                  <strong>MULTI-AKUN MANDIRI</strong>: ${t('Proyek terisolasi per pengguna', 'Private projects per account', lang)}
                 </div>
                 <div class="home-badge-pill">
                   <span class="badge-dot">●</span>
@@ -173,16 +157,13 @@ export class HomeView {
             <!-- Tab Switcher -->
             <div class="showcase-nav-tabs">
               <button class="showcase-tab-btn ${this.activeTourTab === 'workspace' ? 'active' : ''}" data-tab="workspace">
-                ✍️ WORKSPACE 3-PANEL (EDITOR &amp; PDF)
+                ${t('✍️ WORKSPACE 3-PANEL (EDITOR & PDF)', '✍️ 3-PANE WORKSPACE (EDITOR & PDF)', lang)}
               </button>
               <button class="showcase-tab-btn ${this.activeTourTab === 'dashboard' ? 'active' : ''}" data-tab="dashboard">
-                📊 DASHBOARD PROYEK TAKTIS
+                ${t('📊 DASHBOARD PROYEK TAKTIS', '📊 TACTICAL PROJECTS DASHBOARD', lang)}
               </button>
               <button class="showcase-tab-btn ${this.activeTourTab === 'library' ? 'active' : ''}" data-tab="library">
-                📚 RESEARCH LIBRARY &amp; BIBTEX
-              </button>
-              <button class="showcase-tab-btn ${this.activeTourTab === 'iam' ? 'active' : ''}" data-tab="iam">
-                🛡️ ENTERPRISE IAM &amp; MULTI-AKUN
+                ${t('📚 RESEARCH LIBRARY & BIBTEX', '📚 RESEARCH LIBRARY & BIBTEX', lang)}
               </button>
             </div>
 
@@ -202,7 +183,7 @@ export class HomeView {
 
               <!-- Dynamic Screen Mockup Content -->
               <div class="monitor-screen-viewport" id="showcase-viewport">
-                ${this.renderShowcaseTab(this.activeTourTab)}
+                ${this.renderShowcaseTab(this.activeTourTab, lang)}
               </div>
             </div>
           </section>
@@ -210,10 +191,14 @@ export class HomeView {
           <!-- Features Grid Section -->
           <section id="home-features" class="home-features-section">
             <div class="section-header-wrap">
-              <div class="section-tag">[ ARCHITECTURE &amp; CAPABILITIES // FITUR UTAMA ]</div>
-              <h2 class="section-title">Enam Pilar Utama CorTeX WasmTex Studio</h2>
+              <div class="section-tag">${t('[ FITUR UTAMA // ARCHITECTURE & CAPABILITIES ]', '[ CORE CAPABILITIES // TECHNICAL ARCHITECTURE ]', lang)}</div>
+              <h2 class="section-title">${t('Enam Pilar Utama CorTeX WasmTex Studio', 'Six Core Pillars of CorTeX WasmTex Studio', lang)}</h2>
               <p class="section-subtitle">
-                Didesain khusus untuk peneliti, dosen, dan mahasiswa yang memerlukan kecepatan tinggi, reliabilitas tanpa instalasi rumit, dan keamanan data.
+                ${t(
+                  'Didesain khusus untuk peneliti, akademisi, dan mahasiswa yang memerlukan kecepatan tinggi, reliabilitas tanpa instalasi rumit, dan keamanan data.',
+                  'Engineered for researchers, academics, and students demanding high speed, zero-install reliability, and strict data privacy.',
+                  lang
+                )}
               </p>
             </div>
 
@@ -221,9 +206,13 @@ export class HomeView {
               <!-- Feature 1 -->
               <div class="feature-card">
                 <div class="feature-icon">⚡</div>
-                <h3 class="feature-name">WebAssembly Headless TeX Engine</h3>
+                <h3 class="feature-name">${t('WebAssembly Headless TeX Engine', 'WebAssembly Headless TeX Engine', lang)}</h3>
                 <p class="feature-desc">
-                  pdfTeX dan XeTeX dikompilasi langsung ke WebAssembly 64MB memory heap. Proses kompilasi berlangsung lokal di dalam browser Anda, menghasilkan waktu kompilasi sub-detik tanpa risiko server mati.
+                  ${t(
+                    'pdfTeX dan XeTeX dikompilasi langsung ke WebAssembly 64MB memory heap. Proses kompilasi berlangsung lokal di dalam browser Anda, menghasilkan waktu kompilasi sub-detik tanpa risiko server mati.',
+                    'pdfTeX and XeTeX compiled directly into a 64MB WebAssembly memory heap. Compilation runs locally within your browser threads, achieving sub-second turnaround with zero server downtime.',
+                    lang
+                  )}
                 </p>
                 <div class="feature-chip">[ ZERO SERVER DELAY ]</div>
               </div>
@@ -231,9 +220,13 @@ export class HomeView {
               <!-- Feature 2 -->
               <div class="feature-card">
                 <div class="feature-icon">📝</div>
-                <h3 class="feature-name">Triple-Mode Editing (Visual, Code &amp; Split)</h3>
+                <h3 class="feature-name">${t('Alur Kerja 3-Mode (Visual, Code & Split)', 'Triple-Mode Workflow (Visual, Code & Split)', lang)}</h3>
                 <p class="feature-desc">
-                  Mode Visual WYSIWYG untuk melihat formula KaTeX terformat secara instan, Monaco Editor kelas dunia untuk pengkodean LaTeX presisi, serta Split-View untuk kenyamanan maksimal.
+                  ${t(
+                    'Mode Visual WYSIWYG untuk melihat formula KaTeX terformat secara instan, Monaco Editor kelas dunia untuk pengkodean LaTeX presisi, serta Split-View untuk kenyamanan maksimal.',
+                    'Visual WYSIWYG mode to inspect rendered KaTeX formulas instantly, world-class Monaco Editor for exact LaTeX coding, and Split-View for maximum productivity.',
+                    lang
+                  )}
                 </p>
                 <div class="feature-chip">[ MONACO + KATEX HYBRID ]</div>
               </div>
@@ -241,9 +234,13 @@ export class HomeView {
               <!-- Feature 3 -->
               <div class="feature-card">
                 <div class="feature-icon">🎯</div>
-                <h3 class="feature-name">SyncTeX 2-Arah &amp; Live PDF.js Viewer</h3>
+                <h3 class="feature-name">${t('SyncTeX 2-Arah & Viewer PDF.js', 'Bidirectional SyncTeX & PDF.js Viewer', lang)}</h3>
                 <p class="feature-desc">
-                  Navigasi instan antara kode sumber LaTeX dan hasil PDF yang telah dikompilasi. Klik baris editor untuk melompat ke halaman PDF, atau klik di PDF untuk melompat ke baris kode.
+                  ${t(
+                    'Navigasi instan antara kode sumber LaTeX dan hasil PDF yang telah dikompilasi. Klik baris editor untuk melompat ke halaman PDF, atau klik di PDF untuk melompat ke baris kode.',
+                    'Instant jump navigation between LaTeX source code and compiled PDF pages. Click any editor line to jump to PDF, or click PDF to jump back to LaTeX source code.',
+                    lang
+                  )}
                 </p>
                 <div class="feature-chip">[ BIDIRECTIONAL SYNCTEX ]</div>
               </div>
@@ -251,9 +248,13 @@ export class HomeView {
               <!-- Feature 4 -->
               <div class="feature-card">
                 <div class="feature-icon">📚</div>
-                <h3 class="feature-name">Research Library &amp; Auto-Sync BibTeX</h3>
+                <h3 class="feature-name">${t('Research Library & Auto-Sync BibTeX', 'Research Library & Auto-Sync BibTeX', lang)}</h3>
                 <p class="feature-desc">
-                  Katalog literatur saintifik terstruktur dengan memo analisis (Objektif, Metodologi, Temuan). Dilengkapi tombol 1-klik untuk menyinkronkan sitasi BibTeX langsung ke file naskah proyek.
+                  ${t(
+                    'Katalog literatur saintifik terstruktur dengan memo analisis (Objektif, Metodologi, Temuan). Dilengkapi tombol 1-klik untuk menyinkronkan sitasi BibTeX langsung ke file naskah proyek.',
+                    'Structured scientific literature repository with research memos (Objective, Methodology, Findings). Includes 1-click BibTeX sync directly into your active project.',
+                    lang
+                  )}
                 </p>
                 <div class="feature-chip">[ 1-CLICK BIBTEX SYNC ]</div>
               </div>
@@ -261,135 +262,82 @@ export class HomeView {
               <!-- Feature 5 -->
               <div class="feature-card highlighted-card">
                 <div class="feature-icon">🛡️</div>
-                <h3 class="feature-name">Sistem Multi-Akun &amp; IAM Anti-Bentrok</h3>
+                <h3 class="feature-name">${t('Multi-Akun Mandiri Anti-Bentrok', 'Multi-Account Private Workspace', lang)}</h3>
                 <p class="feature-desc">
-                  Data proyek dan pustaka diisolasi secara ketat per akun dengan ID unik. Dilengkapi peran Admin, Researcher, dan Viewer. Setiap akun dapat mengganti Username dan Password secara mandiri tanpa bentrok.
+                  ${t(
+                    'Setiap akun memiliki partisi penyimpanan proyek dan naskah tersendiri pada IndexedDB. Dokumen Anda dijamin aman, terisolasi, dan tidak akan pernah tertimpa atau bentrok dengan akun lain.',
+                    'Every user account owns an isolated project partition inside local IndexedDB. Your documents are strictly sandboxed and will never collide or overwrite other accounts.',
+                    lang
+                  )}
                 </p>
-                <div class="feature-chip highlight-chip">[ MULTI-TENANT ISOLATION ]</div>
+                <div class="feature-chip highlight-chip">[ MULTI-ACCOUNT ISOLATION ]</div>
               </div>
 
               <!-- Feature 6 -->
               <div class="feature-card">
                 <div class="feature-icon">☁️</div>
-                <h3 class="feature-name">Offline-First IndexedDB &amp; Cloudflare R2</h3>
+                <h3 class="feature-name">${t('Offline-First IndexedDB & Cloudflare R2', 'Offline-First IndexedDB & Cloudflare R2', lang)}</h3>
                 <p class="feature-desc">
-                  Penyimpanan lokal IndexedDB memungkinkan Anda menulis dokumen saat offline. Tersedia fitur impor/ekspor ZIP utuh serta sinkronisasi snapshot proyek ke Cloudflare R2 bucket.
+                  ${t(
+                    'Penyimpanan lokal IndexedDB memungkinkan Anda menulis dokumen saat offline. Tersedia fitur impor/ekspor ZIP utuh serta sinkronisasi snapshot proyek ke Cloudflare R2 bucket.',
+                    'Local browser IndexedDB allows full manuscript authoring while offline. Supports ZIP project import/export as well as seamless Cloudflare R2 snapshot backups.',
+                    lang
+                  )}
                 </p>
                 <div class="feature-chip">[ PERSISTENT STORAGE ]</div>
               </div>
             </div>
           </section>
 
-          <!-- IAM Architecture Explanation Section -->
-          <section id="home-iam" class="home-iam-section">
-            <div class="iam-banner-box">
-              <div class="iam-banner-left">
-                <div class="unit-classification-tag">SECURITY MATRIX // RBAC &amp; IAM</div>
-                <h2 class="iam-title">Arsitektur IAM &amp; Isolasi Data Tanpa Bentrok</h2>
-                <p class="iam-desc">
-                  CorTeX menerapkan prinsip Least Privilege dan Multi-Tenant Workspace Sandbox. Setiap dokumen LaTeX yang Anda buat disimpan dengan atribut kepemilikan <code>ownerId</code> spesifik pada IndexedDB browser:
-                </p>
-                <ul class="iam-list">
-                  <li><strong>Isolasi Proyek Total:</strong> Akun peneliti (researcher) hanya dapat melihat dan memodifikasi proyek miliknya sendiri. Proyek pengguna lain tidak akan tertimpa atau terhapus.</li>
-                  <li><strong>Sandbox Tutorial Bawaan:</strong> Setiap akun mendapatkan salinan proyek tutorial awal secara terpisah saat pertama login, mencegah modifikasi bersama yang merusak data.</li>
-                  <li><strong>Manajemen Kredensial Fleksibel:</strong> Setiap user berhak memperbarui username dan mengganti kata sandi secara mandiri di menu pengaturan akun.</li>
-                  <li><strong>Konsol Kontrol Admin:</strong> Pengguna dengan peran <code>admin</code> memiliki wewenang mengelola pengguna lain, mengubah role, mereset password, dan mengaudit proyek sistem.</li>
-                </ul>
-              </div>
-
-              <div class="iam-banner-right">
-                <div class="iam-table-card">
-                  <div class="iam-table-header">[ ROLE PERMISSIONS MATRIX ]</div>
-                  <table class="iam-matrix-table">
-                    <thead>
-                      <tr>
-                        <th>Role</th>
-                        <th>Buat Proyek</th>
-                        <th>Edit Milik Sendiri</th>
-                        <th>Ganti Profil</th>
-                        <th>Kelola IAM</th>
-                      </tr>
-                    </thead>
-                    <tbody>
-                      <tr>
-                        <td><span class="role-badge admin">ADMIN</span></td>
-                        <td>✓ Ya</td>
-                        <td>✓ Ya (Semua)</td>
-                        <td>✓ Ya</td>
-                        <td>✓ Ya</td>
-                      </tr>
-                      <tr>
-                        <td><span class="role-badge researcher">RESEARCHER</span></td>
-                        <td>✓ Ya</td>
-                        <td>✓ Ya (Milik Sendiri)</td>
-                        <td>✓ Ya</td>
-                        <td>✕ Tidak</td>
-                      </tr>
-                      <tr>
-                        <td><span class="role-badge viewer">VIEWER</span></td>
-                        <td>✕ Tidak</td>
-                        <td>✕ Read-only</td>
-                        <td>✓ Ya</td>
-                        <td>✕ Tidak</td>
-                      </tr>
-                    </tbody>
-                  </table>
-                </div>
-              </div>
-            </div>
-          </section>
-
-          <!-- Mandatory Login Section -->
+          <!-- Mandatory Authentication Section (Login & Registration) -->
           <section id="home-login-sec" class="home-login-section">
             <div class="login-wrapper-grid">
-              <!-- Left Login Pitch Column -->
+              <!-- Left Column: Explanation -->
               <div class="login-pitch-col">
-                <div class="unit-classification-tag">AUTHENTICATION GATE // ACCESS MANDATORY</div>
-                <h2 class="login-pitch-title">Masuk ke Dashboard CorTeX Studio</h2>
+                <div class="unit-classification-tag">${t('AUTENTIKASI & MULTI-AKUN MANDIRI', 'AUTHENTICATION & MULTI-ACCOUNT', lang)}</div>
+                <h2 class="login-pitch-title">${t('Masuk ke Dashboard CorTeX Studio', 'Sign In to CorTeX Studio Dashboard', lang)}</h2>
                 <p class="login-pitch-desc">
-                  Untuk menjaga integritas dan isolasi proyek naskah Anda, autentikasi diperlukan sebelum memasuki dashboard atau editor workspace.
+                  ${t(
+                    'CorTeX menerapkan sistem multi-akun lokal. Setiap akun memiliki ruang kerja dokumen dan katalog sitasi riset masing-masing yang terisolasi secara penuh.',
+                    'CorTeX utilizes an isolated multi-account system. Each user account possesses its own dedicated document workspace and research citation repository.',
+                    lang
+                  )}
                 </p>
 
-                <!-- Default Accounts Guide Box -->
-                <div class="default-accounts-box">
-                  <div class="def-box-title">[ AKUN DEFAULT BAWAAN SISTEM ]</div>
-                  <p class="def-box-hint">Gunakan salah satu akun siap-pakai di bawah ini untuk pengujian instan:</p>
-                  
-                  <div class="account-card-row">
-                    <div class="acc-mini-card">
-                      <div class="acc-top">
-                        <span class="role-badge admin">ADMIN</span>
-                        <strong>admin</strong>
+                <div class="multi-acc-benefits-box" style="border: 1.5px solid var(--border-color); background: var(--bg-secondary); padding: 18px; display: flex; flex-direction: column; gap: 12px; font-size: 13px;">
+                  <div style="display: flex; gap: 10px; align-items: flex-start;">
+                    <span style="font-size: 18px;">🔒</span>
+                    <div>
+                      <strong>${t('Isolasi Penuh Antar Akun', 'Complete Multi-Account Isolation', lang)}</strong>
+                      <div style="color: var(--text-secondary); font-size: 12px; margin-top: 2px;">
+                        ${t('Dokumen yang Anda buat disimpan dengan ID akun Anda, sehingga tidak akan dapat dilihat atau ditimpa oleh akun lain di perangkat yang sama.', 'Documents are partitioned by account ID, preventing accidental overwrites or cross-contamination.', lang)}
                       </div>
-                      <div class="acc-pass">Pass: <code>cortex2026</code></div>
-                      <div class="acc-desc">Akses penuh IAM &amp; kelola semua akun/proyek.</div>
-                      <button class="btn-quick-fill" data-user="admin" data-pass="cortex2026">Gunakan Akun Ini ➔</button>
                     </div>
+                  </div>
 
-                    <div class="acc-mini-card">
-                      <div class="acc-top">
-                        <span class="role-badge researcher">RESEARCHER</span>
-                        <strong>researcher</strong>
+                  <div style="display: flex; gap: 10px; align-items: flex-start;">
+                    <span style="font-size: 18px;">⚡</span>
+                    <div>
+                      <strong>${t('Privasi 100% di Browser Client', '100% Client-Side Privacy', lang)}</strong>
+                      <div style="color: var(--text-secondary); font-size: 12px; margin-top: 2px;">
+                        ${t('Semua proses kompilasi dan penyimpanan berjalan di dalam browser Anda tanpa mengirimkan draft naskah ke server luar.', 'All compilation cycles and project files reside securely inside your local browser storage.', lang)}
                       </div>
-                      <div class="acc-pass">Pass: <code>cortex2026</code></div>
-                      <div class="acc-desc">Pusat riset mandiri &amp; proyek terisolasi.</div>
-                      <button class="btn-quick-fill" data-user="researcher" data-pass="cortex2026">Gunakan Akun Ini ➔</button>
                     </div>
+                  </div>
 
-                    <div class="acc-mini-card">
-                      <div class="acc-top">
-                        <span class="role-badge viewer">VIEWER</span>
-                        <strong>guest</strong>
+                  <div style="display: flex; gap: 10px; align-items: flex-start;">
+                    <span style="font-size: 18px;">✍️</span>
+                    <div>
+                      <strong>${t('Bebas Buat Akun & Ganti Kredensial', 'Create Accounts & Update Credentials', lang)}</strong>
+                      <div style="color: var(--text-secondary); font-size: 12px; margin-top: 2px;">
+                        ${t('Anda dapat membuat akun baru kapan saja, serta mengubah username dan password secara mandiri di menu profil.', 'Register new accounts on demand, and freely update your username and password via account settings.', lang)}
                       </div>
-                      <div class="acc-pass">Pass: <code>cortex2026</code></div>
-                      <div class="acc-desc">Mode baca, review naskah &amp; tes kompilasi.</div>
-                      <button class="btn-quick-fill" data-user="guest" data-pass="cortex2026">Gunakan Akun Ini ➔</button>
                     </div>
                   </div>
                 </div>
               </div>
 
-              <!-- Right Login Form Card -->
+              <!-- Right Column: Authentication Card (Login or Register) -->
               <div class="login-form-col">
                 <div class="tactical-login-card">
                   <div class="card-bracket tl"></div>
@@ -397,55 +345,110 @@ export class HomeView {
                   <div class="card-bracket bl"></div>
                   <div class="card-bracket br"></div>
 
-                  <div class="card-top-tag">
-                    <span>SECURITY CLEARANCE GATEWAY</span>
-                    <span class="status-indicator-dot">●</span>
+                  <!-- Tab Switcher: Login vs Register -->
+                  <div class="auth-tab-row" style="display: flex; border-bottom: 1.5px solid var(--border-color); margin-bottom: 20px;">
+                    <button id="tab-auth-login" class="tactical-nav-btn ${this.authTab === 'login' ? 'active' : ''}" style="flex: 1; border-radius: 0; padding: 10px; font-weight: 700;">
+                      ${t('[ 🔑 MASUK / SIGN IN ]', '[ 🔑 SIGN IN ]', lang)}
+                    </button>
+                    <button id="tab-auth-register" class="tactical-nav-btn ${this.authTab === 'register' ? 'active' : ''}" style="flex: 1; border-radius: 0; padding: 10px; font-weight: 700;">
+                      ${t('[ 📝 DAFTAR AKUN / REGISTER ]', '[ 📝 CREATE ACCOUNT ]', lang)}
+                    </button>
                   </div>
 
-                  <h3 class="card-title">AUTENTIKASI OPERATOR</h3>
-                  <p class="card-subtitle">Masukkan Username dan Password untuk mengakses workspace Anda.</p>
+                  <div id="home-auth-error" class="login-alert-banner" style="display:none;"></div>
 
-                  <div id="home-login-error" class="login-alert-banner" style="display:none;"></div>
-
-                  <form id="home-login-form" class="home-auth-form">
+                  ${
+                    this.authTab === 'login'
+                      ? `
+                  <!-- Login Form -->
+                  <form id="form-home-login" class="home-auth-form">
                     <div class="form-group">
-                      <label for="home-input-username" class="form-field-label">USERNAME / OPERATOR ID</label>
+                      <label for="input-login-username" class="form-field-label">USERNAME / OPERATOR ID</label>
                       <input 
                         type="text" 
-                        id="home-input-username" 
+                        id="input-login-username" 
                         class="tactical-form-input" 
-                        placeholder="e.g. admin atau researcher" 
-                        value="admin"
+                        placeholder="e.g. admin, researcher, atau username Anda" 
                         required 
                         autocomplete="username"
+                        autofocus
                       />
                     </div>
 
                     <div class="form-group">
-                      <label for="home-input-password" class="form-field-label">PASSWORD / SECURITY KEY</label>
+                      <label for="input-login-password" class="form-field-label">PASSWORD / KATA SANDI</label>
                       <input 
                         type="password" 
-                        id="home-input-password" 
+                        id="input-login-password" 
                         class="tactical-form-input" 
                         placeholder="••••••••••••" 
-                        value="cortex2026"
                         required 
                         autocomplete="current-password"
                       />
                     </div>
 
-                    <button type="submit" id="btn-submit-home-login" class="tactical-cta-btn cta-orange submit-btn">
+                    <button type="submit" class="tactical-cta-btn cta-orange submit-btn" style="padding: 10px 16px; margin-top: 6px;">
                       <span class="bracket-corner tl"></span>
                       <span class="bracket-corner tr"></span>
                       <span class="bracket-corner bl"></span>
                       <span class="bracket-corner br"></span>
-                      <span class="cta-inner">🔓 MASUK KE DASHBOARD &amp; PROYEK</span>
+                      <span class="cta-inner">🔓 ${t('MASUK KE DASHBOARD & PROYEK', 'SIGN IN TO DASHBOARD', lang)}</span>
                     </button>
                   </form>
+                  `
+                      : `
+                  <!-- Register Form -->
+                  <form id="form-home-register" class="home-auth-form">
+                    <div class="form-group">
+                      <label for="input-reg-username" class="form-field-label">${t('USERNAME BARU (MIN 3 KARAKTER)', 'NEW USERNAME (MIN 3 CHARS)', lang)}</label>
+                      <input 
+                        type="text" 
+                        id="input-reg-username" 
+                        class="tactical-form-input" 
+                        placeholder="e.g. peneliti_utama" 
+                        required 
+                        autocomplete="username"
+                        autofocus
+                      />
+                    </div>
 
-                  <div class="card-footer-notes">
-                    <span>✓ Proteksi Multi-Akun Aktif</span>
-                    <span>✓ Isolasi Sandboxed IndexedDB</span>
+                    <div class="form-group">
+                      <label for="input-reg-name" class="form-field-label">${t('NAMA LENGKAP / TAMPILAN', 'FULL / DISPLAY NAME', lang)}</label>
+                      <input 
+                        type="text" 
+                        id="input-reg-name" 
+                        class="tactical-form-input" 
+                        placeholder="e.g. Dr. Budi Santoso" 
+                        required 
+                      />
+                    </div>
+
+                    <div class="form-group">
+                      <label for="input-reg-password" class="form-field-label">${t('PASSWORD / KATA SANDI (MIN 6 KARAKTER)', 'PASSWORD (MIN 6 CHARS)', lang)}</label>
+                      <input 
+                        type="password" 
+                        id="input-reg-password" 
+                        class="tactical-form-input" 
+                        placeholder="••••••••••••" 
+                        required 
+                        autocomplete="new-password"
+                      />
+                    </div>
+
+                    <button type="submit" class="tactical-cta-btn cta-orange submit-btn" style="padding: 10px 16px; margin-top: 6px;">
+                      <span class="bracket-corner tl"></span>
+                      <span class="bracket-corner tr"></span>
+                      <span class="bracket-corner bl"></span>
+                      <span class="bracket-corner br"></span>
+                      <span class="cta-inner">✨ ${t('BUAT AKUN & MASUK KE DASHBOARD', 'CREATE ACCOUNT & ACCESS DASHBOARD', lang)}</span>
+                    </button>
+                  </form>
+                  `
+                  }
+
+                  <div class="card-footer-notes" style="margin-top: 20px;">
+                    <span>✓ ${t('Ruang Kerja Mandiri', 'Isolated Workspace', lang)}</span>
+                    <span>✓ ${t('Penyimpanan IndexedDB Lokal', 'Local IndexedDB Storage', lang)}</span>
                   </div>
                 </div>
               </div>
@@ -469,13 +472,13 @@ export class HomeView {
     `
   }
 
-  private renderShowcaseTab(tab: 'workspace' | 'dashboard' | 'library' | 'iam'): string {
+  private renderShowcaseTab(tab: 'workspace' | 'dashboard' | 'library', lang: Lang): string {
     if (tab === 'workspace') {
       return `
         <div class="mockup-workspace-view">
           <!-- Left Mini Sidebar -->
           <div class="mockup-sidebar">
-            <div class="mockup-sidebar-header">FILES</div>
+            <div class="mockup-sidebar-header">${t('BERKAS', 'FILES', lang)}</div>
             <div class="mockup-file-tree">
               <div class="mockup-file-item active">📄 main.tex</div>
               <div class="mockup-file-item">📄 introduction.tex</div>
@@ -550,11 +553,11 @@ export class HomeView {
         <div class="mockup-dashboard-view">
           <div class="mockup-dash-header">
             <div class="dash-h-left">
-              <span class="dash-h-brand">CorTeX</span> / PROYEK PENELITIAN AKTIF
+              <span class="dash-h-brand">CorTeX</span> / ${t('PROYEK PENELITIAN AKTIF', 'ACTIVE RESEARCH PROJECTS', lang)}
             </div>
             <div class="dash-h-stats">
-              <span class="stat-pill">TOTAL PROYEK: 4</span>
-              <span class="stat-pill orange">TERISOLASI: USER RESEARCHER</span>
+              <span class="stat-pill">${t('TOTAL PROYEK: 4', 'TOTAL PROJECTS: 4', lang)}</span>
+              <span class="stat-pill orange">${t('TERISOLASI: USER AKUN ANDA', 'ISOLATED: YOUR ACCOUNT', lang)}</span>
             </div>
           </div>
 
@@ -562,10 +565,10 @@ export class HomeView {
             <div class="mockup-proj-card">
               <div class="card-h">
                 <span class="proj-badge">[ IEEE JOURNAL ]</span>
-                <span class="time-ago">Baru saja</span>
+                <span class="time-ago">${t('Baru saja', 'Just now', lang)}</span>
               </div>
               <div class="proj-name">Paper_Dual_NDIR_Spectroscopy_2026</div>
-              <div class="proj-owner">Pemilik: <strong>researcher</strong> (Terisolasi)</div>
+              <div class="proj-owner">${t('Pemilik', 'Owner', lang)}: <strong>user</strong> (${t('Terisolasi', 'Isolated', lang)})</div>
               <div class="proj-tags">
                 <span class="t-badge">Sensors</span>
                 <span class="t-badge">TeX Live 2026</span>
@@ -574,24 +577,24 @@ export class HomeView {
 
             <div class="mockup-proj-card">
               <div class="card-h">
-                <span class="proj-badge">[ TUTORIAL ]</span>
-                <span class="time-ago">2 jam lalu</span>
+                <span class="proj-badge">[ PRESENTASI ]</span>
+                <span class="time-ago">${t('1 jam lalu', '1 hour ago', lang)}</span>
               </div>
-              <div class="proj-name">Tutorial — Getting Started with LaTeX &amp; WasmTex</div>
-              <div class="proj-owner">Pemilik: <strong>researcher</strong> (Sandbox Mandiri)</div>
+              <div class="proj-name">Beamer_Conference_Slides_2026</div>
+              <div class="proj-owner">${t('Pemilik', 'Owner', lang)}: <strong>user</strong> (${t('Terisolasi', 'Isolated', lang)})</div>
               <div class="proj-tags">
-                <span class="t-badge">Starter</span>
-                <span class="t-badge">WasmTex</span>
+                <span class="t-badge">Beamer</span>
+                <span class="t-badge">Slides</span>
               </div>
             </div>
 
             <div class="mockup-proj-card">
               <div class="card-h">
                 <span class="proj-badge">[ ELSEVIER ]</span>
-                <span class="time-ago">1 hari lalu</span>
+                <span class="time-ago">${t('1 hari lalu', '1 day ago', lang)}</span>
               </div>
               <div class="proj-name">Benchtop_DAC_Adsorption_Screening</div>
-              <div class="proj-owner">Pemilik: <strong>researcher</strong> (Terisolasi)</div>
+              <div class="proj-owner">${t('Pemilik', 'Owner', lang)}: <strong>user</strong> (${t('Terisolasi', 'Isolated', lang)})</div>
               <div class="proj-tags">
                 <span class="t-badge">Chemical Eng</span>
                 <span class="t-badge">R2 Cloud Backup</span>
@@ -602,102 +605,46 @@ export class HomeView {
       `
     }
 
-    if (tab === 'library') {
-      return `
-        <div class="mockup-library-view">
-          <div class="mock-lib-sidebar">
-            <div class="lib-side-title">DAFTAR PAPER RISET</div>
-            <div class="lib-paper-item active">
-              <div class="lp-title">Attention Is All You Need</div>
-              <div class="lp-venue">NeurIPS (2017)</div>
-            </div>
-            <div class="lib-paper-item">
-              <div class="lp-title">Deep Residual Learning for Image Recognition</div>
-              <div class="lp-venue">CVPR (2016)</div>
-            </div>
-            <div class="lib-paper-item">
-              <div class="lp-title">LoRA: Low-Rank Adaptation of Large Models</div>
-              <div class="lp-venue">ICLR (2022)</div>
-            </div>
-          </div>
-
-          <div class="mock-lib-content">
-            <div class="lib-paper-header-view">
-              <div class="lph-title">Attention Is All You Need</div>
-              <div class="lph-authors">Ashish Vaswani, Noam Shazeer, Niki Parmar, et al. (2017)</div>
-              <div class="lph-doi">DOI: 10.48550/arXiv.1706.03762</div>
-            </div>
-
-            <div class="mock-memo-grid">
-              <div class="memo-box">
-                <div class="memo-lbl">OBJEKTIF UTAMA</div>
-                <div class="memo-txt">Menggantikan RNN/CNN secara total dengan mekanisme Multi-Head Self-Attention untuk tugas sequence-to-sequence.</div>
-              </div>
-              <div class="memo-box">
-                <div class="memo-lbl">TEMUAN KUNCI</div>
-                <div class="memo-txt">Mencapai skor BLEU 28.4 pada WMT 2014 En-De dengan efisiensi komputasi pelatihan jauh lebih tinggi.</div>
-              </div>
-            </div>
-
-            <div class="bibtex-sync-bar">
-              <div class="bib-code">@article{vaswani2017attention, title={Attention Is All You Need}, year={2017}...}</div>
-              <button class="btn-sync-demo">✓ SINKRONKAN KE PROYEK BIBTEX</button>
-            </div>
-          </div>
-        </div>
-      `
-    }
-
-    // IAM tab
+    // Library tab
     return `
-      <div class="mockup-iam-view">
-        <div class="iam-mock-header">
-          <div class="iam-h-title">🛡️ KONSOL IDENTITY &amp; ACCESS MANAGEMENT (IAM)</div>
-          <div class="iam-h-policy">STATUS: 3 AKUN TERDAFTAR // ISOLASI MULTI-TENANT AKTIF</div>
+      <div class="mockup-library-view">
+        <div class="mock-lib-sidebar">
+          <div class="lib-side-title">${t('DAFTAR PAPER RISET', 'RESEARCH PAPERS REPOSITORY', lang)}</div>
+          <div class="lib-paper-item active">
+            <div class="lp-title">Attention Is All You Need</div>
+            <div class="lp-venue">NeurIPS (2017)</div>
+          </div>
+          <div class="lib-paper-item">
+            <div class="lp-title">Deep Residual Learning for Image Recognition</div>
+            <div class="lp-venue">CVPR (2016)</div>
+          </div>
+          <div class="lib-paper-item">
+            <div class="lp-title">LoRA: Low-Rank Adaptation of Large Models</div>
+            <div class="lp-venue">ICLR (2022)</div>
+          </div>
         </div>
 
-        <div class="mock-iam-table-wrap">
-          <table class="mock-iam-table">
-            <thead>
-              <tr>
-                <th>Username</th>
-                <th>Nama Tampilan</th>
-                <th>Role Akses</th>
-                <th>Izin Proyek</th>
-                <th>Status Sandbox</th>
-              </tr>
-            </thead>
-            <tbody>
-              <tr>
-                <td><strong>admin</strong></td>
-                <td>System Administrator</td>
-                <td><span class="role-badge admin">ADMIN</span></td>
-                <td>Kelola Semua Proyek &amp; IAM</td>
-                <td><span class="status-active">● Master Node</span></td>
-              </tr>
-              <tr>
-                <td><strong>researcher</strong></td>
-                <td>Lead Researcher</td>
-                <td><span class="role-badge researcher">RESEARCHER</span></td>
-                <td>Proyek Mandiri (Terisolasi)</td>
-                <td><span class="status-active">● Sandbox Terkunci</span></td>
-              </tr>
-              <tr>
-                <td><strong>guest</strong></td>
-                <td>Guest Reviewer</td>
-                <td><span class="role-badge viewer">VIEWER</span></td>
-                <td>Kompilasi &amp; Baca Saja</td>
-                <td><span class="status-active">● Read-Only</span></td>
-              </tr>
-            </tbody>
-          </table>
-        </div>
+        <div class="mock-lib-content">
+          <div class="lib-paper-header-view">
+            <div class="lph-title">Attention Is All You Need</div>
+            <div class="lph-authors">Ashish Vaswani, Noam Shazeer, Niki Parmar, et al. (2017)</div>
+            <div class="lph-doi">DOI: 10.48550/arXiv.1706.03762</div>
+          </div>
 
-        <div class="iam-guarantee-box">
-          <span class="guarantee-icon">🔒</span>
-          <div>
-            <strong>JAMINAN ANTI-BENTROK:</strong> Setiap perubahan proyek, file .tex, atau pustaka oleh <code>researcher</code> 
-            disimpan dengan partisi unik <code>ownerId</code> pada IndexedDB, sehingga akun lain tidak akan pernah mengalami konflik data.
+          <div class="mock-memo-grid">
+            <div class="memo-box">
+              <div class="memo-lbl">${t('OBJEKTIF UTAMA', 'PRIMARY OBJECTIVE', lang)}</div>
+              <div class="memo-txt">${t('Menggantikan RNN/CNN secara total dengan mekanisme Multi-Head Self-Attention untuk sequence-to-sequence.', 'Replace recurrent/convolutional models entirely with multi-head self-attention mechanisms.', lang)}</div>
+            </div>
+            <div class="memo-box">
+              <div class="memo-lbl">${t('TEMUAN KUNCI', 'KEY FINDINGS', lang)}</div>
+              <div class="memo-txt">${t('Mencapai skor BLEU 28.4 pada WMT 2014 En-De dengan waktu pelatihan komputasi jauh lebih hemat.', 'Attains 28.4 BLEU on WMT 2014 En-De with drastically superior training computational efficiency.', lang)}</div>
+            </div>
+          </div>
+
+          <div class="bibtex-sync-bar">
+            <div class="bib-code">@article{vaswani2017attention, title={Attention Is All You Need}, year={2017}...}</div>
+            <button class="btn-sync-demo">✓ ${t('SINKRONKAN KE PROYEK BIBTEX', 'SYNC TO PROJECT BIBTEX', lang)}</button>
           </div>
         </div>
       </div>
@@ -727,13 +674,13 @@ export class HomeView {
     tabButtons.forEach((btn) => {
       btn.addEventListener('click', (e) => {
         const target = e.currentTarget as HTMLButtonElement
-        const tab = target.getAttribute('data-tab') as 'workspace' | 'dashboard' | 'library' | 'iam'
+        const tab = target.getAttribute('data-tab') as 'workspace' | 'dashboard' | 'library'
         if (tab && tab !== this.activeTourTab) {
           this.activeTourTab = tab
           const viewport = this.container.querySelector('#showcase-viewport')
           const titleEl = this.container.querySelector('#showcase-monitor-title')
           if (viewport) {
-            viewport.innerHTML = this.renderShowcaseTab(tab)
+            viewport.innerHTML = this.renderShowcaseTab(tab, getLang())
           }
           if (titleEl) {
             titleEl.textContent = `cortex://studio/${tab} [LATEX-WASM ACTIVE]`
@@ -744,51 +691,39 @@ export class HomeView {
       })
     })
 
-    // Quick demo buttons in hero
-    const quickDemoBtns = this.container.querySelectorAll('.btn-quick-demo')
-    quickDemoBtns.forEach((btn) => {
-      btn.addEventListener('click', (e) => {
-        const target = e.currentTarget as HTMLElement
-        const username = target.getAttribute('data-user') || 'admin'
-        const account = DEFAULT_ACCOUNTS.find((a) => a.username === username)
-        if (account) {
-          const auth = authenticate(account.username, account.password)
-          if (auth.success && auth.session) {
-            this.options.onLoginSuccess(auth.session)
-          }
-        }
-      })
+    // Auth Mode tabs (Login vs Register)
+    const tabLogin = this.container.querySelector('#tab-auth-login')
+    const tabRegister = this.container.querySelector('#tab-auth-register')
+
+    tabLogin?.addEventListener('click', () => {
+      if (this.authTab !== 'login') {
+        this.authTab = 'login'
+        this.render()
+        this.bindEvents()
+      }
     })
 
-    // Quick fill buttons in login section
-    const quickFillBtns = this.container.querySelectorAll('.btn-quick-fill')
-    quickFillBtns.forEach((btn) => {
-      btn.addEventListener('click', (e) => {
-        const target = e.currentTarget as HTMLElement
-        const user = target.getAttribute('data-user') || ''
-        const pass = target.getAttribute('data-pass') || ''
-        const userInput = this.container.querySelector('#home-input-username') as HTMLInputElement
-        const passInput = this.container.querySelector('#home-input-password') as HTMLInputElement
-        if (userInput && passInput) {
-          userInput.value = user
-          passInput.value = pass
-          userInput.focus()
-        }
-      })
+    tabRegister?.addEventListener('click', () => {
+      if (this.authTab !== 'register') {
+        this.authTab = 'register'
+        this.render()
+        this.bindEvents()
+      }
     })
 
-    // Login form submission
-    const loginForm = this.container.querySelector('#home-login-form') as HTMLFormElement
-    const errorBanner = this.container.querySelector('#home-login-error') as HTMLElement
+    // Login Form
+    const loginForm = this.container.querySelector('#form-home-login') as HTMLFormElement | null
+    const errorBanner = this.container.querySelector('#home-auth-error') as HTMLElement | null
 
     loginForm?.addEventListener('submit', (e) => {
       e.preventDefault()
-      const usernameInput = (this.container.querySelector('#home-input-username') as HTMLInputElement)?.value.trim()
-      const passwordInput = (this.container.querySelector('#home-input-password') as HTMLInputElement)?.value
+      const usernameInput = (this.container.querySelector('#input-login-username') as HTMLInputElement)?.value.trim()
+      const passwordInput = (this.container.querySelector('#input-login-password') as HTMLInputElement)?.value
+      const curLang = getLang()
 
       if (!usernameInput || !passwordInput) {
         if (errorBanner) {
-          errorBanner.textContent = 'Harap isi Username dan Password.'
+          errorBanner.textContent = t('Harap isi Username dan Password.', 'Please enter Username and Password.', curLang)
           errorBanner.style.display = 'block'
         }
         return
@@ -800,7 +735,36 @@ export class HomeView {
         this.options.onLoginSuccess(res.session)
       } else {
         if (errorBanner) {
-          errorBanner.textContent = res.error || 'Autentikasi gagal. Periksa kembali username dan password.'
+          errorBanner.textContent = res.error || t('Autentikasi gagal. Periksa kembali username dan password.', 'Authentication failed. Check credentials.', curLang)
+          errorBanner.style.display = 'block'
+        }
+      }
+    })
+
+    // Register Form
+    const registerForm = this.container.querySelector('#form-home-register') as HTMLFormElement | null
+    registerForm?.addEventListener('submit', (e) => {
+      e.preventDefault()
+      const usernameInput = (this.container.querySelector('#input-reg-username') as HTMLInputElement)?.value.trim()
+      const nameInput = (this.container.querySelector('#input-reg-name') as HTMLInputElement)?.value.trim()
+      const passwordInput = (this.container.querySelector('#input-reg-password') as HTMLInputElement)?.value
+      const curLang = getLang()
+
+      if (!usernameInput || !passwordInput) {
+        if (errorBanner) {
+          errorBanner.textContent = t('Harap isi data pendaftaran dengan lengkap.', 'Please complete all registration fields.', curLang)
+          errorBanner.style.display = 'block'
+        }
+        return
+      }
+
+      const res = registerAccount(usernameInput, passwordInput, nameInput)
+      if (res.success && res.session) {
+        if (errorBanner) errorBanner.style.display = 'none'
+        this.options.onLoginSuccess(res.session)
+      } else {
+        if (errorBanner) {
+          errorBanner.textContent = res.error || t('Pendaftaran gagal. Coba gunakan username lain.', 'Registration failed. Try another username.', curLang)
           errorBanner.style.display = 'block'
         }
       }

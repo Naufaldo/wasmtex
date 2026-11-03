@@ -755,34 +755,42 @@ async function start() {
     if (langIcon) langIcon.textContent = `🌐 ${lang.toUpperCase()}`
 
     const backBtn = document.getElementById('btn-back-dashboard')
-    if (backBtn) backBtn.innerHTML = `<span class="back-arrow">&larr;</span> ${t('Proyek', 'Projects', lang)}`
+    if (backBtn) backBtn.innerHTML = `<span class="back-arrow">◀</span> [ ${t('DASHBOARD', 'DASHBOARD', lang)} ]`
 
     const tabEditor = document.getElementById('nav-tab-editor')
-    if (tabEditor) tabEditor.textContent = t('✍️ Editor', '✍️ Editor', lang)
+    if (tabEditor) tabEditor.textContent = `[ ${t('✍️ WORKSPACE EDITOR', '✍️ WORKSPACE EDITOR', lang)} ]`
 
     const tabLibrary = document.getElementById('nav-tab-library')
-    if (tabLibrary) tabLibrary.textContent = t('📚 Pustaka Riset', '📚 Research Library', lang)
+    if (tabLibrary) tabLibrary.textContent = `[ ${t('📚 RESEARCH LIBRARY', '📚 RESEARCH LIBRARY', lang)} ]`
 
     const btnReview = document.getElementById('btn-review')
     if (btnReview) {
       const badge = document.getElementById('badge-review')
-      btnReview.innerHTML = `<span class="icon-svg">📝</span> ${t('Review', 'Review', lang)} <span id="badge-review" class="topbar-badge" style="${badge?.style.cssText || 'display:none;'}">${badge?.textContent || '0'}</span>`
+      btnReview.innerHTML = `<span class="icon-svg">📝</span> ${t('REVIEW', 'REVIEW', lang)} <span id="badge-review" class="topbar-badge" style="${badge?.style.cssText || 'display:none;'}">${badge?.textContent || '0'}</span>`
     }
 
     const btnHistory = document.getElementById('btn-history')
-    if (btnHistory) btnHistory.innerHTML = `<span class="icon-svg">🕒</span> ${t('Riwayat', 'History', lang)}`
+    if (btnHistory) btnHistory.innerHTML = `<span class="icon-svg">🕒</span> ${t('HISTORY', 'HISTORY', lang)}`
 
     const btnRecompile = document.getElementById('recompile-btn')
-    if (btnRecompile) btnRecompile.textContent = `▶ ${t('Kompilasi Ulang', 'Recompile', lang)}`
+    if (btnRecompile) {
+      btnRecompile.innerHTML = `
+        <span class="bracket-corner tl"></span>
+        <span class="bracket-corner tr"></span>
+        <span class="bracket-corner bl"></span>
+        <span class="bracket-corner br"></span>
+        <span class="cta-inner">▶ ${t('RECOMPILE PDF', 'RECOMPILE PDF', lang)} [F5]</span>
+      `
+    }
 
     const btnDownloadPdf = document.getElementById('download-pdf-btn')
-    if (btnDownloadPdf) btnDownloadPdf.textContent = `⬇ ${t('PDF', 'PDF', lang)}`
+    if (btnDownloadPdf) btnDownloadPdf.textContent = `⬇ ${t('UNDUH PDF', 'DOWNLOAD PDF', lang)}`
 
     const sidebarFilesLabel = document.querySelector('.sidebar-files-label')
-    if (sidebarFilesLabel) sidebarFilesLabel.textContent = t('BERKAS', 'FILES', lang)
+    if (sidebarFilesLabel) sidebarFilesLabel.textContent = `[ ${t('BERKAS PROYEK', 'PROJECT FILES', lang)} ]`
 
     const outlineHeader = document.querySelector('.outline-header')
-    if (outlineHeader) outlineHeader.textContent = t('OUTLINE', 'OUTLINE', lang)
+    if (outlineHeader) outlineHeader.textContent = `[ ${t('STRUKTUR DOKUMEN // OUTLINE', 'DOCUMENT OUTLINE', lang)} ]`
 
     const drawerTitle = document.querySelector('.drawer-title')
     if (drawerTitle) drawerTitle.textContent = t('Diagnostik & Log Kompiler', 'Diagnostics & Compiler Output', lang)

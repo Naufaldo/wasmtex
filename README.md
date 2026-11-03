@@ -11,10 +11,14 @@ WasmTex Studio provides a complete, zero-install, Overleaf-style web interface f
 
 Repository ini merupakan *fork* dari **WasmTex** (oleh Corca AI). Fokus utama fork ini adalah menambahkan **Web UI yang lengkap, modern, dan mudah digunakan** (layaknya Overleaf / CorTeX) serta siap untuk **di-deploy mandiri (self-hosted)**:
 
-- **Mode Editor Lengkap**: WYSIWYG Visual Editor, Monaco LaTeX Editor (dengan LSP & auto-complete), dan Dual Split View.
-- **Manajemen Proyek**: Dashboard proyek bergaya Overleaf, ganti nama, tag/kategori, dan penyimpanan otomatis di browser.
-- **Research Library**: Manajemen sitasi BibTeX dan pencarian referensi literatur.
-- **Fitur Kolaborasi**: Riwayat versi (*snapshots*), *track changes / review*, komentar kontekstual, dan pencarian global (`Ctrl+Shift+F`).
+- **Halaman Depan Publik & Gerbang Masuk Mandiri**: Landing page promosi arsitektur sistem dengan visual tour dan gerbang autentikasi (Login & Pendaftaran Akun).
+- **Multi-Akun Mandiri & Anti-Bentrok**: Penyimpanan dokumen terisolasi per pengguna menggunakan partisi `ownerId` di IndexedDB. Bebas membuat akun baru serta mengubah username dan password secara mandiri.
+- **Dashboard Manajer Folder & Tag**: Navigasi folder instan (Semua, Jurnal, Presentasi, Tesis, Tutorial), filter tag dinamis, pencarian real-time (`Ctrl+K`), dan galeri 6 starter template akademik (IEEE, Beamer, Elsevier, Tesis, Nature, Technical Report).
+- **Mode Editor 3-Arah & WYSIWYG KaTeX**: Mode Visual WYSIWYG, Monaco LaTeX Editor (dengan LSP & auto-complete), dan Dual Split View.
+- **Sinkronisasi 2-Arah SyncTeX**: Klik pada PDF langsung melompat ke nomor baris editor kode sekaligus menyorot elemen DOM visual editor (`data-line`), dan sebaliknya.
+- **Dukungan Dwibahasa Penuh (ID / EN)**: Seluruh tampilan antarmuka dapat diganti antara Bahasa Indonesia dan Bahasa Inggris secara instan via tombol `🌐 ID / EN`.
+- **Research Library**: Manajemen sitasi BibTeX dan sinkronisasi referensi 1-klik ke naskah proyek.
+- **Kontras Tinggi Ergonomis**: Mode Gelap & Mode Terang dengan tipografi tegas, ramah mata, dan kontras tajam sesuai standar desain taktis brutalist.
 - **Kompilasi Client-Side**: Kompilasi berjalan langsung di browser via WebAssembly tanpa perlu menginstal TeX Live di server/komputer.
 - **Deploy Mandiri**: Siap dijalankan lokal (`npm run dev`) atau di-deploy langsung ke Cloudflare Workers (`npm run deploy`).
 
@@ -23,9 +27,19 @@ Repository ini merupakan *fork* dari **WasmTex** (oleh Corca AI). Fokus utama fo
 ## 🚀 Features
 
 - **🎯 Tactical Brutalist UI & Ergonomic Comfort (CorTeX Style)**: High-contrast research studio interface inspired by technical intelligence systems (editorial serif typography, monospaced telemetry data, radar frequency instruments, zero-radius industrial layout, and dark eye-friendly obsidian navbar).
-- **👤 Simple Operator Authentication**:
-  - Modal login dialog with Operator ID/Email and Passphrase or quick Guest Access.
-  - Client-side persistent session (`localStorage`) showing active operator badge and custom authorship on new manuscripts.
+- **🛡️ Isolated Multi-Account Architecture**:
+  - Independent user accounts with sandboxed workspace storage partitioned by `ownerId` on IndexedDB.
+  - Documents remain private to their respective creator and will never collide or overwrite other users' files.
+  - Self-service account registration and in-app profile management (update username & change password).
+- **📁 Document Manager with Category Folders & Tags Explorer**:
+  - One-click Category Folders: `[ ALL ]`, `[ JOURNALS ]` (IEEE/Elsevier/Nature), `[ SLIDES ]` (Beamer decks), `[ THESIS ]` (Dissertations/Reports), and `[ GUIDES ]` (Tutorials).
+  - Dynamic Tag Chips filter and real-time project search bar (`Ctrl+K`) matching Title, Author, and Tags.
+  - Six academic starter templates: IEEE Transactions, Elsevier ScienceDirect, LaTeX Beamer 16:9, Multi-Chapter Thesis/Dissertation, Nature/Springer, and Technical Engineering Report.
+- **🌐 Full Bilingual Support (ID & EN i18n)**:
+  - Instant one-click toggle `🌐 ID / EN` across all screens: Public Home Showcase, Tactical Dashboard, Research Library, and Editor Workspace.
+- **📍 Bidirectional SyncTeX & Visual WYSIWYG Sync**:
+  - Clicking any element or equation in the compiled PDF viewer automatically scrolls and highlights both the corresponding line in Monaco Editor and the visual DOM element in the Visual Editor.
+  - Clicking elements in the Visual Editor jumps directly to the source line and triggers forward search into the PDF.
 - **📦 Zero-Dependency ZIP Auto-Unzip**:
   - Import complete LaTeX archives (`.zip` from Overleaf, arXiv, journals) with automatic client-side extraction via native browser `DecompressionStream('deflate-raw')`.
   - Automatic directory hierarchy creation, `main.tex` discovery, and document title extraction.
@@ -56,7 +70,7 @@ Repository ini merupakan *fork* dari **WasmTex** (oleh Corca AI). Fokus utama fo
 - **🔍 Global Project Search**: Find and replace across all project files (`Ctrl+Shift+F` / `Ctrl+K`).
 - **⚡ 100% Client-Side WebAssembly Compilation**: Compiles pdfLaTeX, XeLaTeX, and LuaLaTeX directly inside Web Workers.
 - **🌐 Cloudflare Worker Proxy & Edge Ready**: Preconfigured with Cloudflare Workers (`wrangler.jsonc` + `worker/index.ts`) for CORS-free TeX Live package streaming and instant edge deployment.
-- **🌓 Tactical Light & Dark Theme**: High-contrast off-white parchment and tactical deep-slate themes.
+- **🌓 High-Contrast Light & Dark Theme**: Disciplined brutalist styling featuring pitch-black text on off-white paper in light mode, and crisp white/silver text on deep obsidian slate in dark mode with glowing orange accents.
 
 ---
 

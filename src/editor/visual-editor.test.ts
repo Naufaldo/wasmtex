@@ -1,12 +1,15 @@
 import { describe, expect, it, vi } from 'vitest'
 import { VisualEditor } from './visual-editor'
 
+// biome-ignore lint/suspicious/noExplicitAny: test DOM mock
 function createMockElement(tag: string): any {
+  // biome-ignore lint/suspicious/noExplicitAny: test DOM mock
   const children: any[] = []
   const attrs = new Map<string, string>()
   const classList = new Set<string>()
   const listeners = new Map<string, Function[]>()
 
+  // biome-ignore lint/suspicious/noExplicitAny: test DOM mock
   const el: any = {
     tagName: tag.toUpperCase(),
     children,

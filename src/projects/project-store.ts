@@ -57,8 +57,7 @@ export const DEFAULT_PROJECTS: ProjectItem[] = [
 ]
 
 export async function getAllProjects(
-  currentUser?: UserSession | null,
-  showAll = false
+  currentUser?: UserSession | null
 ): Promise<ProjectItem[]> {
   try {
     const db = await openDB()
@@ -90,42 +89,38 @@ export async function getAllProjects(
           list = [...DEFAULT_PROJECTS]
         }
 
-        // Multi-Account IAM Isolation
+        // Multi-Account Isolation: each user account strictly sees their own projects
         if (currentUser) {
-          const isFullAdmin = currentUser.role === 'admin'
-          if (!isFullAdmin || !showAll) {
-            // Filter strictly by user ID or username
-            const userOwned = list.filter(
-              (p) =>
-                p.ownerId === currentUser.userId ||
-                (!p.ownerId && p.owner.toLowerCase() === currentUser.username.toLowerCase())
-            )
+          const userOwned = list.filter(
+            (p) =>
+              p.ownerId === currentUser.userId ||
+              (!p.ownerId && p.owner.toLowerCase() === currentUser.username.toLowerCase())
+          )
 
-            // If this user has no personal projects yet, seed their isolated tutorial project
-            if (userOwned.length === 0) {
-              const personalTutorial: ProjectItem = {
-                id: `proj_tutorial_${currentUser.userId}`,
-                title: 'Tutorial — Getting Started with LaTeX & WasmTex',
-                owner: currentUser.name || currentUser.username,
-                ownerId: currentUser.userId,
-                lastModified: Date.now(),
-                tags: ['Tutorial'],
-                files: {
-                  'main.tex': DEFAULT_TEX,
-                  'algebra.tex': DEFAULT_ALGEBRA,
-                  'analysis.tex': DEFAULT_ANALYSIS,
-                  'linalg.tex': DEFAULT_LINALG,
-                  'refs.bib': DEFAULT_REFS_BIB,
-                },
-              }
-              await saveProject(personalTutorial)
-              userOwned.push(personalTutorial)
+          // If this user has no personal projects yet, seed their isolated tutorial project
+          if (userOwned.length === 0) {
+            const personalTutorial: ProjectItem = {
+              id: `proj_tutorial_${currentUser.userId}`,
+              title: 'Tutorial — Getting Started with LaTeX & WasmTex',
+              owner: currentUser.name || currentUser.username,
+              ownerId: currentUser.userId,
+              lastModified: Date.now(),
+              tags: ['Tutorial'],
+              files: {
+                'main.tex': DEFAULT_TEX,
+                'algebra.tex': DEFAULT_ALGEBRA,
+                'analysis.tex': DEFAULT_ANALYSIS,
+                'linalg.tex': DEFAULT_LINALG,
+                'refs.bib': DEFAULT_REFS_BIB,
+              },
             }
-
-            userOwned.sort((a, b) => b.lastModified - a.lastModified)
-            resolve(userOwned)
-            return
+            await saveProject(personalTutorial)
+            userOwned.push(personalTutorial)
           }
+
+          userOwned.sort((a, b) => b.lastModified - a.lastModified)
+          resolve(userOwned)
+          return
         }
 
         list.sort((a, b) => b.lastModified - a.lastModified)

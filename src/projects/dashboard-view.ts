@@ -3,13 +3,8 @@ import { getLang, t, toggleLang } from '../ui/i18n'
 import {
   changePassword,
   changeUsername,
-  createUser,
-  deleteUser,
-  getAllUsers,
   getCurrentUser,
   logoutUser,
-  updateUserProfile,
-  type UserRole,
 } from '../auth/auth-store'
 import { unzipLatexProject } from '../fs/unzip'
 import {
@@ -27,6 +22,7 @@ import {
   saveProject,
 } from './project-store'
 import { backupProjectToR2, checkR2StorageAvailable } from './r2-storage'
+import { TEMPLATES } from '../fs/templates'
 
 export interface DashboardViewOptions {
   onOpenProject: (project: ProjectItem) => void
@@ -42,7 +38,7 @@ export class DashboardView {
   private projects: ProjectItem[] = []
   private papers: ResearchPaper[] = []
   private selectedLibraryProject = 'all'
-  private currentFilter: 'all' | 'all_iam' | 'library' | 'archived' | 'trash' | string = 'all'
+  private currentFilter: 'all' | 'library' | 'archived' | 'trash' | string = 'all'
 
   constructor(container: HTMLElement, options: DashboardViewOptions) {
     this.container = container
@@ -51,7 +47,7 @@ export class DashboardView {
 
   async init(): Promise<void> {
     const currentUser = getCurrentUser()
-    this.projects = await getAllProjects(currentUser, this.currentFilter === 'all_iam')
+    this.projects = await getAllProjects(currentUser)
     this.papers = await getAllPapers()
     this.render()
   }
@@ -60,9 +56,55 @@ export class DashboardView {
     const isDark = this.options.isDarkMode()
     const currentUser = getCurrentUser()
     const lang = getLang()
-    const activeCount = this.projects.filter((p) => !p.trashed && !p.archived).length
+    const activeProjects = this.projects.filter((p) => !p.trashed && !p.archived)
+    const activeCount = activeProjects.length
     const archivedCount = this.projects.filter((p) => p.archived && !p.trashed).length
     const trashCount = this.projects.filter((p) => p.trashed).length
+
+    const journalCount = activeProjects.filter((p) => {
+      const lt = p.tags?.map((t) => t.toLowerCase()) || []
+      const tl = p.title.toLowerCase()
+      return (
+        lt.some((t) => ['journal', 'ieee', 'elsevier', 'nature', 'sensors', 'paper'].includes(t)) ||
+        tl.includes('journal') ||
+        tl.includes('ieee') ||
+        tl.includes('elsevier') ||
+        tl.includes('nature') ||
+        tl.includes('paper')
+      )
+    }).length
+
+    const slidesCount = activeProjects.filter((p) => {
+      const lt = p.tags?.map((t) => t.toLowerCase()) || []
+      const tl = p.title.toLowerCase()
+      return (
+        lt.some((t) => ['presentation', 'beamer', 'slides'].includes(t)) ||
+        tl.includes('beamer') ||
+        tl.includes('presentation') ||
+        tl.includes('slides')
+      )
+    }).length
+
+    const thesisCount = activeProjects.filter((p) => {
+      const lt = p.tags?.map((t) => t.toLowerCase()) || []
+      const tl = p.title.toLowerCase()
+      return (
+        lt.some((t) => ['thesis', 'dissertation', 'report', 'book'].includes(t)) ||
+        tl.includes('thesis') ||
+        tl.includes('report') ||
+        tl.includes('dissertation')
+      )
+    }).length
+
+    const tutorialCount = activeProjects.filter((p) => {
+      const lt = p.tags?.map((t) => t.toLowerCase()) || []
+      const tl = p.title.toLowerCase()
+      return (
+        lt.some((t) => ['tutorial', 'starter', 'wasmtex'].includes(t)) ||
+        tl.includes('tutorial') ||
+        tl.includes('starter')
+      )
+    }).length
 
     this.container.innerHTML = `
       <div class="tactical-dash-root">
@@ -101,14 +143,6 @@ export class DashboardView {
             <button class="tactical-nav-btn ${this.currentFilter === 'all' ? 'active' : ''}" data-filter="all">
               [ ${t('PROYEK SAYA', 'MY PROJECTS', lang)} (${activeCount}) ]
             </button>
-            ${
-              currentUser?.role === 'admin'
-                ? `
-            <button class="tactical-nav-btn ${this.currentFilter === 'all_iam' ? 'active' : ''}" data-filter="all_iam" title="${t('Tampilkan seluruh proyek lintas user dalam sistem IAM', 'Show all projects across all users in IAM', lang)}">
-              [ 🌐 ${t('SEMUA PROYEK (IAM)', 'ALL IAM PROJECTS', lang)} ]
-            </button>`
-                : ''
-            }
             <button class="tactical-nav-btn ${this.currentFilter === 'library' ? 'active' : ''}" data-filter="library">
               [ 📚 ${t('PUSTAKA RISET', 'RESEARCH LIBRARY', lang)} (${this.papers.length}) ]
             </button>
@@ -137,14 +171,9 @@ export class DashboardView {
               <div class="tactical-user-wrap">
                 <button id="dash-account-settings-btn" class="tactical-user-tag-btn" title="${t('Kelola Profil & Akun', 'Manage Profile & Account', lang)} (@${escapeHtml(currentUser.username)})">
                   <span class="user-bracket">&lt;</span>
-                  <span class="user-text">OPERATOR // ${escapeHtml(currentUser.username.toUpperCase())} [${escapeHtml(currentUser.role.toUpperCase())}]</span>
+                  <span class="user-text">OPERATOR // ${escapeHtml(currentUser.username.toUpperCase())}</span>
                   <span class="user-bracket">&gt;</span>
                 </button>
-                ${
-                  currentUser.role === 'admin'
-                    ? `<button id="dash-iam-mgmt-btn" class="tactical-btn-action iam-pill-btn" style="font-size:10px; padding:3px 8px; margin-left:4px; border-color:#FF4D2D; color:#FF4D2D; font-weight:700;" title="${t('Konsol IAM & Manajemen Pengguna', 'IAM Console & User Management', lang)}">🛡️ IAM CONSOLE</button>`
-                    : ''
-                }
                 <button id="dash-logout-btn" class="tactical-btn-action" style="font-size:10.5px; padding:3px 8px; margin-left:4px;" title="${t('Keluar / Logout', 'Logout', lang)}">${t('LOGOUT', 'LOGOUT', lang)}</button>
               </div>
             `
@@ -346,30 +375,131 @@ export class DashboardView {
           </section>
           `
               : `
-          <!-- Project Archive & Management Section -->
-          <section class="tactical-archive-section">
+          <!-- Starter Templates Gallery Section -->
+          <section class="tactical-templates-section">
             <div class="archive-section-header">
               <div class="archive-title-wrap">
                 <span class="archive-index">[ 01 ]</span>
                 <div>
-                  <div class="archive-heading">MANUSCRIPT &amp; RESEARCH ARCHIVE</div>
+                  <div class="archive-heading">${t('KATALOG TEMPLATE & STARTER NASKAH ILMIAH', 'STARTER TEMPLATES & MANUSCRIPT CATALOG', lang)}</div>
                   <div style="font-family: var(--font-mono); font-size: 11px; color: var(--text-muted); margin-top: 2px;">
-                    Daftar dokumen naskah ilmiah Anda. Klik baris dokumen untuk membuka dan mengedit langsung di editor workspace.
+                    ${t(
+                      'Pilih template standar produksi untuk presentasi seminar (Beamer), naskah jurnal internasional (IEEE / Elsevier / Nature), tesis, atau laporan teknis.',
+                      'Select a production-ready starter template: Conference Slides (Beamer), IEEE / Elsevier / Nature Journals, Thesis, or Technical Report.',
+                      lang
+                    )}
+                  </div>
+                </div>
+              </div>
+              <div class="archive-actions-wrap">
+                <span class="tactical-badge" style="color:var(--accent-orange); border-color:var(--accent-orange); font-weight:700;">[ ${TEMPLATES.length} TEMPLATES READY ]</span>
+              </div>
+            </div>
+
+            <div class="templates-grid">
+              ${TEMPLATES.map(
+                (tpl) => `
+                <div class="template-card">
+                  <div class="template-card-header">
+                    <span class="template-badge">${escapeHtml(tpl.badge)}</span>
+                    <span class="template-cat">${escapeHtml(tpl.category.toUpperCase())}</span>
+                  </div>
+                  <div class="template-title">${escapeHtml(lang === 'en' ? tpl.titleEn : tpl.titleId)}</div>
+                  <div class="template-desc">${escapeHtml(lang === 'en' ? tpl.descriptionEn : tpl.descriptionId)}</div>
+                  <div class="template-tags">
+                    ${tpl.tags.map((tag) => `<span class="t-badge">[ ${escapeHtml(tag)} ]</span>`).join(' ')}
+                  </div>
+                  <div class="template-card-footer">
+                    <button class="tactical-cta-btn cta-orange btn-use-template" data-template-id="${tpl.id}" style="width:100%; padding: 7px 12px;" title="${t('Gunakan template ini untuk membuat dokumen baru', 'Create new document with this template', lang)}">
+                      <span class="bracket-corner tl"></span>
+                      <span class="bracket-corner tr"></span>
+                      <span class="bracket-corner bl"></span>
+                      <span class="bracket-corner br"></span>
+                      <span class="cta-inner">+ ${t('GUNAKAN TEMPLATE', 'USE TEMPLATE', lang)}</span>
+                    </button>
+                  </div>
+                </div>
+              `
+              ).join('')}
+            </div>
+          </section>
+
+          <!-- Project Archive & Management Section -->
+          <section class="tactical-archive-section">
+            <div class="archive-section-header">
+              <div class="archive-title-wrap">
+                <span class="archive-index">[ 02 ]</span>
+                <div>
+                  <div class="archive-heading">${t('MANAJER DOKUMEN & FOLDER PROYEK', 'DOCUMENT MANAGER & PROJECT FOLDERS', lang)}</div>
+                  <div style="font-family: var(--font-mono); font-size: 12px; color: var(--text-secondary); margin-top: 2px;">
+                    ${t(
+                      'Pilih folder atau filter tag di bawah untuk mencari naskah dengan cepat. Klik baris dokumen untuk membuka langsung di workspace.',
+                      'Select category folder or filter by tags to locate documents. Click any row to open in workspace.',
+                      lang
+                    )}
                   </div>
                 </div>
               </div>
               <div class="archive-search-container">
                 <span class="search-terminal-prompt">&gt;_</span>
-                <input type="text" id="dash-search-input" class="tactical-search-input" placeholder="SEARCH PROJECTS (TITLE, OWNER, TAG)..." />
+                <input type="text" id="dash-search-input" class="tactical-search-input" placeholder="${t('CARI PROYEK (JUDUL, PEMILIK, TAG)...', 'SEARCH PROJECTS (TITLE, OWNER, TAG)...', lang)}" />
                 <span class="search-key-badge">CTRL+K</span>
                 <button id="dash-search-clear" class="search-clear-btn" style="display:none;" title="Clear search">✕</button>
               </div>
             </div>
 
+            <!-- Folder Category Navigation Bar -->
+            <div class="folder-categories-grid">
+              <button class="folder-category-card ${this.currentFilter === 'all' ? 'active' : ''}" data-folder="all">
+                <div class="folder-card-top">
+                  <span class="folder-glyph">📁</span>
+                  <span class="folder-badge">[ ALL ]</span>
+                </div>
+                <div class="folder-title">${t('Semua Dokumen', 'All Documents', lang)}</div>
+                <div class="folder-subtitle">${activeCount} ${t('Naskah Tersimpan', 'Saved Manuscripts', lang)}</div>
+              </button>
+
+              <button class="folder-category-card ${this.currentFilter === 'folder:journal' ? 'active' : ''}" data-folder="journal">
+                <div class="folder-card-top">
+                  <span class="folder-glyph">📄</span>
+                  <span class="folder-badge">[ JOURNALS ]</span>
+                </div>
+                <div class="folder-title">${t('Jurnal & Artikel', 'Journals & Papers', lang)}</div>
+                <div class="folder-subtitle">${journalCount} ${t('Naskah IEEE/Elsevier', 'IEEE/Elsevier Papers', lang)}</div>
+              </button>
+
+              <button class="folder-category-card ${this.currentFilter === 'folder:slides' ? 'active' : ''}" data-folder="slides">
+                <div class="folder-card-top">
+                  <span class="folder-glyph">📊</span>
+                  <span class="folder-badge">[ SLIDES ]</span>
+                </div>
+                <div class="folder-title">${t('Presentasi Slide', 'Presentations & Slides', lang)}</div>
+                <div class="folder-subtitle">${slidesCount} ${t('Slide Beamer', 'Beamer Decks', lang)}</div>
+              </button>
+
+              <button class="folder-category-card ${this.currentFilter === 'folder:thesis' ? 'active' : ''}" data-folder="thesis">
+                <div class="folder-card-top">
+                  <span class="folder-glyph">🎓</span>
+                  <span class="folder-badge">[ THESIS ]</span>
+                </div>
+                <div class="folder-title">${t('Tesis & Laporan', 'Thesis & Reports', lang)}</div>
+                <div class="folder-subtitle">${thesisCount} ${t('Dokumen Akademik', 'Academic Documents', lang)}</div>
+              </button>
+
+              <button class="folder-category-card ${this.currentFilter === 'folder:tutorial' ? 'active' : ''}" data-folder="tutorial">
+                <div class="folder-card-top">
+                  <span class="folder-glyph">💡</span>
+                  <span class="folder-badge">[ GUIDES ]</span>
+                </div>
+                <div class="folder-title">${t('Tutorial & Panduan', 'Tutorials & Guides', lang)}</div>
+                <div class="folder-subtitle">${tutorialCount} ${t('Panduan WasmTex', 'WasmTex Guides', lang)}</div>
+              </button>
+            </div>
+
             <!-- Tags Filter Chips -->
             <div class="tactical-tags-bar">
-              <span class="tags-bar-label">FILTERS:</span>
-              <button class="tactical-tag-chip ${this.currentFilter === 'all' ? 'active' : ''}" data-tag="all">[ ALL ]</button>
+              <span class="tags-bar-label">🏷️ ${t('FILTER TAGS / KATA KUNCI:', 'FILTER BY TAGS:', lang)}</span>
+              <button class="tactical-tag-chip ${this.currentFilter === 'all' ? 'active' : ''}" data-tag="all">[ ${t('SEMUA TAG', 'ALL TAGS', lang)} ]</button>
               <div id="dash-tags-list" class="tags-chips-container"></div>
             </div>
 
@@ -378,10 +508,10 @@ export class DashboardView {
               <table class="tactical-table">
                 <thead>
                   <tr>
-                    <th style="width: 52%;">DOCUMENT TITLE / CLASSIFICATION</th>
+                    <th style="width: 50%;">DOCUMENT TITLE / CLASSIFICATION</th>
                     <th style="width: 18%;">AUTHOR / OPERATOR</th>
                     <th style="width: 18%;">TIMESTAMP</th>
-                    <th style="width: 12%; text-align: right;">ACTION</th>
+                    <th style="width: 14%; text-align: right;">ACTION</th>
                   </tr>
                 </thead>
                 <tbody id="dash-table-body"></tbody>
@@ -400,8 +530,8 @@ export class DashboardView {
         </footer>
 
         <!-- Account Settings & Credential Management Dialog -->
-        <dialog id="tactical-account-dialog" class="tactical-login-modal">
-          <div class="tactical-modal-frame" style="max-width: 520px; width: 92vw;">
+        <dialog id="tactical-account-dialog" class="tactical-login-modal modal-account">
+          <div class="tactical-modal-frame">
             <span class="bracket-corner tl"></span>
             <span class="bracket-corner tr"></span>
             <span class="bracket-corner bl"></span>
@@ -455,76 +585,6 @@ export class DashboardView {
                     <span class="cta-inner">GANTI PASSWORD</span>
                   </button>
                 </form>
-              </div>
-            </div>
-          </div>
-        </dialog>
-
-        <!-- Admin IAM Console Dialog -->
-        <dialog id="tactical-iam-dialog" class="tactical-login-modal">
-          <div class="tactical-modal-frame" style="max-width: 760px; width: 95vw;">
-            <span class="bracket-corner tl"></span>
-            <span class="bracket-corner tr"></span>
-            <span class="bracket-corner bl"></span>
-            <span class="bracket-corner br"></span>
-            <div class="tactical-modal-header">
-              <span class="modal-spec-tag">[ ENTERPRISE IAM &amp; MANAJEMEN PENGGUNA // MULTI-TENANT RBAC ]</span>
-              <button type="button" class="modal-close-x" id="modal-iam-close" title="Tutup">✕</button>
-            </div>
-            <div class="tactical-modal-body">
-              <div id="iam-feedback-msg" class="msg-box" style="display:none; padding:8px 12px; margin-bottom:12px; font-family:var(--font-mono); font-size:11px;"></div>
-
-              <div class="iam-dialog-table-wrap" style="border:1px solid var(--border-color); padding:10px; background:var(--bg-primary); margin-bottom:14px; max-height:220px; overflow-y:auto;">
-                <div class="sub-sec-title" style="font-family:var(--font-mono); font-size:11px; font-weight:700; margin-bottom:6px;">[ DAFTAR PENGGUNA TERDAFTAR ]</div>
-                <table class="iam-users-table" style="width:100%; font-size:11px; border-collapse:collapse;">
-                  <thead>
-                    <tr style="border-bottom:1px solid var(--border-color); text-align:left; font-family:var(--font-mono);">
-                      <th style="padding:4px 6px;">USERNAME</th>
-                      <th style="padding:4px 6px;">NAMA TAMPILAN</th>
-                      <th style="padding:4px 6px;">ROLE</th>
-                      <th style="padding:4px 6px;">ID</th>
-                      <th style="padding:4px 6px; text-align:right;">AKSI</th>
-                    </tr>
-                  </thead>
-                  <tbody id="iam-users-tbody"></tbody>
-                </table>
-              </div>
-
-              <!-- Form Add User -->
-              <div class="form-sub-section" style="border:1px solid var(--border-color); padding:12px; background:var(--bg-primary);">
-                <div class="sub-sec-title" style="font-family:var(--font-mono); font-size:11px; font-weight:700; margin-bottom:8px;">[ + TAMBAH AKUN PENGGUNA BARU ]</div>
-                <form id="form-create-user" style="display:grid; grid-template-columns: 1fr 1fr; gap: 10px;">
-                  <div class="form-field-group">
-                    <label for="new-user-username" class="form-field-label">USERNAME</label>
-                    <input type="text" id="new-user-username" class="tactical-form-input" placeholder="e.g. researcher2" required />
-                  </div>
-                  <div class="form-field-group">
-                    <label for="new-user-name" class="form-field-label">NAMA LENGKAP</label>
-                    <input type="text" id="new-user-name" class="tactical-form-input" placeholder="e.g. Prof. Budi" required />
-                  </div>
-                  <div class="form-field-group">
-                    <label for="new-user-password" class="form-field-label">PASSWORD (MIN 6)</label>
-                    <input type="password" id="new-user-password" class="tactical-form-input" placeholder="••••••••" required />
-                  </div>
-                  <div class="form-field-group">
-                    <label for="new-user-role" class="form-field-label">HAK AKSES / ROLE</label>
-                    <select id="new-user-role" class="tactical-form-input">
-                      <option value="researcher">Researcher (Proyek Mandiri)</option>
-                      <option value="admin">Admin (Akses Penuh IAM)</option>
-                      <option value="viewer">Viewer (Read-Only Reviewer)</option>
-                    </select>
-                  </div>
-                  <div style="grid-column: 1 / -1; margin-top:4px;">
-                    <button type="submit" class="tactical-cta-btn cta-orange" style="width: 100%; padding: 8px 14px;">
-                      <span class="cta-inner">+ DAFTARKAN AKUN BARU KE SISTEM IAM</span>
-                    </button>
-                  </div>
-                </form>
-              </div>
-
-              <div class="iam-note-box" style="margin-top:12px; padding:8px 12px; background:var(--bg-secondary); border:1px solid var(--border-color); font-family:var(--font-mono); font-size:10.5px; color:var(--text-secondary); display:flex; align-items:center; gap:8px;">
-                <span>🛡️</span>
-                <span><strong>JAMINAN ANTI-BENTROK:</strong> Setiap user memiliki <code>ownerId</code> unik di IndexedDB. Proyek antar pengguna dijamin terisolasi dan tidak akan saling menimpa.</span>
               </div>
             </div>
           </div>
@@ -599,6 +659,51 @@ export class DashboardView {
   private bindEvents(): void {
     const newBtn = this.container.querySelector('#dash-new-project-btn')
     newBtn?.addEventListener('click', () => this.promptNewProject())
+
+    // Starter template instantiation
+    this.container.querySelectorAll('.btn-use-template').forEach((btn) => {
+      btn.addEventListener('click', async (e) => {
+        e.stopPropagation()
+        const tplId = btn.getAttribute('data-template-id')
+        const tpl = TEMPLATES.find((t) => t.id === tplId)
+        if (!tpl) return
+
+        const curUser = getCurrentUser()
+        if (curUser?.role === 'viewer') {
+          alert(
+            t(
+              'Mode Baca: Akun Viewer tidak memiliki izin membuat dokumen baru.',
+              'Read-Only Mode: Viewer accounts cannot create new documents.',
+              getLang()
+            )
+          )
+          return
+        }
+
+        const defaultTitle = getLang() === 'en' ? tpl.titleEn : tpl.titleId
+        const inputTitle = prompt(
+          t('Beri judul untuk manuskrip baru ini:', 'Enter a title for this new manuscript:', getLang()),
+          defaultTitle
+        )
+        if (inputTitle === null) return
+        const finalTitle = inputTitle.trim() || defaultTitle
+
+        const authorName = curUser?.username || curUser?.name || 'Operator'
+        const newProj: ProjectItem = {
+          id: `proj_${Date.now()}_${Math.random().toString(36).slice(2, 6)}`,
+          title: finalTitle,
+          owner: authorName,
+          ownerId: curUser?.userId || 'usr_admin',
+          lastModified: Date.now(),
+          tags: [...tpl.tags],
+          files: { ...tpl.files },
+        }
+
+        await saveProject(newProj, curUser)
+        this.projects = await getAllProjects(curUser)
+        this.options.onOpenProject(newProj)
+      })
+    })
 
     const gotoLibBtn = this.container.querySelector('#dash-goto-library-btn')
     gotoLibBtn?.addEventListener('click', () => {
@@ -804,135 +909,6 @@ export class DashboardView {
       }
     })
 
-    // IAM Management dialog bindings (Admin only)
-    const iamDialog = this.container.querySelector('#tactical-iam-dialog') as HTMLDialogElement | null
-    const iamBtn = this.container.querySelector('#dash-iam-mgmt-btn')
-    const iamCloseBtn = this.container.querySelector('#modal-iam-close')
-    const formCreateUser = this.container.querySelector('#form-create-user') as HTMLFormElement | null
-    const iamMsg = this.container.querySelector('#iam-feedback-msg') as HTMLElement | null
-
-    const renderIamUsersList = () => {
-      const tbody = this.container.querySelector('#iam-users-tbody')
-      if (!tbody) return
-      const users = getAllUsers()
-      const curUser = getCurrentUser()
-
-      tbody.innerHTML = users
-        .map(
-          (u) => `
-        <tr style="border-bottom: 1px solid var(--border-color);">
-          <td style="padding:6px 6px;"><strong>${escapeHtml(u.username)}</strong></td>
-          <td style="padding:6px 6px;">${escapeHtml(u.name)}</td>
-          <td style="padding:6px 6px;"><span class="role-badge ${u.role}">${escapeHtml(u.role.toUpperCase())}</span></td>
-          <td style="padding:6px 6px;"><code style="font-size:10px;">${escapeHtml(u.id)}</code></td>
-          <td style="padding:6px 6px; text-align:right;">
-            <div style="display:inline-flex; gap:4px; align-items:center;">
-              <select class="iam-role-select" data-id="${u.id}" style="padding:2px 4px; font-size:10px; background:var(--bg-secondary); color:var(--text-primary); border:1px solid var(--border-color);">
-                <option value="admin" ${u.role === 'admin' ? 'selected' : ''}>Admin</option>
-                <option value="researcher" ${u.role === 'researcher' ? 'selected' : ''}>Researcher</option>
-                <option value="viewer" ${u.role === 'viewer' ? 'selected' : ''}>Viewer</option>
-              </select>
-              <button class="tactical-btn-action btn-iam-reset-pass" data-id="${u.id}" style="font-size:10px; padding:2px 6px;" title="Reset password pengguna">RESET PASS</button>
-              ${
-                u.id !== curUser?.userId && u.id !== 'usr_admin'
-                  ? `<button class="tactical-btn-action btn-iam-del-user" data-id="${u.id}" style="font-size:10px; padding:2px 6px; color:#EF4444; border-color:#EF4444;" title="Hapus pengguna">✕</button>`
-                  : ''
-              }
-            </div>
-          </td>
-        </tr>
-      `
-        )
-        .join('')
-
-      tbody.querySelectorAll('.iam-role-select').forEach((sel) => {
-        sel.addEventListener('change', (e) => {
-          const target = e.currentTarget as HTMLSelectElement
-          const targetUserId = target.getAttribute('data-id')
-          const newRole = target.value as UserRole
-          if (targetUserId) {
-            updateUserProfile(targetUserId, { role: newRole })
-            if (iamMsg) {
-              iamMsg.style.display = 'block'
-              iamMsg.style.color = '#22C55E'
-              iamMsg.textContent = `✓ Role pengguna berhasil diubah ke ${newRole.toUpperCase()}.`
-            }
-            renderIamUsersList()
-          }
-        })
-      })
-
-      tbody.querySelectorAll('.btn-iam-reset-pass').forEach((btn) => {
-        btn.addEventListener('click', (e) => {
-          const target = e.currentTarget as HTMLElement
-          const targetUserId = target.getAttribute('data-id')
-          if (!targetUserId) return
-          const newPass = prompt('Masukkan password baru untuk pengguna ini (minimal 6 karakter):')
-          if (newPass) {
-            const res = changePassword(targetUserId, null, newPass, true)
-            if (res.success) {
-              alert('✓ Password pengguna berhasil direset!')
-            } else {
-              alert(res.error || 'Gagal mereset password.')
-            }
-          }
-        })
-      })
-
-      tbody.querySelectorAll('.btn-iam-del-user').forEach((btn) => {
-        btn.addEventListener('click', (e) => {
-          const target = e.currentTarget as HTMLElement
-          const targetUserId = target.getAttribute('data-id')
-          if (!targetUserId) return
-          if (confirm('Yakin ingin menghapus akun pengguna ini dari sistem IAM?')) {
-            const res = deleteUser(targetUserId, curUser?.userId)
-            if (res.success) {
-              if (iamMsg) {
-                iamMsg.style.display = 'block'
-                iamMsg.style.color = '#22C55E'
-                iamMsg.textContent = '✓ Akun pengguna berhasil dihapus dari IAM.'
-              }
-              renderIamUsersList()
-            } else {
-              alert(res.error || 'Gagal menghapus user.')
-            }
-          }
-        })
-      })
-    }
-
-    iamBtn?.addEventListener('click', () => {
-      renderIamUsersList()
-      if (iamMsg) iamMsg.style.display = 'none'
-      iamDialog?.showModal()
-    })
-
-    iamCloseBtn?.addEventListener('click', () => {
-      iamDialog?.close()
-    })
-
-    formCreateUser?.addEventListener('submit', (e) => {
-      e.preventDefault()
-      const userInput = (this.container.querySelector('#new-user-username') as HTMLInputElement)?.value
-      const passInput = (this.container.querySelector('#new-user-password') as HTMLInputElement)?.value
-      const nameInput = (this.container.querySelector('#new-user-name') as HTMLInputElement)?.value
-      const roleInput = (this.container.querySelector('#new-user-role') as HTMLSelectElement)?.value as UserRole
-
-      const res = createUser(userInput, passInput, nameInput, roleInput)
-      if (iamMsg) {
-        iamMsg.style.display = 'block'
-        if (res.success) {
-          iamMsg.style.color = '#22C55E'
-          iamMsg.textContent = `✓ Pengguna "${userInput}" berhasil didaftarkan sebagai ${roleInput.toUpperCase()}. Proyek terisolasi siap digunakan.`
-          formCreateUser.reset()
-          renderIamUsersList()
-        } else {
-          iamMsg.style.color = '#EF4444'
-          iamMsg.textContent = res.error || 'Gagal membuat pengguna baru.'
-        }
-      }
-    })
-
     const r2Btn = this.container.querySelector('#dash-r2-sync')
     r2Btn?.addEventListener('click', async () => {
       const status = await checkR2StorageAvailable()
@@ -958,6 +934,14 @@ export class DashboardView {
     this.container.querySelectorAll('.tactical-nav-btn').forEach((btn) => {
       btn.addEventListener('click', () => {
         this.currentFilter = btn.getAttribute('data-filter') || 'all'
+        this.render()
+      })
+    })
+
+    this.container.querySelectorAll('.folder-category-card').forEach((card) => {
+      card.addEventListener('click', () => {
+        const folder = card.getAttribute('data-folder') || 'all'
+        this.currentFilter = folder === 'all' ? 'all' : `folder:${folder}`
         this.render()
       })
     })
@@ -1009,7 +993,7 @@ export class DashboardView {
       newProj.ownerId = curUser?.userId || 'usr_admin'
 
       await saveProject(newProj, curUser)
-      this.projects = await getAllProjects(curUser, this.currentFilter === 'all_iam')
+      this.projects = await getAllProjects(curUser)
       this.options.onOpenProject(newProj)
     })
   }
@@ -1054,6 +1038,47 @@ export class DashboardView {
       if (p.trashed) return false
       if (this.currentFilter === 'archived') return p.archived === true
       if (p.archived) return false
+      if (this.currentFilter === 'folder:journal') {
+        const lowerTags = p.tags?.map((t) => t.toLowerCase()) || []
+        const titleLower = p.title.toLowerCase()
+        return (
+          lowerTags.some((t) => ['journal', 'ieee', 'elsevier', 'nature', 'sensors', 'paper'].includes(t)) ||
+          titleLower.includes('journal') ||
+          titleLower.includes('ieee') ||
+          titleLower.includes('elsevier') ||
+          titleLower.includes('nature') ||
+          titleLower.includes('paper')
+        )
+      }
+      if (this.currentFilter === 'folder:slides') {
+        const lowerTags = p.tags?.map((t) => t.toLowerCase()) || []
+        const titleLower = p.title.toLowerCase()
+        return (
+          lowerTags.some((t) => ['presentation', 'beamer', 'slides'].includes(t)) ||
+          titleLower.includes('beamer') ||
+          titleLower.includes('presentation') ||
+          titleLower.includes('slides')
+        )
+      }
+      if (this.currentFilter === 'folder:thesis') {
+        const lowerTags = p.tags?.map((t) => t.toLowerCase()) || []
+        const titleLower = p.title.toLowerCase()
+        return (
+          lowerTags.some((t) => ['thesis', 'dissertation', 'report', 'book'].includes(t)) ||
+          titleLower.includes('thesis') ||
+          titleLower.includes('report') ||
+          titleLower.includes('dissertation')
+        )
+      }
+      if (this.currentFilter === 'folder:tutorial') {
+        const lowerTags = p.tags?.map((t) => t.toLowerCase()) || []
+        const titleLower = p.title.toLowerCase()
+        return (
+          lowerTags.some((t) => ['tutorial', 'starter', 'wasmtex'].includes(t)) ||
+          titleLower.includes('tutorial') ||
+          titleLower.includes('starter')
+        )
+      }
       if (this.currentFilter.startsWith('tag:')) {
         const tag = this.currentFilter.replace('tag:', '')
         return p.tags?.includes(tag)
@@ -1152,8 +1177,9 @@ export class DashboardView {
         const input = prompt(`Tag untuk "${found.title}" (pisahkan koma):`, found.tags?.join(', ') || '')
         if (input !== null) {
           found.tags = input.split(',').map((t) => t.trim()).filter(Boolean)
-          await saveProject(found)
-          this.projects = await getAllProjects()
+          const curUser = getCurrentUser()
+          await saveProject(found, curUser)
+          this.projects = await getAllProjects(curUser)
           this.renderTags()
           this.renderProjectRows(searchQuery)
         }
@@ -1165,8 +1191,9 @@ export class DashboardView {
         e.stopPropagation()
         const id = (btn as HTMLElement).getAttribute('data-id')!
         if (confirm('Pindahkan manuskrip ini ke Trash?')) {
-          deleteProject(id).then(async () => {
-            this.projects = await getAllProjects()
+          const curUser = getCurrentUser()
+          deleteProject(id, false, curUser).then(async () => {
+            this.projects = await getAllProjects(curUser)
             this.renderTags()
             this.renderProjectRows(searchQuery)
           })
@@ -1179,7 +1206,8 @@ export class DashboardView {
         e.stopPropagation()
         const id = (btn as HTMLElement).getAttribute('data-id')!
         restoreProject(id).then(async () => {
-          this.projects = await getAllProjects()
+          const curUser = getCurrentUser()
+          this.projects = await getAllProjects(curUser)
           this.renderTags()
           this.renderProjectRows(searchQuery)
         })
@@ -1404,7 +1432,7 @@ Start writing your manuscript here.
     }
 
     saveProject(newProj, curUser).then(async () => {
-      this.projects = await getAllProjects(curUser, this.currentFilter === 'all_iam')
+      this.projects = await getAllProjects(curUser)
       this.options.onOpenProject(newProj)
     })
   }

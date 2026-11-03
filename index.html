@@ -22,39 +22,39 @@
 
     <!-- View 2: Overleaf-style Editor Workspace -->
     <div id="view-workspace" class="app-page-view">
-      <!-- Editor Top Bar (Overleaf style) -->
+      <!-- Editor Top Bar (CorTeX Tactical Brutalist Style) -->
       <header class="app-topbar">
         <div class="topbar-left">
-          <button id="btn-back-dashboard" class="topbar-back-btn" title="Back to Projects Dashboard">
-            <span class="back-arrow">&larr;</span> Projects
+          <button id="btn-back-dashboard" class="topbar-back-btn" title="Kembali ke Dashboard">
+            <span class="back-arrow">◀</span> [ DASHBOARD ]
           </button>
           <div class="topbar-divider"></div>
           <span class="brand-logo-small">📐</span>
-          <input type="text" id="doc-title-input" class="doc-title-input" value="Academic Paper Manuscript" title="Click to rename document" />
+          <input type="text" id="doc-title-input" class="doc-title-input" value="Academic Paper Manuscript" title="Klik untuk mengubah judul naskah" />
         </div>
 
         <div class="topbar-center">
           <nav class="topbar-nav">
-            <button id="nav-tab-editor" class="topbar-nav-tab active">✍️ Editor</button>
-            <button id="nav-tab-library" class="topbar-nav-tab">📚 Research Library</button>
+            <button id="nav-tab-editor" class="topbar-nav-tab active">[ ✍️ EDITOR ]</button>
+            <button id="nav-tab-library" class="topbar-nav-tab">[ 📚 RESEARCH LIBRARY ]</button>
           </nav>
         </div>
 
         <div class="topbar-actions">
-          <!-- Overleaf-style Action Icons -->
+          <!-- Tactical Action Icons -->
           <button id="btn-review" class="topbar-icon-action" title="Track Changes & Review">
             <span class="icon-svg">📝</span> Review <span id="badge-review" class="topbar-badge" style="display:none">0</span>
           </button>
-          <button id="btn-comments" class="topbar-icon-action" title="Comments">
+          <button id="btn-comments" class="topbar-icon-action" title="Komentar / Comments">
             <span class="icon-svg">💬</span> <span id="badge-comments" class="topbar-badge" style="display:none">0</span>
           </button>
-          <button id="btn-history" class="topbar-icon-action" title="History & Changelog">
+          <button id="btn-history" class="topbar-icon-action" title="Riwayat Versi / History">
             <span class="icon-svg">🕒</span> History
           </button>
-          <button id="btn-search" class="topbar-icon-action" title="Find in Project (Ctrl+Shift+F)">
+          <button id="btn-search" class="topbar-icon-action" title="Cari di Proyek (Ctrl+Shift+F)">
             <span class="icon-svg">🔍</span>
           </button>
-          <button id="btn-theme-toggle" class="topbar-icon-action" title="Toggle Light / Dark Mode">
+          <button id="btn-theme-toggle" class="topbar-icon-action" title="Ganti Mode Gelap / Terang">
             <span id="theme-icon">🌙</span>
           </button>
           <button id="btn-lang-toggle" class="topbar-icon-action" title="Ganti Bahasa / Switch Language">
@@ -62,15 +62,19 @@
           </button>
 
           <div class="editor-mode-toggle" id="editor-mode-toggle">
-            <button id="btn-mode-visual" class="mode-btn active" title="Visual Mode">Visual</button>
-            <button id="btn-mode-code" class="mode-btn" title="Code Mode">Code</button>
-            <button id="btn-mode-split" class="mode-btn" title="Split Mode">Split</button>
+            <button id="btn-mode-visual" class="mode-btn active" title="Visual WYSIWYG Mode">[ VISUAL ]</button>
+            <button id="btn-mode-code" class="mode-btn" title="Monaco Code Mode">[ CODE ]</button>
+            <button id="btn-mode-split" class="mode-btn" title="Split Visual & Code Mode">[ SPLIT ]</button>
           </div>
 
-          <button id="recompile-btn" class="topbar-btn topbar-btn-primary" title="Recompile LaTeX PDF">
-            ▶ Recompile
+          <button id="recompile-btn" class="tactical-cta-btn cta-orange" style="padding: 6px 14px; font-size: 11.5px;" title="Kompilasi LaTeX PDF (F5 / Ctrl+Enter)">
+            <span class="bracket-corner tl"></span>
+            <span class="bracket-corner tr"></span>
+            <span class="bracket-corner bl"></span>
+            <span class="bracket-corner br"></span>
+            <span class="cta-inner">▶ RECOMPILE</span>
           </button>
-          <button id="download-pdf-btn" class="topbar-btn topbar-btn-outline" title="Download compiled PDF">
+          <button id="download-pdf-btn" class="tactical-btn-action" style="padding: 6px 12px; font-size: 11.5px; font-weight: 700;" title="Unduh hasil PDF">
             ⬇ PDF
           </button>
         </div>
@@ -80,16 +84,16 @@
       <main class="app-main-view">
         <!-- 1. Editor View -->
         <div id="view-editor" class="view-panel active">
-          <!-- Overleaf-style Left Sidebar -->
+          <!-- Tactical Brutalist Left Sidebar -->
           <aside id="file-tree-panel" class="le-left-panel panel">
             <!-- Sidebar toolbar: + File, + Folder, Upload -->
             <div class="sidebar-top-tools">
-              <span class="sidebar-files-label">FILES</span>
+              <span class="sidebar-files-label">[ BERKAS PROYEK ]</span>
               <div class="sidebar-tool-icons">
-                <button id="add-file-btn" class="sidebar-tool-btn" title="New file">📄+</button>
-                <button id="add-folder-btn" class="sidebar-tool-btn" title="New folder">📁+</button>
-                <label for="upload-file-input" class="sidebar-tool-btn" title="Upload file" style="cursor: pointer; margin: 0;">
-                  ⬆
+                <button id="add-file-btn" class="sidebar-tool-btn" title="Berkas baru">+FILE</button>
+                <button id="add-folder-btn" class="sidebar-tool-btn" title="Folder baru">+DIR</button>
+                <label for="upload-file-input" class="sidebar-tool-btn" title="Unggah berkas" style="cursor: pointer; margin: 0;">
+                  ⬆UPLOAD
                   <input type="file" id="upload-file-input" style="display: none;" />
                 </label>
               </div>
@@ -97,7 +101,7 @@
             <div id="file-tree-list" class="le-file-tree"></div>
 
             <div class="le-outline">
-              <div class="outline-header">OUTLINE</div>
+              <div class="outline-header">[ STRUKTUR DOKUMEN // OUTLINE ]</div>
               <div id="outline-list"></div>
             </div>
           </aside>
