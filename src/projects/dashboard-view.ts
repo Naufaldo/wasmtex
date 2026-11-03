@@ -220,9 +220,10 @@ export class DashboardView {
       )
       .join('')
 
-    tbody.querySelectorAll('.dash-project-link').forEach((link) => {
-      link.addEventListener('click', () => {
-        const id = link.getAttribute('data-id')!
+    tbody.querySelectorAll('.dash-row').forEach((row) => {
+      row.addEventListener('click', (e) => {
+        if ((e.target as HTMLElement).closest('.dash-action-btn')) return
+        const id = row.getAttribute('data-id')!
         const found = this.projects.find((p) => p.id === id)
         if (found) {
           this.options.onOpenProject(found)

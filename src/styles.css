@@ -1973,6 +1973,7 @@ body {
 .dash-row {
   border-bottom: 1px solid var(--border-color);
   transition: background 0.1s ease;
+  cursor: pointer;
 }
 
 .dash-row:hover {
