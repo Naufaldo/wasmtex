@@ -2,6 +2,13 @@ import { OVERLEAF_ICONS } from '../ui/logo'
 import { getCurrentUser, loginUser, logoutUser } from '../auth/auth-store'
 import { unzipLatexProject } from '../fs/unzip'
 import {
+  addPaperToProjectBibtex,
+  deletePaper,
+  getAllPapers,
+  type ResearchPaper,
+  savePaper,
+} from '../library/library-store'
+import {
   deleteProject,
   getAllProjects,
   type ProjectItem,
@@ -20,7 +27,9 @@ export class DashboardView {
   private container: HTMLElement
   private options: DashboardViewOptions
   private projects: ProjectItem[] = []
-  private currentFilter: 'all' | 'archived' | 'trash' | string = 'all'
+  private papers: ResearchPaper[] = []
+  private selectedLibraryProject = 'all'
+  private currentFilter: 'all' | 'library' | 'archived' | 'trash' | string = 'all'
 
   constructor(container: HTMLElement, options: DashboardViewOptions) {
     this.container = container
@@ -29,6 +38,7 @@ export class DashboardView {
 
   async init(): Promise<void> {
     this.projects = await getAllProjects()
+    this.papers = await getAllPapers()
     this.render()
   }
 
@@ -67,6 +77,9 @@ export class DashboardView {
           <nav class="tactical-nav-center">
             <button class="tactical-nav-btn ${this.currentFilter === 'all' ? 'active' : ''}" data-filter="all">
               [ ALL PROJECTS (${activeCount}) ]
+            </button>
+            <button class="tactical-nav-btn ${this.currentFilter === 'library' ? 'active' : ''}" data-filter="library">
+              [ 📚 RESEARCH LIBRARY (${this.papers.length}) ]
             </button>
             <button class="tactical-nav-btn ${this.currentFilter === 'archived' ? 'active' : ''}" data-filter="archived">
               [ ARCHIVED (${archivedCount}) ]
@@ -220,6 +233,61 @@ export class DashboardView {
             </div>
           </section>
 
+          ${
+            this.currentFilter === 'library'
+              ? `
+          <!-- Research Library Section on Dashboard -->
+          <section class="tactical-archive-section">
+            <div class="archive-section-header">
+              <div class="archive-title-wrap">
+                <span class="archive-index">[ 02 ]</span>
+                <span class="archive-heading">RESEARCH LIBRARY &amp; LITERATURE REPOSITORY</span>
+              </div>
+              <div class="archive-actions-wrap" style="display:flex; align-items:center; gap:10px;">
+                <div style="display:flex; align-items:center; gap:6px;">
+                  <span style="font-family: var(--font-mono); font-size:11px; color:var(--text-muted); font-weight:700;">FILTER PROJECT:</span>
+                  <select id="dash-lib-project-select" class="tactical-form-select">
+                    <option value="all">ALL PROJECTS (${this.papers.length})</option>
+                    ${this.projects
+                      .filter((p) => !p.trashed)
+                      .map(
+                        (p) =>
+                          `<option value="${p.id}" ${this.selectedLibraryProject === p.id ? 'selected' : ''}>${escapeHtml(p.title)}</option>`,
+                      )
+                      .join('')}
+                  </select>
+                </div>
+                <button id="dash-lib-add-paper-btn" class="tactical-cta-btn cta-orange" style="padding:6px 14px;">
+                  <span class="cta-inner">+ ADD RESEARCH PAPER</span>
+                </button>
+              </div>
+            </div>
+
+            <!-- Search Bar -->
+            <div style="padding: 12px 24px; border-bottom: 1.5px solid var(--border-color); display:flex; gap:10px;">
+              <div class="archive-search-container" style="flex:1;">
+                <span class="search-terminal-prompt">&gt;_</span>
+                <input type="text" id="dash-lib-search-input" class="tactical-search-input" placeholder="SEARCH PAPERS (TITLE, AUTHORS, VENUE, DOI, TAGS)..." />
+              </div>
+            </div>
+
+            <!-- Library Table Frame -->
+            <div class="tactical-table-frame">
+              <table class="tactical-table">
+                <thead>
+                  <tr>
+                    <th style="width: 40%;">PAPER TITLE / VENUE</th>
+                    <th style="width: 22%;">AUTHORS &amp; DOI</th>
+                    <th style="width: 16%;">LINKED PROJECT</th>
+                    <th style="width: 22%; text-align: right;">ACTIONS</th>
+                  </tr>
+                </thead>
+                <tbody id="dash-lib-table-body"></tbody>
+              </table>
+            </div>
+          </section>
+          `
+              : `
           <!-- Project Archive & Management Section -->
           <section class="tactical-archive-section">
             <div class="archive-section-header">
@@ -257,6 +325,8 @@ export class DashboardView {
               </table>
             </div>
           </section>
+          `
+          }
         </div>
 
         <!-- Bottom Confidential Footer Ribbon -->
@@ -297,17 +367,139 @@ export class DashboardView {
             </form>
           </div>
         </dialog>
+
+        <!-- Add Paper Modal Dialog -->
+        <dialog id="tactical-paper-dialog" class="tactical-login-modal">
+          <div class="tactical-modal-frame" style="max-width: 520px;">
+            <span class="bracket-corner tl"></span>
+            <span class="bracket-corner tr"></span>
+            <span class="bracket-corner bl"></span>
+            <span class="bracket-corner br"></span>
+            <div class="tactical-modal-header">
+              <span class="modal-spec-tag">[ NEW LITERATURE ENTRY // RESEARCH REPOSITORY ]</span>
+              <button type="button" class="modal-close-x" id="modal-paper-close" title="Tutup">✕</button>
+            </div>
+            <form id="tactical-paper-form" class="tactical-modal-body">
+              <div class="form-field-group">
+                <label for="paper-input-title" class="form-field-label">PAPER TITLE</label>
+                <input type="text" id="paper-input-title" class="tactical-form-input" placeholder="e.g. Attention Is All You Need" required autofocus />
+              </div>
+              <div style="display:grid; grid-template-columns: 1fr 1fr; gap:10px;">
+                <div class="form-field-group">
+                  <label for="paper-input-authors" class="form-field-label">AUTHORS</label>
+                  <input type="text" id="paper-input-authors" class="tactical-form-input" placeholder="e.g. Vaswani et al." required />
+                </div>
+                <div class="form-field-group">
+                  <label for="paper-input-year" class="form-field-label">YEAR / VENUE</label>
+                  <input type="text" id="paper-input-year" class="tactical-form-input" placeholder="e.g. 2026 · NeurIPS" required />
+                </div>
+              </div>
+              <div style="display:grid; grid-template-columns: 1fr 1fr; gap:10px;">
+                <div class="form-field-group">
+                  <label for="paper-input-doi" class="form-field-label">DOI / ARXIV LINK (OPTIONAL)</label>
+                  <input type="text" id="paper-input-doi" class="tactical-form-input" placeholder="e.g. 10.48550/arXiv..." />
+                </div>
+                <div class="form-field-group">
+                  <label for="paper-input-project" class="form-field-label">LINK TO PROJECT</label>
+                  <select id="paper-input-project" class="tactical-form-select">
+                    <option value="">[ GLOBAL / ALL PROJECTS ]</option>
+                    ${this.projects
+                      .filter((p) => !p.trashed)
+                      .map((p) => `<option value="${p.id}">${escapeHtml(p.title)}</option>`)
+                      .join('')}
+                  </select>
+                </div>
+              </div>
+              <div class="form-field-group">
+                <label for="paper-input-bibtex" class="form-field-label">BIBTEX CITATION</label>
+                <textarea id="paper-input-bibtex" class="tactical-form-textarea" rows="4" placeholder="@article{...}" required></textarea>
+              </div>
+              <div class="form-actions-row">
+                <button type="submit" class="tactical-cta-btn cta-orange" style="padding: 9px 18px;">
+                  <span class="cta-inner">[ ▶ SAVE TO LIBRARY ]</span>
+                </button>
+              </div>
+            </form>
+          </div>
+        </dialog>
       </div>
     `
 
     this.bindEvents()
-    this.renderTags()
-    this.renderProjectRows()
+    if (this.currentFilter === 'library') {
+      this.renderLibraryRows()
+    } else {
+      this.renderTags()
+      this.renderProjectRows()
+    }
   }
 
   private bindEvents(): void {
     const newBtn = this.container.querySelector('#dash-new-project-btn')
     newBtn?.addEventListener('click', () => this.promptNewProject())
+
+    // Research Library bindings on Dashboard
+    const libProjectSelect = this.container.querySelector('#dash-lib-project-select') as HTMLSelectElement | null
+    libProjectSelect?.addEventListener('change', () => {
+      this.selectedLibraryProject = libProjectSelect.value
+      this.renderLibraryRows()
+    })
+
+    const libSearchInput = this.container.querySelector('#dash-lib-search-input') as HTMLInputElement | null
+    libSearchInput?.addEventListener('input', () => {
+      this.renderLibraryRows(libSearchInput.value.trim().toLowerCase())
+    })
+
+    const paperDialog = this.container.querySelector('#tactical-paper-dialog') as HTMLDialogElement | null
+    const addPaperBtn = this.container.querySelector('#dash-lib-add-paper-btn')
+    const paperClose = this.container.querySelector('#modal-paper-close')
+    const paperForm = this.container.querySelector('#tactical-paper-form')
+
+    addPaperBtn?.addEventListener('click', () => {
+      paperDialog?.showModal()
+    })
+
+    paperClose?.addEventListener('click', () => {
+      paperDialog?.close()
+    })
+
+    paperForm?.addEventListener('submit', async (e) => {
+      e.preventDefault()
+      const title = (this.container.querySelector('#paper-input-title') as HTMLInputElement)?.value.trim()
+      const authors = (this.container.querySelector('#paper-input-authors') as HTMLInputElement)?.value.trim()
+      const yearVenue = (this.container.querySelector('#paper-input-year') as HTMLInputElement)?.value.trim()
+      const doi = (this.container.querySelector('#paper-input-doi') as HTMLInputElement)?.value.trim() || ''
+      const targetProjId = (this.container.querySelector('#paper-input-project') as HTMLSelectElement)?.value || undefined
+      const bibtex = (this.container.querySelector('#paper-input-bibtex') as HTMLTextAreaElement)?.value.trim()
+
+      if (title && authors && bibtex) {
+        const id = `paper_${Date.now()}`
+        const newPaper: ResearchPaper = {
+          id,
+          title,
+          authors,
+          year: yearVenue.split('·')[0]?.trim() || '2026',
+          venue: yearVenue.split('·')[1]?.trim() || 'Journal / Conference',
+          doi,
+          abstract: '',
+          tags: ['Research', 'Literature'],
+          bibtex,
+          projectId: targetProjId,
+          memo: {
+            objective: '',
+            methodology: '',
+            findings: '',
+            notes: '',
+          },
+        }
+
+        await savePaper(newPaper)
+        this.papers = await getAllPapers()
+        paperDialog?.close()
+        this.render()
+        alert(`✓ Literatur "${title}" berhasil disimpan ke Research Library!`)
+      }
+    })
 
     const searchInput = this.container.querySelector('#dash-search-input') as HTMLInputElement
     const searchClear = this.container.querySelector('#dash-search-clear') as HTMLButtonElement
@@ -616,6 +808,187 @@ export class DashboardView {
           this.renderTags()
           this.renderProjectRows(searchQuery)
         })
+      })
+    })
+  }
+
+  private renderLibraryRows(searchQuery = ''): void {
+    const tbody = this.container.querySelector('#dash-lib-table-body')
+    if (!tbody) return
+
+    let list = this.papers.filter((paper) => {
+      if (this.selectedLibraryProject !== 'all') {
+        return paper.projectId === this.selectedLibraryProject || !paper.projectId
+      }
+      return true
+    })
+
+    if (searchQuery) {
+      list = list.filter((paper) => {
+        return (
+          paper.title.toLowerCase().includes(searchQuery) ||
+          paper.authors.toLowerCase().includes(searchQuery) ||
+          paper.venue.toLowerCase().includes(searchQuery) ||
+          paper.year.includes(searchQuery) ||
+          paper.doi.toLowerCase().includes(searchQuery) ||
+          paper.tags.some((t) => t.toLowerCase().includes(searchQuery))
+        )
+      })
+    }
+
+    if (list.length === 0) {
+      tbody.innerHTML = `
+        <tr>
+          <td colspan="4" class="tactical-empty-cell">
+            <div class="empty-state-box">
+              <span class="empty-icon">[!]</span>
+              <span class="empty-title">TIDAK ADA LITERATUR YANG COCOK</span>
+              <span class="empty-sub">KLIK "+ ADD RESEARCH PAPER" UNTUK MENAMBAH PAPER ATAU DOI BARU</span>
+            </div>
+          </td>
+        </tr>
+      `
+      return
+    }
+
+    tbody.innerHTML = list
+      .map((paper) => {
+        const linkedProj = this.projects.find((p) => p.id === paper.projectId)
+        const projBadge = linkedProj
+          ? `<span class="tactical-badge" style="color:var(--accent-orange); border-color:var(--accent-orange);">[ 📄 ${escapeHtml(linkedProj.title)} ]</span>`
+          : `<span class="tactical-badge" style="color:var(--text-muted);">[ 🌐 GLOBAL ]</span>`
+
+        return `
+        <tr class="tactical-row" data-id="${paper.id}">
+          <td class="col-title">
+            <div class="title-cell-wrap">
+              <span class="doc-file-glyph">📚</span>
+              <div class="title-details">
+                <span class="proj-title-link" style="font-weight:700;">${escapeHtml(paper.title)}</span>
+                <div class="proj-tags-list" style="margin-top:2px;">
+                  <span style="font-family:var(--font-mono); font-size:10.5px; color:var(--text-secondary);">${escapeHtml(paper.venue)} (${escapeHtml(paper.year)})</span>
+                  ${paper.tags.map((t) => `<span class="tactical-badge">[ ${escapeHtml(t.toUpperCase())} ]</span>`).join(' ')}
+                </div>
+              </div>
+            </div>
+          </td>
+          <td class="col-owner">
+            <div style="font-family:var(--font-mono); font-size:11px; line-height:1.35;">
+              <div>${escapeHtml(paper.authors)}</div>
+              ${paper.doi ? `<div style="font-size:10px; color:var(--accent-cyan); margin-top:2px;"><a href="https://doi.org/${encodeURIComponent(paper.doi)}" target="_blank" style="color:inherit; text-decoration:none;">DOI: ${escapeHtml(paper.doi)} ↗</a></div>` : ''}
+            </div>
+          </td>
+          <td class="col-time">
+            <div style="display:flex; align-items:center; gap:4px;">
+              ${projBadge}
+              <button class="tactical-tag-chip btn-assign-proj" data-id="${paper.id}" title="Hubungkan ke proyek...">🔗</button>
+            </div>
+          </td>
+          <td class="col-action" style="text-align: right;">
+            <div class="row-actions-group" style="justify-content: flex-end;">
+              <button class="tactical-btn-action btn-add-bibtex" data-id="${paper.id}" title="Tambahkan sitasi ke refs.bib proyek">📥 ADD TO BIBTEX</button>
+              <button class="tactical-btn-action btn-copy-bibtex" data-id="${paper.id}" title="Salin kode BibTeX">📋 COPY</button>
+              <button class="tactical-btn-action btn-del-paper" data-id="${paper.id}" style="color:var(--accent-orange);" title="Hapus paper">✕</button>
+            </div>
+          </td>
+        </tr>
+      `
+      })
+      .join('')
+
+    // Bind row actions
+    tbody.querySelectorAll('.btn-add-bibtex').forEach((btn) => {
+      btn.addEventListener('click', async (e) => {
+        e.stopPropagation()
+        const id = btn.getAttribute('data-id')
+        const paper = this.papers.find((p) => p.id === id)
+        if (!paper) return
+
+        let targetProj: ProjectItem | undefined
+        if (this.selectedLibraryProject !== 'all') {
+          targetProj = this.projects.find((p) => p.id === this.selectedLibraryProject && !p.trashed)
+        } else if (paper.projectId) {
+          targetProj = this.projects.find((p) => p.id === paper.projectId && !p.trashed)
+        }
+
+        if (!targetProj) {
+          const activeProjects = this.projects.filter((p) => !p.trashed)
+          if (activeProjects.length === 0) {
+            alert('Tidak ada proyek aktif. Silakan buat proyek baru terlebih dahulu.')
+            return
+          }
+          const promptText =
+            'Pilih nomor proyek tujuan untuk menambahkan BibTeX:\n' +
+            activeProjects.map((p, idx) => `${idx + 1}. ${p.title}`).join('\n')
+          const ans = prompt(promptText, '1')
+          if (!ans) return
+          const selectedIdx = parseInt(ans.trim(), 10) - 1
+          targetProj = activeProjects[selectedIdx]
+        }
+
+        if (!targetProj) {
+          alert('Pilihan proyek tidak valid.')
+          return
+        }
+
+        const res = await addPaperToProjectBibtex(paper, targetProj)
+        alert(res.message)
+      })
+    })
+
+    tbody.querySelectorAll('.btn-copy-bibtex').forEach((btn) => {
+      btn.addEventListener('click', (e) => {
+        e.stopPropagation()
+        const id = btn.getAttribute('data-id')
+        const paper = this.papers.find((p) => p.id === id)
+        if (paper) {
+          navigator.clipboard
+            ?.writeText(paper.bibtex)
+            .then(() => alert(`✓ BibTeX [${paper.id}] berhasil disalin ke clipboard!`))
+            .catch(() => prompt('Salin kode BibTeX:', paper.bibtex))
+        }
+      })
+    })
+
+    tbody.querySelectorAll('.btn-assign-proj').forEach((btn) => {
+      btn.addEventListener('click', async (e) => {
+        e.stopPropagation()
+        const id = btn.getAttribute('data-id')
+        const paper = this.papers.find((p) => p.id === id)
+        if (!paper) return
+
+        const activeProjects = this.projects.filter((p) => !p.trashed)
+        const promptText =
+          'Hubungkan literatur ini ke proyek mana?\n0. [ Global / Semua Proyek ]\n' +
+          activeProjects.map((p, idx) => `${idx + 1}. ${p.title}`).join('\n')
+        const ans = prompt(promptText, '0')
+        if (ans === null) return
+        const idx = parseInt(ans.trim(), 10)
+        if (idx === 0) {
+          delete paper.projectId
+        } else if (activeProjects[idx - 1]) {
+          paper.projectId = activeProjects[idx - 1]!.id
+        } else {
+          alert('Pilihan tidak valid.')
+          return
+        }
+
+        await savePaper(paper)
+        this.papers = await getAllPapers()
+        this.renderLibraryRows()
+      })
+    })
+
+    tbody.querySelectorAll('.btn-del-paper').forEach((btn) => {
+      btn.addEventListener('click', async (e) => {
+        e.stopPropagation()
+        const id = btn.getAttribute('data-id')
+        const paper = this.papers.find((p) => p.id === id)
+        if (paper && confirm(`Hapus "${paper.title}" dari Research Library?`)) {
+          await deletePaper(paper.id)
+          this.papers = await getAllPapers()
+          this.render()
+        }
       })
     })
   }

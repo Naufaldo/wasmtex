@@ -14,6 +14,15 @@ breaking changes are called out under **Changed** with a ⚠️ marker.
 ## [0.1.0] - 2026-11-03
 
 ### Added
+- **KaTeX Visual Math Rendering with Side Preview Box (`src/editor/visual-editor.ts`)**:
+  - Full WYSIWYG mathematical equation rendering inside visual editor canvas via KaTeX.
+  - Side preview box adjacent to every equation displaying `[ EQUATION ]`, raw LaTeX code, and instant `✎ Edit` button.
+  - Interactive formula editing for both block equations (`\begin{equation}`, `\begin{align}`, `$$...$$`, `\[...\]`) and inline math `$ ... $`.
+- **Dashboard Research Library & Project BibTeX Integration (`src/projects/dashboard-view.ts`, `src/library/library-store.ts`)**:
+  - Integrated `[ 📚 RESEARCH LIBRARY ]` view on the main dashboard with search and filter.
+  - Filter papers by linked project or view global repository.
+  - One-click `[ 📥 ADD TO BIBTEX ]`: automatically inserts BibTeX citation into the target project's `refs.bib` file with duplicate detection and IndexedDB persistence.
+  - Project linking: associate papers with specific projects via `[ 🔗 ]` or when adding new literature.
 - **Client-Side ZIP Auto-Unzip Import (`src/fs/unzip.ts`)**:
   - Full client-side extraction of `.zip` projects (Overleaf exports, arXiv source, local archives) via native browser `DecompressionStream('deflate-raw')` with zero external dependencies.
   - Automatic detection of `main.tex` and document `\title{...}` for project naming.

@@ -460,6 +460,7 @@ async function start() {
       editor.setFile('refs.bib', updated)
       editor.openFile('refs.bib')
       renderFileList(editor.listFiles())
+      persistActiveProject()
       alert('Entri BibTeX berhasil disisipkan ke refs.bib!')
     },
   })

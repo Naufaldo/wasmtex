@@ -8,6 +8,8 @@ export declare class DashboardView {
     private container;
     private options;
     private projects;
+    private papers;
+    private selectedLibraryProject;
     private currentFilter;
     constructor(container: HTMLElement, options: DashboardViewOptions);
     init(): Promise<void>;
@@ -15,5 +17,6 @@ export declare class DashboardView {
     private bindEvents;
     private renderTags;
     private renderProjectRows;
+    private renderLibraryRows;
     private promptNewProject;
 }

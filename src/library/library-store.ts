@@ -1,3 +1,5 @@
+import { type ProjectItem, saveProject } from '../projects/project-store'
+
 export interface PaperMemo {
   objective: string
   methodology: string
@@ -17,6 +19,7 @@ export interface ResearchPaper {
   bibtex: string
   memo: PaperMemo
   pdfBlob?: Blob
+  projectId?: string | undefined
 }
 
 const DB_NAME = 'wasmtex_research_library'
@@ -139,4 +142,33 @@ export async function deletePaper(id: string): Promise<void> {
     req.onsuccess = () => resolve()
     req.onerror = () => reject(req.error)
   })
+}
+
+export async function addPaperToProjectBibtex(
+  paper: ResearchPaper,
+  targetProject: ProjectItem
+): Promise<{ success: boolean; message: string; key: string }> {
+  const currentBib = targetProject.files['refs.bib'] || ''
+
+  const keyMatch = paper.bibtex.match(/@\w+\s*\{\s*([^,\s]+)/)
+  const citationKey = keyMatch ? keyMatch[1] : paper.id
+
+  if (currentBib.includes(`{${citationKey},`) || currentBib.includes(`{${citationKey} `)) {
+    return {
+      success: true,
+      message: `Sitasi "${citationKey}" sudah ada di refs.bib pada proyek "${targetProject.title}".`,
+      key: citationKey!,
+    }
+  }
+
+  const separator = currentBib.trim().length > 0 ? '\n\n' : ''
+  targetProject.files['refs.bib'] = currentBib + separator + paper.bibtex.trim() + '\n'
+  targetProject.lastModified = Date.now()
+  await saveProject(targetProject)
+
+  return {
+    success: true,
+    message: `Berhasil menambahkan sitasi [cite:${citationKey}] ke refs.bib pada proyek "${targetProject.title}"!`,
+    key: citationKey!,
+  }
 }

@@ -124,6 +124,7 @@
   "devDependencies": {
     "@biomejs/biome": "^2.4.3",
     "@playwright/test": "^1.58.2",
+    "@types/katex": "^0.16.8",
     "@types/node": "^24.13.2",
     "@typescript/native-preview": "^7.0.0-dev.20260219.1",
     "@vitest/coverage-v8": "^4.1.10",
@@ -136,5 +137,8 @@
     "vite": "^8.2.0",
     "vite-plugin-dts": "^4.5.4",
     "vitest": "^4.0.18"
+  },
+  "dependencies": {
+    "katex": "^0.19.1"
   }
 }
