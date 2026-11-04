@@ -586,17 +586,24 @@ function parseLatexToHtml(body: string, bodyStartLine = 1): string {
       continue
     }
 
-    // Tables
-    if (line.includes('\\begin{tabular}')) {
+    // Tables (\begin{table} ... \end{table} or bare \begin{tabular} ... \end{tabular})
+    if (line.includes('\\begin{table}') || line.includes('\\begin{tabular}')) {
+      const isTableEnv = line.includes('\\begin{table}')
+      const endTag = isTableEnv ? '\\end{table}' : '\\end{tabular}'
       const tblStartLine = currentLine
       const tableLines = [line]
       while (i + 1 < lines.length) {
         i++
         tableLines.push(lines[i]!)
-        if (lines[i]!.includes('\\end{tabular}')) break
+        if (lines[i]!.includes(endTag)) break
       }
       const tblEndLine = bodyStartLine + i
-      htmlParts.push(parseTabularToHtml(tableLines.join('\n'), tblStartLine, tblEndLine))
+      const fullTableBlock = tableLines.join('\n')
+      const capMatch = fullTableBlock.match(/\\caption\{([^}]+)\}/)
+      const lblMatch = fullTableBlock.match(/\\label\{([^}]+)\}/)
+      const caption = capMatch ? capMatch[1] : undefined
+      const label = lblMatch ? lblMatch[1] : undefined
+      htmlParts.push(parseTabularToHtml(fullTableBlock, tblStartLine, tblEndLine, caption, label))
       continue
     }
 
@@ -700,17 +707,39 @@ function parseLatexToHtml(body: string, bodyStartLine = 1): string {
   return htmlParts.join('\n')
 }
 
-function parseTabularToHtml(tabularBlock: string, startLine = 1, endLine = 1): string {
+function parseTabularToHtml(
+  tabularBlock: string,
+  startLine = 1,
+  endLine = 1,
+  caption?: string,
+  label?: string
+): string {
   const rows = tabularBlock
-    .replace(/\\begin\{tabular\}\{[^}]+\}/, '')
-    .replace(/\\end\{tabular\}/, '')
+    .replace(/\\begin\{table\}(?:\[[^\]]*\])?/g, '')
+    .replace(/\\end\{table\}/g, '')
+    .replace(/\\centering/g, '')
+    .replace(/\\caption\{[^}]*\}/g, '')
+    .replace(/\\label\{[^}]*\}/g, '')
+    .replace(/\\begin\{tabular\}\{[^}]+\}/g, '')
+    .replace(/\\end\{tabular\}/g, '')
+    .replace(/\\toprule/g, '')
+    .replace(/\\midrule/g, '')
+    .replace(/\\bottomrule/g, '')
     .replace(/\\hline/g, '')
     .split('\\\\')
     .map((r) => r.trim())
-    .filter((r) => r.length > 0)
+    .filter((r) => r.length > 0 && !r.startsWith('%'))
+
+  const captionHtml = caption
+    ? `<div class="ve-table-caption-bar" contenteditable="false">
+        <span class="ve-table-badge">📊 TABLE:</span>
+        <span class="ve-table-caption-text" contenteditable="true">${escapeHtml(caption)}</span>
+        ${label ? `<span class="ve-table-label-tag">(${escapeHtml(label)})</span>` : ''}
+       </div>`
+    : ''
 
   if (rows.length === 0) {
-    return `<div class="ve-table-wrap" data-line="${startLine}" data-end-line="${endLine}" contenteditable="false"><table class="ve-table" contenteditable="true"><tbody><tr><td>Data</td></tr></tbody></table></div>`
+    return `<div class="ve-table-wrap" data-line="${startLine}" data-end-line="${endLine}" contenteditable="false" ${label ? `data-label="${escapeAttr(label)}"` : ''}>${captionHtml}<table class="ve-table" contenteditable="true"><tbody><tr><td>Data</td></tr></tbody></table></div>`
   }
 
   const htmlRows: string[] = []
@@ -722,7 +751,8 @@ function parseTabularToHtml(tabularBlock: string, startLine = 1, endLine = 1): s
   })
 
   return `
-    <div class="ve-table-wrap" data-line="${startLine}" data-end-line="${endLine}" contenteditable="false">
+    <div class="ve-table-wrap" data-line="${startLine}" data-end-line="${endLine}" contenteditable="false" ${label ? `data-label="${escapeAttr(label)}"` : ''}>
+      ${captionHtml}
       <table class="ve-table" contenteditable="true">
         <tbody>
           ${htmlRows.join('\n')}
@@ -802,10 +832,7 @@ function serializeHtmlToLatex(root: HTMLElement): string {
         const math = input ? input.value : (el.getAttribute('data-latex') || '')
         parts.push(`\\begin{equation}\n  ${math.trim()}\n\\end{equation}`)
       } else if (el.classList.contains('ve-table-wrap') || tag === 'table') {
-        const table = (tag === 'table' ? el : el.querySelector('table')) as HTMLTableElement | null
-        if (table) {
-          parts.push(serializeTableToLatex(table))
-        }
+        parts.push(serializeTableToLatex(el))
       } else if (el.classList.contains('ve-figure-card')) {
         const cap = el.querySelector('.ve-figure-caption-text')?.textContent?.trim() || 'Figure'
         parts.push(`\\begin{figure}[htbp]\n  \\centering\n  \\caption{${cap}}\n\\end{figure}`)
@@ -857,7 +884,13 @@ function serializeHtmlToLatex(root: HTMLElement): string {
   return parts.join('\n\n')
 }
 
-function serializeTableToLatex(table: HTMLTableElement): string {
+function serializeTableToLatex(tableOrWrap: HTMLElement): string {
+  const table = (tableOrWrap.tagName.toLowerCase() === 'table' ? tableOrWrap : tableOrWrap.querySelector('table')) as HTMLTableElement | null
+  if (!table) return ''
+  const captionEl = tableOrWrap.querySelector('.ve-table-caption-text')
+  const caption = captionEl?.textContent?.trim() || ''
+  const labelAttr = tableOrWrap.getAttribute('data-label')
+
   const trs = Array.from(table.querySelectorAll('tr'))
   if (trs.length === 0) return ''
 
@@ -867,19 +900,26 @@ function serializeTableToLatex(table: HTMLTableElement): string {
     if (cellCount > maxCols) maxCols = cellCount
   })
 
-  const colAlign = '|' + 'c|'.repeat(maxCols)
+  const colAlign = 'l' + 'c'.repeat(Math.max(0, maxCols - 1))
   const rowsLatex: string[] = []
 
-  trs.forEach((tr) => {
+  trs.forEach((tr, idx) => {
     const cells = Array.from(tr.querySelectorAll('th, td')).map((c) => serializeInline(c as HTMLElement).trim())
-    rowsLatex.push('    ' + cells.join(' & ') + ' \\\\ \\hline')
+    rowsLatex.push('    ' + cells.join(' & ') + ' \\\\')
+    if (idx === 0) {
+      rowsLatex.push('    \\midrule')
+    }
   })
+
+  const captionLine = caption ? `  \\caption{${caption}}\n` : ''
+  const labelLine = labelAttr ? `  \\label{${labelAttr}}\n` : ''
 
   return `\\begin{table}[htbp]
   \\centering
-  \\begin{tabular}{${colAlign}}
-    \\hline
+${captionLine}${labelLine}  \\begin{tabular}{${colAlign}}
+    \\toprule
 ${rowsLatex.join('\n')}
+    \\bottomrule
   \\end{tabular}
 \\end{table}`
 }

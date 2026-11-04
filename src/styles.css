@@ -723,6 +723,94 @@ body {
 }
 
 /* ==========================================================================
+   Tactical Far-Left Activity Bar (Icon Dock)
+   ========================================================================== */
+.tactical-activity-bar {
+  width: 48px;
+  background: var(--bg-secondary);
+  border-right: 1.5px solid var(--border-color);
+  display: flex;
+  flex-direction: column;
+  justify-content: space-between;
+  align-items: center;
+  padding: 8px 0;
+  flex-shrink: 0;
+  z-index: 30;
+}
+
+.activity-bar-top,
+.activity-bar-bottom {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 6px;
+  width: 100%;
+}
+
+.act-bar-btn {
+  width: 38px;
+  height: 38px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  background: transparent;
+  border: 1.5px solid transparent;
+  color: var(--text-secondary);
+  cursor: pointer;
+  position: relative;
+  transition: all 0.15s ease;
+  border-radius: 0;
+}
+
+.act-bar-btn:hover {
+  background: var(--bg-tertiary);
+  color: var(--accent-orange);
+  border-color: var(--border-color);
+}
+
+.act-bar-btn.active {
+  background: var(--bg-primary);
+  color: var(--accent-orange);
+  border-color: var(--border-color);
+  box-shadow: inset 3px 0 0 var(--accent-orange);
+}
+
+.act-icon {
+  font-size: 16px;
+  line-height: 1;
+}
+
+.act-lang-text {
+  font-family: var(--font-mono);
+  font-size: 10.5px;
+  font-weight: 700;
+  letter-spacing: 0.05em;
+  color: var(--text-primary);
+}
+
+.act-bar-divider {
+  width: 28px;
+  height: 1px;
+  background: var(--border-color);
+  margin: 4px 0;
+  opacity: 0.5;
+}
+
+.act-badge {
+  position: absolute;
+  top: 4px;
+  right: 4px;
+  background: var(--accent-orange);
+  color: #ffffff;
+  font-family: var(--font-mono);
+  font-size: 9px;
+  font-weight: 700;
+  padding: 1px 4px;
+  border-radius: 2px;
+  line-height: 1;
+}
+
+/* ==========================================================================
    Main Workspace Container & Mode Switching
    ========================================================================== */
 .app-main-view {
@@ -1115,8 +1203,44 @@ body {
 
 /* Word-Style Tables */
 .ve-table-wrap {
-  margin: 16px 0;
+  margin: 18px 0;
   overflow-x: auto;
+  border: 1.5px solid var(--border-color);
+  background: var(--bg-primary);
+}
+
+.ve-table-caption-bar {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  padding: 6px 12px;
+  background: var(--bg-tertiary);
+  border-bottom: 1.5px solid var(--border-color);
+  font-family: var(--font-mono);
+  font-size: 11px;
+}
+
+.ve-table-badge {
+  font-weight: 700;
+  color: var(--accent-orange);
+  letter-spacing: 0.05em;
+}
+
+.ve-table-caption-text {
+  font-weight: 700;
+  color: var(--text-primary);
+  outline: none;
+  border-bottom: 1px dashed transparent;
+}
+
+.ve-table-caption-text:hover,
+.ve-table-caption-text:focus {
+  border-bottom-color: var(--accent-orange);
+}
+
+.ve-table-label-tag {
+  color: var(--text-muted);
+  font-size: 10px;
 }
 
 .ve-table {
@@ -1125,7 +1249,7 @@ body {
   font-family: var(--font-serif);
   font-size: 14.5px;
   background: var(--bg-primary);
-  border: 1.5px solid var(--border-color);
+  border: none;
 }
 
 .ve-table th, .ve-table td {
@@ -2157,16 +2281,17 @@ body {
 /* Comments & Review Drawers */
 .comments-drawer {
   position: fixed;
-  top: 48px;
+  top: 50px;
   right: 0;
-  width: 380px;
-  height: calc(100vh - 48px);
+  width: 420px;
+  max-width: 90vw;
+  height: calc(100vh - 50px - 28px);
   background: var(--bg-primary);
   box-shadow: -8px 0 30px rgba(0, 0, 0, 0.5);
   border-left: 1.5px solid var(--border-color);
   display: flex;
   flex-direction: column;
-  z-index: 90;
+  z-index: 100;
 }
 
 .drawer-header {
@@ -2480,10 +2605,21 @@ body {
   height: 100%;
   flex-direction: column;
   overflow: hidden;
+  transition: padding-right 0.2s cubic-bezier(0.16, 1, 0.3, 1);
 }
 
 .app-page-view.active {
   display: flex;
+}
+
+#view-workspace.has-side-drawer {
+  padding-right: 420px;
+}
+
+@media (max-width: 1100px) {
+  #view-workspace.has-side-drawer {
+    padding-right: 0;
+  }
 }
 
 .dashboard-container {
@@ -3820,35 +3956,363 @@ body {
   color: var(--text-primary);
 }
 
-/* Diagnostics Hidden Drawer */
-.diagnostics-drawer {
-  position: fixed;
-  bottom: 34px;
-  right: 16px;
-  width: 540px;
-  max-height: 400px;
-  background: var(--bg-primary);
-  border: 1.5px solid var(--border-color);
-  border-radius: 0;
-  box-shadow: 4px 4px 0 rgba(0, 0, 0, 0.4);
-  z-index: 95;
-  display: none;
-  flex-direction: column;
-  overflow: hidden;
-  font-family: var(--font-mono);
+/* ==========================================================================
+   Overleaf-Style Preview Pane & Diagnostics Log Drawer (Image 1 & 2 layout)
+   ========================================================================== */
+.overleaf-preview-panel {
+  display: flex !important;
+  flex-direction: column !important;
+  flex: 1 !important;
+  min-width: 280px !important;
+  height: 100% !important;
+  position: relative !important;
+  overflow: hidden !important;
+  padding: 0 !important;
+  background: var(--bg-secondary) !important;
 }
 
-.diagnostics-drawer.open {
+.overleaf-preview-toolbar {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 6px 14px;
+  background: var(--bg-primary);
+  border-bottom: 1.5px solid var(--border-color);
+  flex-shrink: 0;
+  min-height: 44px;
+  box-sizing: border-box;
+  z-index: 20;
+}
+
+.overleaf-toolbar-left {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
+.overleaf-toolbar-right {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+}
+
+.overleaf-recompile-btn {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  background: #0e8a16;
+  color: #ffffff;
+  font-family: var(--font-sans, -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif);
+  font-size: 12.5px;
+  font-weight: 700;
+  border: none;
+  border-radius: 4px;
+  padding: 6px 16px;
+  cursor: pointer;
+  transition: background 0.15s ease, transform 0.05s ease;
+  box-shadow: 0 1px 2px rgba(0, 0, 0, 0.15);
+}
+
+.overleaf-recompile-btn:hover {
+  background: #15803d;
+}
+
+.overleaf-recompile-btn:active {
+  transform: translateY(1px);
+}
+
+.recompile-play-icon {
+  font-size: 10px;
+  display: inline-block;
+}
+
+.overleaf-log-btn {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  background: var(--bg-secondary);
+  border: 1.5px solid var(--border-color);
+  border-radius: 4px;
+  padding: 5px 9px;
+  cursor: pointer;
+  color: var(--text-primary);
+  transition: all 0.15s ease;
+}
+
+.overleaf-log-btn:hover {
+  background: var(--bg-tertiary);
+  border-color: var(--accent-orange, #ff6600);
+}
+
+.overleaf-log-icon {
+  font-size: 14px;
+  line-height: 1;
+}
+
+.overleaf-badge-pill {
+  display: inline-block;
+  padding: 1px 6px;
+  border-radius: 10px;
+  font-size: 10.5px;
+  font-weight: 700;
+  color: #ffffff;
+  min-width: 14px;
+  text-align: center;
+}
+
+.overleaf-badge-pill.badge-error {
+  background: #ef4444;
+}
+
+.overleaf-badge-pill.badge-warning {
+  background: #f59e0b;
+  color: #000;
+}
+
+.overleaf-badge-pill.badge-info {
+  background: #3b82f6;
+}
+
+.overleaf-tool-btn {
+  display: inline-flex;
+  align-items: center;
+  gap: 4px;
+  background: var(--bg-tertiary);
+  border: 1px solid var(--border-color);
+  border-radius: 4px;
+  padding: 5px 10px;
+  font-family: var(--font-mono);
+  font-size: 11px;
+  font-weight: 700;
+  color: var(--text-primary);
+  cursor: pointer;
+}
+
+.overleaf-tool-btn:hover {
+  background: var(--text-primary);
+  color: var(--bg-primary);
+}
+
+/* Overleaf Log Drawer */
+.overleaf-log-drawer {
+  display: none;
+  flex-direction: column;
+  width: 100%;
+  max-height: 52%;
+  background: var(--bg-primary);
+  border-bottom: 2px solid var(--border-color);
+  z-index: 30;
+  flex-shrink: 0;
+  box-shadow: 0 4px 16px rgba(0, 0, 0, 0.2);
+  animation: overleafDrawerSlide 0.18s ease-out;
+}
+
+.overleaf-log-drawer.open {
   display: flex;
 }
 
-.diagnostics-drawer-body {
-  padding: 12px 16px;
-  max-height: 320px;
+@keyframes overleafDrawerSlide {
+  from {
+    transform: translateY(-8px);
+    opacity: 0;
+  }
+  to {
+    transform: translateY(0);
+    opacity: 1;
+  }
+}
+
+.overleaf-log-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 8px 14px;
+  background: var(--bg-secondary);
+  border-bottom: 1px solid var(--border-color);
+}
+
+.overleaf-log-title {
+  font-family: var(--font-sans, -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif);
+  font-size: 12.5px;
+  font-weight: 700;
+  color: var(--text-primary);
+}
+
+.overleaf-log-header-actions {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
+.overleaf-sub-btn {
+  background: var(--bg-primary);
+  border: 1px solid var(--border-color);
+  border-radius: 4px;
+  padding: 3px 9px;
+  font-size: 11px;
+  font-weight: 600;
+  color: var(--text-secondary);
+  cursor: pointer;
+}
+
+.overleaf-sub-btn:hover {
+  border-color: var(--text-primary);
+  color: var(--text-primary);
+}
+
+.overleaf-log-close {
+  background: transparent;
+  border: none;
+  font-size: 20px;
+  line-height: 1;
+  color: var(--text-muted);
+  cursor: pointer;
+  padding: 0 4px;
+}
+
+.overleaf-log-close:hover {
+  color: var(--text-primary);
+}
+
+.overleaf-log-tabs {
+  display: flex;
+  gap: 4px;
+  padding: 0 12px;
+  background: var(--bg-primary);
+  border-bottom: 1.5px solid var(--border-color);
+  overflow-x: auto;
+}
+
+.overleaf-log-tab {
+  background: transparent;
+  border: none;
+  border-bottom: 2.5px solid transparent;
+  padding: 7px 12px;
+  font-size: 11.5px;
+  font-weight: 600;
+  color: var(--text-muted);
+  cursor: pointer;
+  transition: all 0.1s ease;
+}
+
+.overleaf-log-tab:hover {
+  color: var(--text-primary);
+}
+
+.overleaf-log-tab.active {
+  color: #0e8a16;
+  border-bottom-color: #0e8a16;
+  font-weight: 700;
+}
+
+.overleaf-log-body {
+  flex: 1;
   overflow-y: auto;
+  padding: 10px 14px;
+  max-height: 290px;
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
+
+.overleaf-log-item {
+  display: flex;
+  align-items: flex-start;
+  gap: 10px;
+  padding: 8px 12px;
+  background: var(--bg-secondary);
+  border: 1px solid var(--border-color);
+  border-radius: 4px;
+  cursor: pointer;
+  transition: background 0.12s ease, border-color 0.12s ease;
+  font-family: var(--font-sans, -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif);
+}
+
+.overleaf-log-item:hover {
+  background: var(--bg-tertiary);
+  border-color: var(--accent-orange, #ff6600);
+}
+
+.overleaf-log-pill {
+  display: inline-block;
+  padding: 2px 7px;
+  border-radius: 3px;
+  font-size: 10.5px;
+  font-weight: 700;
   font-family: var(--font-mono);
+  white-space: nowrap;
+  flex-shrink: 0;
+}
+
+.overleaf-log-pill.pill-error {
+  background: #fee2e2;
+  color: #b91c1c;
+  border: 1px solid #fca5a5;
+}
+
+.overleaf-log-pill.pill-warning {
+  background: #fef3c7;
+  color: #b45309;
+  border: 1px solid #fde68a;
+}
+
+.overleaf-log-pill.pill-info {
+  background: #e0f2fe;
+  color: #0369a1;
+  border: 1px solid #bae6fd;
+}
+
+.overleaf-log-text-wrap {
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+  min-width: 0;
+  flex: 1;
+}
+
+.overleaf-log-headline {
   font-size: 12px;
-  line-height: 1.5;
+  font-weight: 700;
+  color: var(--text-primary);
+  line-height: 1.35;
+  word-break: break-word;
+}
+
+.overleaf-log-details {
+  font-size: 11px;
+  color: var(--text-muted);
+  line-height: 1.3;
+  font-family: var(--font-mono);
+  word-break: break-word;
+}
+
+.overleaf-raw-log {
+  flex: 1;
+  margin: 0;
+  padding: 10px 14px;
+  background: var(--bg-tertiary);
+  color: var(--text-primary);
+  font-family: var(--font-mono);
+  font-size: 11.5px;
+  line-height: 1.45;
+  overflow: auto;
+  max-height: 290px;
+  white-space: pre-wrap;
+  word-break: break-all;
+}
+
+.overleaf-pdf-area {
+  flex: 1;
+  width: 100%;
+  height: 100%;
+  min-height: 0;
+  overflow: auto;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  padding: 10px;
+  box-sizing: border-box;
+  position: relative;
 }
 
 .status-diagnostics-pill {
@@ -3860,13 +4324,7 @@ body {
   font-family: var(--font-mono);
   font-size: 11px;
   font-weight: 700;
-  cursor: pointer;
   letter-spacing: 0.05em;
-}
-
-.status-diagnostics-pill:hover {
-  background: #4ADE80;
-  color: #111111;
 }
 
 /* ==========================================================================
@@ -5264,22 +5722,35 @@ body {
   display: flex;
   align-items: center;
   justify-content: center;
-  background: #ffffff;
+  background: var(--bg-primary);
+  background-image: radial-gradient(rgba(255, 77, 45, 0.08) 1px, transparent 1px);
+  background-size: 20px 20px;
   position: relative;
 }
 
 .tikz-empty-state {
   text-align: center;
-  max-width: 320px;
-  color: #64748B;
+  max-width: 340px;
+  color: var(--text-muted);
   font-size: 12.5px;
   line-height: 1.5;
+  background: var(--bg-secondary);
+  border: 1.5px dashed var(--border-color);
+  padding: 24px;
 }
 
 .tikz-empty-state .empty-icon {
   font-size: 36px;
   display: block;
   margin-bottom: 10px;
+  filter: drop-shadow(0 2px 4px rgba(0, 0, 0, 0.3));
+}
+
+.tikz-canvas-output {
+  background: #ffffff;
+  padding: 16px;
+  box-shadow: 0 12px 36px rgba(0, 0, 0, 0.6);
+  border: 1.5px solid var(--border-color);
 }
 
 .tikz-error-box {
@@ -5335,18 +5806,18 @@ body {
 
 .ai-assistant-drawer {
   position: fixed;
-  top: 48px;
+  top: 50px;
   right: 0;
   width: 420px;
-  max-width: 95vw;
-  height: calc(100vh - 48px);
+  max-width: 90vw;
+  height: calc(100vh - 50px - 28px);
   background: var(--bg-primary, #ffffff);
   color: var(--text-primary, #111827);
-  box-shadow: -6px 0 24px rgba(0, 0, 0, 0.16);
-  border-left: 2px solid var(--border-color, #1a1a1a);
+  box-shadow: -8px 0 30px rgba(0, 0, 0, 0.5);
+  border-left: 1.5px solid var(--border-color, #1a1a1a);
   display: flex;
   flex-direction: column;
-  z-index: 95;
+  z-index: 100;
   font-family: var(--font-sans, system-ui, -apple-system, sans-serif);
 }
 

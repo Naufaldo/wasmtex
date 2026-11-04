@@ -1,14 +1,14 @@
 import type { ModelAdapter } from '../types'
 
 export interface ErrorDiagnosisInput {
-  errors: Array<{ message: string; file?: string; line?: number; code?: string }>
-  logExcerpt?: string
-  relevantFiles?: Record<string, string>
+  errors: Array<{ message: string; file?: string | undefined; line?: number | undefined; code?: string | undefined }>
+  logExcerpt?: string | undefined
+  relevantFiles?: Record<string, string> | undefined
 }
 
 export interface ProposedFix {
   file: string
-  line?: number
+  line?: number | undefined
   explanation: string
   oldSnippet: string
   newSnippet: string

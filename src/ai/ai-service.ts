@@ -189,8 +189,8 @@ export class AIService {
   }
 
   async diagnoseErrors(
-    errors: Array<{ message: string; file?: string; line?: number; code?: string }>,
-    logExcerpt?: string,
+    errors: Array<{ message: string; file?: string | undefined; line?: number | undefined; code?: string | undefined }>,
+    logExcerpt?: string | undefined,
   ): Promise<DiagnosisResult> {
     const relevantFiles: Record<string, string> = {}
     for (const f of this.options.fs.listFiles()) {

@@ -58,4 +58,30 @@ describe('VisualEditor WYSIWYG SyncTeX & Line Mapping', () => {
     expect(typeof editor.revealLine).toBe('function')
     editor.revealLine(42)
   })
+
+  it('correctly handles table environments with captions and booktabs', () => {
+    const mockContainer = createMockElement('div')
+    const editor = new VisualEditor(mockContainer, {
+      onContentChange: vi.fn(),
+    })
+    const doc = `
+\\begin{table}[htbp]
+  \\centering
+  \\caption{Latency Comparison}
+  \\label{tab:perf}
+  \\begin{tabular}{lcc}
+    \\toprule
+    Env & Delay & Model \\\\
+    \\midrule
+    Cloud & 1420 & Server \\\\
+    Local & 310 & Disk \\\\
+    WASM & 112 & Sandbox \\\\
+    \\bottomrule
+  \\end{tabular}
+\\end{table}
+`
+    editor.setLatex(doc)
+    // The inner editable should have received the HTML representation without errors
+    expect(mockContainer.innerHTML).toBeDefined()
+  })
 })

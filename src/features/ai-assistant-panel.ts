@@ -24,8 +24,8 @@ import { t } from '../ui/i18n'
 
 export interface AiAssistantPanelOptions {
   getEditor: () => WasmTex | null
-  getCompilerErrors: () => Array<{ message: string; file?: string; line?: number; code?: string }>
-  getProjectId?: () => string
+  getCompilerErrors: () => Array<{ message: string; file?: string | undefined; line?: number | undefined; code?: string | undefined }>
+  getProjectId?: (() => string) | undefined
   onRecompile: () => void
   onInsertText: (text: string) => void
   onReplaceSelection: (text: string) => void
@@ -156,6 +156,8 @@ export class AiAssistantPanel {
 
     this.bindEvents()
     this.renderTabContent()
+    document.getElementById('view-workspace')?.classList.add('has-side-drawer')
+    setTimeout(() => window.dispatchEvent(new Event('resize')), 250)
   }
 
   close(): void {
@@ -164,6 +166,8 @@ export class AiAssistantPanel {
       this.container.remove()
       this.container = null
     }
+    document.getElementById('view-workspace')?.classList.remove('has-side-drawer')
+    setTimeout(() => window.dispatchEvent(new Event('resize')), 250)
     if (this.pendingApprovalResolver) {
       this.pendingApprovalResolver(false)
       this.pendingApprovalResolver = null

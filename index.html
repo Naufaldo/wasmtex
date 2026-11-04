@@ -22,7 +22,7 @@
 
     <!-- View 2: Overleaf-style Editor Workspace -->
     <div id="view-workspace" class="app-page-view">
-      <!-- Editor Top Bar (CorTeX Tactical Brutalist Style) -->
+      <!-- Editor Top Bar (CorTeX Tactical Compact) -->
       <header class="app-topbar">
         <div class="topbar-left">
           <button id="btn-back-dashboard" class="topbar-back-btn" title="Kembali ke Dashboard">
@@ -34,63 +34,60 @@
         </div>
 
         <div class="topbar-center">
-          <nav class="topbar-nav">
-            <button id="nav-tab-editor" class="topbar-nav-tab active">[ ✍️ EDITOR ]</button>
-            <button id="nav-tab-library" class="topbar-nav-tab">[ 📚 RESEARCH LIBRARY ]</button>
-          </nav>
-        </div>
-
-        <div class="topbar-actions">
-          <!-- Tactical Action Icons -->
-          <button id="btn-review" class="topbar-icon-action" title="Track Changes & Review">
-            <span class="icon-svg">📝</span> Review <span id="badge-review" class="topbar-badge" style="display:none">0</span>
-          </button>
-          <button id="btn-comments" class="topbar-icon-action" title="Komentar / Comments">
-            <span class="icon-svg">💬</span> <span id="badge-comments" class="topbar-badge" style="display:none">0</span>
-          </button>
-          <button id="btn-history" class="topbar-icon-action" title="Riwayat Versi / History">
-            <span class="icon-svg">🕒</span> History
-          </button>
-          <button id="btn-search" class="topbar-icon-action" title="Cari di Proyek (Ctrl+Shift+F)">
-            <span class="icon-svg">🔍</span>
-          </button>
-          <button id="btn-tikz-scratchpad" class="topbar-icon-action" title="TikZ / Figure Scratchpad (Editor Diagram Cepat)">
-            <span class="icon-svg">📐</span> TikZ
-          </button>
-          <button id="btn-ai-assistant" class="topbar-icon-action" title="AI Research & LaTeX Assistant">
-            <span class="icon-svg">✨</span> AI Agent
-          </button>
-          <button id="btn-theme-toggle" class="topbar-icon-action" title="Ganti Mode Gelap / Terang">
-            <span id="theme-icon">🌙</span>
-          </button>
-          <button id="btn-lang-toggle" class="topbar-icon-action" title="Ganti Bahasa / Switch Language">
-            <span id="lang-icon" style="font-family: var(--font-mono); font-size: 11px; font-weight: 700;">🌐 ID</span>
-          </button>
-
           <div class="editor-mode-toggle" id="editor-mode-toggle">
             <button id="btn-mode-visual" class="mode-btn active" title="Visual WYSIWYG Mode">[ VISUAL ]</button>
             <button id="btn-mode-code" class="mode-btn" title="Monaco Code Mode">[ CODE ]</button>
             <button id="btn-mode-split" class="mode-btn" title="Split Visual & Code Mode">[ SPLIT ]</button>
           </div>
+        </div>
 
-          <button id="recompile-btn" class="tactical-cta-btn cta-orange" style="padding: 6px 14px; font-size: 11.5px;" title="Kompilasi LaTeX PDF (F5 / Ctrl+Enter)">
-            <span class="bracket-corner tl"></span>
-            <span class="bracket-corner tr"></span>
-            <span class="bracket-corner bl"></span>
-            <span class="bracket-corner br"></span>
-            <span class="cta-inner">▶ RECOMPILE</span>
-          </button>
-          <button id="download-pdf-btn" class="tactical-btn-action" style="padding: 6px 12px; font-size: 11.5px; font-weight: 700;" title="Unduh hasil PDF">
-            ⬇ PDF
-          </button>
-          <button id="btn-arxiv-export" class="tactical-btn-action" style="padding: 6px 12px; font-size: 11.5px; font-weight: 700;" title="Ekspor Paket arXiv / Camera-Ready (.zip)">
-            📦 arXiv
-          </button>
+        <div class="topbar-actions">
+          <!-- Tactical indicators if needed, Recompile moved to PDF preview pane -->
         </div>
       </header>
 
-      <!-- Main Workspace Views -->
+      <!-- Main Workspace Views with Left Activity Bar -->
       <main class="app-main-view">
+        <!-- Far-Left Activity Bar (Icon Dock, 48px) -->
+        <nav class="tactical-activity-bar" id="tactical-activity-bar">
+          <div class="activity-bar-top">
+            <button id="nav-tab-editor" class="act-bar-btn active" title="Editor & Berkas Proyek (File Tree)">
+              <span class="act-icon">📁</span>
+            </button>
+            <button id="btn-search" class="act-bar-btn" title="Cari di Proyek (Ctrl+Shift+F)">
+              <span class="act-icon">🔍</span>
+            </button>
+            <button id="btn-ai-assistant" class="act-bar-btn" title="AI Research Assistant">
+              <span class="act-icon">✨</span>
+            </button>
+            <button id="btn-review" class="act-bar-btn" title="Track Changes & Review">
+              <span class="act-icon">📝</span>
+              <span id="badge-review" class="act-badge" style="display:none">0</span>
+            </button>
+            <button id="btn-comments" class="act-bar-btn" title="Komentar Dokumen">
+              <span class="act-icon">💬</span>
+              <span id="badge-comments" class="act-badge" style="display:none">0</span>
+            </button>
+            <button id="btn-tikz-scratchpad" class="act-bar-btn" title="TikZ / Figure Scratchpad (Editor Diagram Cepat)">
+              <span class="act-icon">📐</span>
+            </button>
+            <button id="btn-history" class="act-bar-btn" title="Riwayat Versi / History">
+              <span class="act-icon">🕒</span>
+            </button>
+            <div class="act-bar-divider"></div>
+            <button id="nav-tab-library" class="act-bar-btn" title="Pustaka Riset / Research Library">
+              <span class="act-icon">📚</span>
+            </button>
+          </div>
+          <div class="activity-bar-bottom">
+            <button id="btn-theme-toggle" class="act-bar-btn" title="Ganti Mode Gelap / Terang">
+              <span id="theme-icon" class="act-icon">🌙</span>
+            </button>
+            <button id="btn-lang-toggle" class="act-bar-btn" title="Ganti Bahasa (ID / EN)">
+              <span id="lang-icon" class="act-icon act-lang-text">ID</span>
+            </button>
+          </div>
+        </nav>
         <!-- 1. Editor View -->
         <div id="view-editor" class="view-panel active">
           <!-- Tactical Brutalist Left Sidebar -->
@@ -125,8 +122,64 @@
 
           <div class="divider"></div>
 
-          <!-- Right PDF Preview Area -->
-          <div id="preview-container" class="le-viewer panel"></div>
+          <!-- Right PDF Preview & Overleaf-Style Compilation Pane -->
+          <div id="preview-panel" class="overleaf-preview-panel le-viewer panel">
+            <!-- Overleaf-Style Preview Toolbar (Top of PDF pane) -->
+            <div class="overleaf-preview-toolbar" id="overleaf-preview-toolbar">
+              <div class="overleaf-toolbar-left">
+                <!-- Overleaf Green Recompile Button -->
+                <button id="recompile-btn" class="overleaf-recompile-btn" title="Kompilasi LaTeX PDF (Ctrl+Enter / F5)">
+                  <span class="recompile-play-icon">▶</span>
+                  <span class="recompile-label">Recompile</span>
+                </button>
+
+                <!-- Overleaf Log & Output Files Button with Badge -->
+                <button id="btn-toggle-diagnostics" class="overleaf-log-btn" title="Logs & output files">
+                  <span class="overleaf-log-icon">📄</span>
+                  <span id="log-badge-pill" class="overleaf-badge-pill" style="display: none;">0</span>
+                </button>
+              </div>
+
+              <div class="overleaf-toolbar-right">
+                <button id="download-pdf-btn" class="overleaf-tool-btn" title="Unduh hasil PDF">
+                  <span class="overleaf-tool-icon">⬇</span> PDF
+                </button>
+                <button id="btn-arxiv-export" class="overleaf-tool-btn" title="Ekspor Paket arXiv / Camera-Ready (.zip)">
+                  <span class="overleaf-tool-icon">📦</span> arXiv
+                </button>
+              </div>
+            </div>
+
+            <!-- Overleaf Log Drawer (Slides down over the preview, matching Image 1) -->
+            <div id="diagnostics-drawer" class="overleaf-log-drawer">
+              <div class="overleaf-log-header">
+                <div class="overleaf-log-title" id="overleaf-log-title">
+                  0 Logs: 0 errors, 0 warnings, 0 info
+                </div>
+                <div class="overleaf-log-header-actions">
+                  <button id="btn-toggle-raw-log" class="overleaf-sub-btn">View raw logs</button>
+                  <button class="overleaf-log-close" id="diagnostics-drawer-close" title="Close log panel">&times;</button>
+                </div>
+              </div>
+
+              <!-- Overleaf Filter Tabs (All Logs, Errors, Warnings, Info) -->
+              <div class="overleaf-log-tabs" id="overleaf-log-tabs">
+                <button class="overleaf-log-tab active" data-log-tab="all" id="tab-log-all">All Logs (0)</button>
+                <button class="overleaf-log-tab" data-log-tab="error" id="tab-log-error">Errors (0)</button>
+                <button class="overleaf-log-tab" data-log-tab="warning" id="tab-log-warning">Warnings (0)</button>
+                <button class="overleaf-log-tab" data-log-tab="info" id="tab-log-info">Info (0)</button>
+              </div>
+
+              <!-- Overleaf Structured Log List -->
+              <div id="error-log-list" class="overleaf-log-body"></div>
+
+              <!-- Raw Monospace Log Output (toggled via View raw logs) -->
+              <pre id="raw-log-output" class="overleaf-raw-log" style="display: none;"></pre>
+            </div>
+
+            <!-- Actual PDF View Area -->
+            <div id="preview-container" class="overleaf-pdf-area"></div>
+          </div>
         </div>
 
         <!-- 2. Research Library View -->
@@ -135,15 +188,6 @@
         </div>
       </main>
 
-      <!-- Hidden Diagnostics Drawer (Popup on demand, never blocks screen) -->
-      <div id="diagnostics-drawer" class="diagnostics-drawer">
-        <div class="drawer-header">
-          <span class="drawer-title">Diagnostics & Compiler Output</span>
-          <button class="modal-close-btn" id="diagnostics-drawer-close">&times;</button>
-        </div>
-        <div id="error-log-list" class="diagnostics-drawer-body"></div>
-      </div>
-
       <!-- Minimal Status Bar -->
       <footer id="status-bar" class="le-status-bar">
         <div class="le-status-group">
@@ -151,9 +195,9 @@
           <span id="status-detail"></span>
         </div>
         <div class="le-status-controls">
-          <button id="btn-toggle-diagnostics" class="status-diagnostics-pill" title="Click to view compiler diagnostics">
+          <div id="footer-diagnostics-badge" class="status-diagnostics-pill" title="Compiler status">
             ✓ 0 Diagnostics
-          </button>
+          </div>
           <div class="le-version-info">
             <label for="texlive-version">TeX Live:</label>
             <select id="texlive-version" class="le-version-select">

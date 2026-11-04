@@ -86,6 +86,8 @@ export class CommentsPanel {
     document.body.appendChild(panel)
     this.container = panel
     this.isOpen = true
+    document.getElementById('view-workspace')?.classList.add('has-side-drawer')
+    setTimeout(() => window.dispatchEvent(new Event('resize')), 250)
 
     panel.querySelector('#drawer-close')?.addEventListener('click', () => this.close())
 
@@ -113,6 +115,8 @@ export class CommentsPanel {
       this.container.remove()
       this.container = null
       this.isOpen = false
+      document.getElementById('view-workspace')?.classList.remove('has-side-drawer')
+      setTimeout(() => window.dispatchEvent(new Event('resize')), 250)
     }
   }
 

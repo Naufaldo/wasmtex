@@ -93,6 +93,8 @@ export class ReviewManager {
 
     document.body.appendChild(panel)
     this.container = panel
+    document.getElementById('view-workspace')?.classList.add('has-side-drawer')
+    setTimeout(() => window.dispatchEvent(new Event('resize')), 250)
 
     panel.querySelector('#review-close')?.addEventListener('click', () => this.close())
 
@@ -119,6 +121,8 @@ export class ReviewManager {
     if (this.container) {
       this.container.remove()
       this.container = null
+      document.getElementById('view-workspace')?.classList.remove('has-side-drawer')
+      setTimeout(() => window.dispatchEvent(new Event('resize')), 250)
     }
   }
 

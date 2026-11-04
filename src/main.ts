@@ -15,13 +15,21 @@ import { unzipLatexProject } from './fs/unzip'
 import { WasmTexCompiler } from './headless'
 import { LibraryView } from './library/library-view'
 import type { SectionDef } from './lsp/types'
-import { mergeDiagnostics, type PanelDiagnostic, resolveAddFile } from './main-helpers'
+import {
+  filterLogEntries,
+  mergeDiagnostics,
+  type OverleafLogSummary,
+  type PanelDiagnostic,
+  parseOverleafLogEntries,
+  resolveAddFile,
+  summarizeLogEntries,
+} from './main-helpers'
 import { DashboardView } from './projects/dashboard-view'
 import { getProject, type ProjectItem, saveProject } from './projects/project-store'
 import type { AppStatus, WarmupCache } from './types'
 import { HomeView } from './ui/home-view'
 import { getLang, type Lang, t, toggleLang } from './ui/i18n'
-import { tacticalPrompt, tacticalConfirm, tacticalAlert } from './ui/tactical-dialog'
+import { tacticalAlert, tacticalConfirm, tacticalPrompt } from './ui/tactical-dialog'
 import { configurePdfjsWorker } from './viewer/pdf-viewer'
 import { WasmTex } from './wasmtex'
 import './styles.css'
@@ -57,6 +65,11 @@ let lastCompileErrors: PanelDiagnostic[] = []
 // Static (LSP/lint) diagnostics, kept so a compile re-renders the union instead of
 // clobbering them out of the panel.
 let lastDiagnostics: PanelDiagnostic[] = []
+let lastLogDiagnostics: PanelDiagnostic[] = []
+let allCurrentDiagnostics: PanelDiagnostic[] = []
+let lastRawLog = ''
+let currentLogFilter: 'all' | 'error' | 'warning' | 'info' = 'all'
+let isViewingRawLog = false
 
 const DEFAULT_TEXLIVE = '2025' as const
 const DEFAULT_PROJECT = 'default' as const
@@ -225,7 +238,11 @@ function renderFileList(files: string[]): void {
         const confirmed = await tacticalConfirm({
           title: t('Hapus Berkas', 'Delete File', getLang()),
           specTag: t('VFS // HAPUS BERKAS', 'VFS // DELETE FILE', getLang()),
-          message: t(`Yakin ingin menghapus berkas "${filePath}"? Tindakan ini tidak dapat dibatalkan.`, `Are you sure you want to delete file "${filePath}"? This cannot be undone.`, getLang()),
+          message: t(
+            `Yakin ingin menghapus berkas "${filePath}"? Tindakan ini tidak dapat dibatalkan.`,
+            `Are you sure you want to delete file "${filePath}"? This cannot be undone.`,
+            getLang(),
+          ),
           confirmText: t('YA, HAPUS', 'YES, DELETE', getLang()),
           danger: true,
         })
@@ -280,52 +297,134 @@ function renderOutline(sections: SectionDef[]): void {
   outlineContainer.appendChild(list)
 }
 
-function renderDiagnostics(
-  diagnostics: Array<{ file?: string; line: number; message: string; severity: string }>,
-): void {
-  if (errorLogList) errorLogList.innerHTML = ''
-
-  const errors = diagnostics.filter((entry) => entry.severity === 'error')
-  const warnings = diagnostics.filter((entry) => entry.severity === 'warning')
-
-  const pill = document.getElementById('btn-toggle-diagnostics')
-  if (pill) {
-    if (errors.length > 0) {
-      pill.textContent = `❌ ${errors.length} Error${errors.length > 1 ? 's' : ''}`
-      pill.style.background = '#dc2626'
-    } else if (warnings.length > 0) {
-      pill.textContent = `⚠️ ${warnings.length} Warning${warnings.length > 1 ? 's' : ''}`
-      pill.style.background = '#d97706'
+function updateLogBadges(summary: OverleafLogSummary): void {
+  const logBadge = document.getElementById('log-badge-pill')
+  if (logBadge) {
+    if (summary.errors > 0) {
+      logBadge.textContent = String(summary.errors)
+      logBadge.className = 'overleaf-badge-pill badge-error'
+      logBadge.style.display = 'inline-block'
+    } else if (summary.warnings > 0) {
+      logBadge.textContent = String(summary.warnings)
+      logBadge.className = 'overleaf-badge-pill badge-warning'
+      logBadge.style.display = 'inline-block'
+    } else if (summary.info > 0) {
+      logBadge.textContent = String(summary.info)
+      logBadge.className = 'overleaf-badge-pill badge-info'
+      logBadge.style.display = 'inline-block'
     } else {
-      pill.textContent = '✓ 0 Diagnostics'
-      pill.style.background = 'rgba(255, 255, 255, 0.15)'
+      logBadge.style.display = 'none'
     }
   }
 
-  if (diagnostics.length === 0) {
-    if (errorLogList) {
-      const empty = document.createElement('div')
-      empty.className = 'log-entry'
-      empty.textContent = 'No diagnostics reported'
-      errorLogList.appendChild(empty)
+  const footerBadge = document.getElementById('footer-diagnostics-badge')
+  if (footerBadge) {
+    if (summary.errors > 0) {
+      footerBadge.textContent = `❌ ${summary.errors} Error${summary.errors > 1 ? 's' : ''}`
+      footerBadge.style.background = '#dc2626'
+    } else if (summary.warnings > 0) {
+      footerBadge.textContent = `⚠️ ${summary.warnings} Warning${summary.warnings > 1 ? 's' : ''}`
+      footerBadge.style.background = '#d97706'
+    } else {
+      footerBadge.textContent = '✓ 0 Diagnostics'
+      footerBadge.style.background = 'rgba(255, 255, 255, 0.15)'
     }
+  }
+}
+
+function updateLogHeadersAndTabs(summary: OverleafLogSummary): void {
+  const logTitle = document.getElementById('overleaf-log-title')
+  if (logTitle) {
+    logTitle.textContent = `${summary.total} Logs: ${summary.errors} errors, ${summary.warnings} warnings, ${summary.info} info`
+  }
+
+  const tabAll = document.getElementById('tab-log-all')
+  const tabErr = document.getElementById('tab-log-error')
+  const tabWarn = document.getElementById('tab-log-warning')
+  const tabInfo = document.getElementById('tab-log-info')
+  if (tabAll) tabAll.textContent = `All Logs (${summary.total})`
+  if (tabErr) tabErr.textContent = `Errors (${summary.errors})`
+  if (tabWarn) tabWarn.textContent = `Warnings (${summary.warnings})`
+  if (tabInfo) tabInfo.textContent = `Info (${summary.info})`
+
+  const rawLogPre = document.getElementById('raw-log-output') as HTMLPreElement | null
+  if (rawLogPre) {
+    rawLogPre.textContent = lastRawLog || '(No raw log available)'
+  }
+}
+
+function createLogItemElement(entry: PanelDiagnostic): HTMLElement {
+  const item = document.createElement('div')
+  item.className = 'overleaf-log-item'
+
+  const pill = document.createElement('span')
+  const sev =
+    entry.severity === 'error' || entry.severity === 'warning' || entry.severity === 'info'
+      ? entry.severity
+      : 'info'
+  pill.className = `overleaf-log-pill pill-${sev}`
+  if (entry.line > 0) {
+    pill.textContent = `line ${entry.line}`
+  } else if (entry.file) {
+    pill.textContent = entry.file
+  } else {
+    pill.textContent = entry.severity.toUpperCase()
+  }
+  item.appendChild(pill)
+
+  const textWrap = document.createElement('div')
+  textWrap.className = 'overleaf-log-text-wrap'
+
+  const headline = document.createElement('div')
+  headline.className = 'overleaf-log-headline'
+  headline.textContent = entry.message
+  textWrap.appendChild(headline)
+
+  if (entry.details && entry.details !== entry.message) {
+    const details = document.createElement('div')
+    details.className = 'overleaf-log-details'
+    details.textContent = entry.details
+    textWrap.appendChild(details)
+  }
+
+  item.appendChild(textWrap)
+
+  if (entry.line > 0 || entry.file) {
+    item.title = 'Click to jump to line in editor'
+    item.addEventListener('click', () => {
+      if (editorRef) {
+        editorRef.revealLine(entry.line > 0 ? entry.line : 1, entry.file)
+      }
+    })
+  }
+
+  return item
+}
+
+function renderDiagnostics(diagnostics: PanelDiagnostic[]): void {
+  allCurrentDiagnostics = diagnostics
+  const summary = summarizeLogEntries(allCurrentDiagnostics)
+
+  updateLogBadges(summary)
+  updateLogHeadersAndTabs(summary)
+
+  if (!errorLogList) return
+  errorLogList.innerHTML = ''
+
+  const filtered = filterLogEntries(allCurrentDiagnostics, currentLogFilter)
+  if (filtered.length === 0) {
+    const empty = document.createElement('div')
+    empty.style.padding = '24px'
+    empty.style.textAlign = 'center'
+    empty.style.color = 'var(--text-muted)'
+    empty.style.fontSize = '12px'
+    empty.textContent = `No ${currentLogFilter === 'all' ? '' : currentLogFilter} logs reported`
+    errorLogList.appendChild(empty)
     return
   }
 
-  for (const entry of diagnostics) {
-    const item = document.createElement('div')
-    item.className = `log-entry ${entry.severity}`
-    item.textContent = `${entry.file ? `${entry.file}:` : ''}${entry.line} ${entry.message}`
-
-    if (entry.file) {
-      item.classList.add('clickable')
-      item.title = 'Click to jump to line'
-      item.addEventListener('click', () => {
-        if (editorRef) editorRef.revealLine(entry.line, entry.file)
-      })
-    }
-
-    errorLogList?.appendChild(item)
+  for (const entry of filtered) {
+    errorLogList.appendChild(createLogItemElement(entry))
   }
 }
 
@@ -397,7 +496,7 @@ async function start() {
 
   editor.on('diagnostics', ({ diagnostics }) => {
     lastDiagnostics = diagnostics
-    renderDiagnostics(mergeDiagnostics(lastCompileErrors, lastDiagnostics))
+    renderDiagnostics(mergeDiagnostics(lastCompileErrors, lastDiagnostics, lastLogDiagnostics))
   })
 
   editor.on('status', ({ status, message, incremental }) => {
@@ -420,9 +519,23 @@ async function start() {
     globals.__compileHistory = history
 
     lastCompileErrors = result.errors
-    renderDiagnostics(mergeDiagnostics(lastCompileErrors, lastDiagnostics))
+    lastRawLog = result.log ?? ''
+    lastLogDiagnostics = parseOverleafLogEntries(lastRawLog)
 
-    if (result.errors.length === 0) {
+    const merged = mergeDiagnostics(lastCompileErrors, lastDiagnostics, lastLogDiagnostics)
+    renderDiagnostics(merged)
+
+    // Reset Recompile button state
+    const recompileBtn = document.getElementById('recompile-btn')
+    if (recompileBtn) {
+      recompileBtn.innerHTML =
+        '<span class="recompile-play-icon">▶</span><span class="recompile-label">Recompile</span>'
+    }
+
+    if (result.errors.length > 0) {
+      const diagDrawer = document.getElementById('diagnostics-drawer')
+      diagDrawer?.classList.add('open')
+    } else {
       console.log('[main] compile success')
     }
   })
@@ -493,7 +606,11 @@ async function start() {
       await tacticalAlert({
         title: 'BibTeX',
         specTag: t('BIBTEX // INTEGRASI', 'BIBTEX // INTEGRATION', getLang()),
-        message: t('Entri BibTeX berhasil disisipkan ke refs.bib!', 'BibTeX citation appended to refs.bib!', getLang()),
+        message: t(
+          'Entri BibTeX berhasil disisipkan ke refs.bib!',
+          'BibTeX citation appended to refs.bib!',
+          getLang(),
+        ),
         type: 'success',
       })
     },
@@ -507,10 +624,19 @@ async function start() {
   const viewLibrary = document.getElementById('view-library')!
 
   navTabEditor.addEventListener('click', () => {
-    navTabEditor.classList.add('active')
-    navTabLibrary.classList.remove('active')
-    viewEditor.classList.add('active')
-    viewLibrary.classList.remove('active')
+    if (viewLibrary.classList.contains('active')) {
+      navTabEditor.classList.add('active')
+      navTabLibrary.classList.remove('active')
+      viewEditor.classList.add('active')
+      viewLibrary.classList.remove('active')
+    } else {
+      // Toggle file tree sidebar panel
+      const sidePanel = document.getElementById('file-tree-panel')
+      if (sidePanel) {
+        const isClosed = sidePanel.style.display === 'none'
+        sidePanel.style.display = isClosed ? 'flex' : 'none'
+      }
+    }
   })
 
   navTabLibrary.addEventListener('click', () => {
@@ -554,6 +680,8 @@ async function start() {
   // Recompile Button
   const recompileBtn = document.getElementById('recompile-btn')
   recompileBtn?.addEventListener('click', () => {
+    recompileBtn.innerHTML =
+      '<span class="recompile-play-icon">⏳</span><span class="recompile-label">Recompiling...</span>'
     editor.compile()
   })
 
@@ -571,7 +699,11 @@ async function start() {
       await tacticalAlert({
         title: t('PDF Belum Siap', 'PDF Not Ready', getLang()),
         specTag: t('KOMPILER // STATUS', 'COMPILER // STATUS', getLang()),
-        message: t('PDF belum siap. Klik Recompile terlebih dahulu.', 'PDF is not ready yet. Please click Recompile first.', getLang()),
+        message: t(
+          'PDF belum siap. Klik Recompile terlebih dahulu.',
+          'PDF is not ready yet. Please click Recompile first.',
+          getLang(),
+        ),
         type: 'warning',
       })
       return
@@ -828,13 +960,53 @@ async function start() {
     applyTheme(!isDark)
   })
 
-  // Diagnostics Drawer Toggle
+  // Overleaf Diagnostics Drawer Toggle & Controls
   const diagDrawer = document.getElementById('diagnostics-drawer')
   document.getElementById('btn-toggle-diagnostics')?.addEventListener('click', () => {
     diagDrawer?.classList.toggle('open')
   })
   document.getElementById('diagnostics-drawer-close')?.addEventListener('click', () => {
     diagDrawer?.classList.remove('open')
+  })
+
+  // Overleaf Filter Tabs (All Logs, Errors, Warnings, Info)
+  const logTabs = document.querySelectorAll('#overleaf-log-tabs .overleaf-log-tab')
+  logTabs.forEach((tab) => {
+    tab.addEventListener('click', () => {
+      logTabs.forEach((t) => {
+        t.classList.remove('active')
+      })
+      tab.classList.add('active')
+      const target = tab.getAttribute('data-log-tab') as 'all' | 'error' | 'warning' | 'info'
+      currentLogFilter = target || 'all'
+
+      if (isViewingRawLog) {
+        isViewingRawLog = false
+        const rawLogPre = document.getElementById('raw-log-output')
+        const rawLogBtn = document.getElementById('btn-toggle-raw-log')
+        if (errorLogList) errorLogList.style.display = 'flex'
+        if (rawLogPre) rawLogPre.style.display = 'none'
+        if (rawLogBtn) rawLogBtn.textContent = 'View raw logs'
+      }
+
+      renderDiagnostics(allCurrentDiagnostics)
+    })
+  })
+
+  // View Raw Logs / Parsed Logs Toggle Button
+  const rawLogBtn = document.getElementById('btn-toggle-raw-log')
+  rawLogBtn?.addEventListener('click', () => {
+    isViewingRawLog = !isViewingRawLog
+    const rawLogPre = document.getElementById('raw-log-output')
+    if (isViewingRawLog) {
+      if (errorLogList) errorLogList.style.display = 'none'
+      if (rawLogPre) rawLogPre.style.display = 'block'
+      rawLogBtn.textContent = 'View parsed logs'
+    } else {
+      if (errorLogList) errorLogList.style.display = 'flex'
+      if (rawLogPre) rawLogPre.style.display = 'none'
+      rawLogBtn.textContent = 'View raw logs'
+    }
   })
 
   // Views & Page Navigation (Home / Dashboard / Workspace)
@@ -898,22 +1070,46 @@ async function start() {
       backBtn.innerHTML = `<span class="back-arrow">◀</span> [ ${t('DASHBOARD', 'DASHBOARD', lang)} ]`
 
     const tabEditor = document.getElementById('nav-tab-editor')
-    if (tabEditor)
-      tabEditor.textContent = `[ ${t('✍️ WORKSPACE EDITOR', '✍️ WORKSPACE EDITOR', lang)} ]`
+    if (tabEditor) {
+      tabEditor.title = t(
+        'Editor & Berkas Proyek (File Tree)',
+        'Editor & Project Files (File Tree)',
+        lang,
+      )
+    }
 
     const tabLibrary = document.getElementById('nav-tab-library')
-    if (tabLibrary)
-      tabLibrary.textContent = `[ ${t('📚 RESEARCH LIBRARY', '📚 RESEARCH LIBRARY', lang)} ]`
+    if (tabLibrary) {
+      tabLibrary.title = t(
+        'Pustaka Riset / Research Library',
+        'Research Library (Papers & BibTeX)',
+        lang,
+      )
+    }
 
     const btnReview = document.getElementById('btn-review')
     if (btnReview) {
-      const badge = document.getElementById('badge-review')
-      btnReview.innerHTML = `<span class="icon-svg">📝</span> ${t('REVIEW', 'REVIEW', lang)} <span id="badge-review" class="topbar-badge" style="${badge?.style.cssText || 'display:none;'}">${badge?.textContent || '0'}</span>`
+      btnReview.title = t(
+        'Lacak Perubahan & Review (Track Changes)',
+        'Track Changes & Review',
+        lang,
+      )
+    }
+
+    const btnComments = document.getElementById('btn-comments')
+    if (btnComments) {
+      btnComments.title = t('Komentar Dokumen / Comments', 'Document Comments', lang)
     }
 
     const btnHistory = document.getElementById('btn-history')
-    if (btnHistory)
-      btnHistory.innerHTML = `<span class="icon-svg">🕒</span> ${t('HISTORY', 'HISTORY', lang)}`
+    if (btnHistory) {
+      btnHistory.title = t('Riwayat Versi / Version History', 'Project Version History', lang)
+    }
+
+    const btnAi = document.getElementById('btn-ai-assistant')
+    if (btnAi) {
+      btnAi.title = t('Asisten Riset & LaTeX AI', 'AI Research & LaTeX Assistant', lang)
+    }
 
     const btnRecompile = document.getElementById('recompile-btn')
     if (btnRecompile) {
@@ -931,18 +1127,26 @@ async function start() {
 
     const btnTikz = document.getElementById('btn-tikz-scratchpad')
     if (btnTikz) {
-      btnTikz.innerHTML = `<span class="icon-svg">📐</span> ${t('TIKZ', 'TIKZ', lang)}`
-      btnTikz.title = t('Editor Diagram TikZ / Figure Scratchpad', 'TikZ / Figure Scratchpad (Quick Diagram Editor)', lang)
+      btnTikz.title = t(
+        'Editor Diagram TikZ / Figure Scratchpad',
+        'TikZ / Figure Scratchpad (Quick Diagram Editor)',
+        lang,
+      )
     }
 
     const btnArxiv = document.getElementById('btn-arxiv-export')
     if (btnArxiv) {
       btnArxiv.textContent = `📦 ${t('ARXIV', 'ARXIV', lang)}`
-      btnArxiv.title = t('Ekspor Paket arXiv / Camera-Ready (.zip)', 'Export arXiv / Camera-Ready Package (.zip)', lang)
+      btnArxiv.title = t(
+        'Ekspor Paket arXiv / Camera-Ready (.zip)',
+        'Export arXiv / Camera-Ready Package (.zip)',
+        lang,
+      )
     }
 
     const btnSearch = document.getElementById('btn-search')
-    if (btnSearch) btnSearch.title = t('Cari di Proyek (Ctrl+Shift+F)', 'Search in Project (Ctrl+Shift+F)', lang)
+    if (btnSearch)
+      btnSearch.title = t('Cari di Proyek (Ctrl+Shift+F)', 'Search in Project (Ctrl+Shift+F)', lang)
 
     const sidebarFilesLabel = document.querySelector('.sidebar-files-label')
     if (sidebarFilesLabel)
@@ -1020,11 +1224,11 @@ async function start() {
           activeFile = unzipped.mainFile
           editor.openFile(unzipped.mainFile)
         }
-      } catch (err: any) {
+      } catch (err: unknown) {
         await tacticalAlert({
           title: t('Gagal Ekstrak ZIP', 'ZIP Extraction Failed', getLang()),
           specTag: t('BERKAS // ZIP', 'FILES // ZIP', getLang()),
-          message: `${err?.message || err}`,
+          message: `${err instanceof Error ? err.message : String(err)}`,
           type: 'error',
         })
       }
@@ -1043,7 +1247,11 @@ async function start() {
     const folder = await tacticalPrompt({
       title: t('Folder Baru', 'New Folder', getLang()),
       specTag: t('BERKAS // DIREKTORI BARU', 'FILES // NEW DIRECTORY', getLang()),
-      message: t('Nama folder baru (contoh: "chapters", "sections", "figures"):', 'New folder name (e.g. "chapters", "sections", "figures"):', getLang()),
+      message: t(
+        'Nama folder baru (contoh: "chapters", "sections", "figures"):',
+        'New folder name (e.g. "chapters", "sections", "figures"):',
+        getLang(),
+      ),
       placeholder: 'chapters',
     })
     if (folder) {
@@ -1060,13 +1268,14 @@ async function start() {
     const filePath = await tacticalPrompt({
       title: t('Berkas Baru', 'New File', getLang()),
       specTag: t('BERKAS // BUAT BERKAS', 'FILES // CREATE FILE', getLang()),
-      message: t('Path berkas baru (contoh: "notes.tex" atau "chapters/section1.tex"):', 'New file path (e.g. "notes.tex" or "chapters/section1.tex"):', getLang()),
+      message: t(
+        'Path berkas baru (contoh: "notes.tex" atau "chapters/section1.tex"):',
+        'New file path (e.g. "notes.tex" or "chapters/section1.tex"):',
+        getLang(),
+      ),
       placeholder: 'chapters/intro.tex',
     })
-    const decision = resolveAddFile(
-      filePath,
-      (p) => editor.getFile(p) !== null,
-    )
+    const decision = resolveAddFile(filePath, (p) => editor.getFile(p) !== null)
     if (decision.action === 'cancel') return
     // Only create writes content; opening an existing file must not overwrite it.
     if (decision.action === 'create') {
