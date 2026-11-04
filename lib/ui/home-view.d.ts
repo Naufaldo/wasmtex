@@ -9,6 +9,7 @@ export declare class HomeView {
     private container;
     private options;
     private activeTourTab;
+    private authTab;
     constructor(container: HTMLElement, options: HomeViewOptions);
     init(): void;
     private render;

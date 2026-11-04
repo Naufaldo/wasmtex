@@ -13,9 +13,13 @@ export declare class DashboardView {
     private papers;
     private selectedLibraryProject;
     private currentFilter;
+    private templateCategoryFilter;
+    private templateSearchQuery;
     constructor(container: HTMLElement, options: DashboardViewOptions);
     init(): Promise<void>;
     private render;
+    private renderTemplateCards;
+    private bindTemplateButtons;
     private bindEvents;
     private renderTags;
     private renderProjectRows;

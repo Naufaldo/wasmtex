@@ -50,6 +50,11 @@ export declare function createUser(username: string, pass: string, name: string,
     user?: UserAccount;
     error?: string;
 };
+export declare function registerAccount(username: string, pass: string, name?: string): {
+    success: boolean;
+    session?: UserSession | undefined;
+    error?: string | undefined;
+};
 export declare function deleteUser(targetUserId: string, currentUserId?: string): {
     success: boolean;
     error?: string;

@@ -11,6 +11,23 @@ breaking changes are called out under **Changed** with a ⚠️ marker.
 
 ## [Unreleased]
 
+### Added
+
+- LuaLaTeX heap checkpoints (`luatexHeapCheckpoints`): canonical compiles and page
+  previews resume from the paragraph before an edit on a LuaHBTeX build whose
+  Asyncify instrumentation covers only the line-read path. A refused or oversized
+  checkpoint is reported, never kept.
+
+### Fixed
+
+- Take LuaLaTeX heap checkpoints in Chromium. Its stack traces report sscanf's
+  reader beside the line read once it inlines that indirect call, and the stack
+  guard refused every checkpoint, so previews kept starting from the format. The
+  checkpoint build now lists that reader too.
+- Answer ok when the pdfTeX worker is asked to create a directory that already
+  exists. Hosts sync every parent directory again, so a book with chapter
+  folders logged "Not able to mkdir" for every keystroke.
+
 ## [0.1.0] - 2026-11-03
 
 ### Added
@@ -74,6 +91,13 @@ breaking changes are called out under **Changed** with a ⚠️ marker.
 
 ### Fixed
 
+- Take LuaLaTeX heap checkpoints in Chromium. Its stack traces report sscanf's
+  reader beside the line read once it inlines that indirect call, and the stack
+  guard refused every checkpoint, so previews kept starting from the format. The
+  checkpoint build now lists that reader too.
+- Answer ok when the pdfTeX worker is asked to create a directory that already
+  exists. Hosts sync every parent directory again, so a book with chapter
+  folders logged "Not able to mkdir" for every keystroke.
 - Record every input of a pdfTeX compile resumed from a heap checkpoint. The
   worker reopened the renamed recorder under its first name, so the job's `.fls`
   kept only what was flushed before the checkpoint, and a host trusting the

@@ -43,6 +43,17 @@ for (const relative of readdirSync(lib, { recursive: true })) {
   for (const edit of edits.sort((a, b) => b.start - a.start)) {
     content = content.slice(0, edit.start) + edit.value + content.slice(edit.end)
   }
-  if (edits.length) writeFileSync(file, content)
+  if (edits.length) {
+    for (let attempt = 0; attempt < 10; attempt++) {
+      try {
+        writeFileSync(file, content)
+        break
+      } catch (err) {
+        if (attempt === 9) throw err
+        const end = Date.now() + 100
+        while (Date.now() < end) {}
+      }
+    }
+  }
 }
 console.log('declaration module specifiers use resolvable ESM paths')
