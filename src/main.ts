@@ -1034,6 +1034,140 @@ async function start() {
     }
   })
 
+  // Desktop Menu Bar (File, Edit, View, Insert, Help) + Resizable Splitters
+  new DesktopMenuBar({
+    onNewFile: () => {
+      document.getElementById('add-file-btn')?.click()
+    },
+    onNewFolder: () => {
+      document.getElementById('add-folder-btn')?.click()
+    },
+    onUploadZip: async (file: File) => {
+      try {
+        const buf = await file.arrayBuffer()
+        const unzippedFiles = await unzipLatexProject(buf)
+        for (const [relPath, content] of Object.entries(unzippedFiles)) {
+          editor.setFile(relPath, content)
+        }
+        renderFileList(editor.listFiles())
+        persistActiveProject()
+        await tacticalAlert({
+          title: t('Unggah Berhasil', 'Upload Successful', getLang()),
+          specTag: 'VFS // UNZIP',
+          message: t(
+            `Berhasil mengekstrak ${Object.keys(unzippedFiles).length} berkas ke dalam proyek.`,
+            `Successfully extracted ${Object.keys(unzippedFiles).length} files into project.`,
+            getLang(),
+          ),
+          type: 'info',
+        })
+      } catch (err: unknown) {
+        await tacticalAlert({
+          title: t('Gagal Ekstrak ZIP', 'ZIP Extraction Failed', getLang()),
+          specTag: 'VFS // UNZIP_ERROR',
+          message: err instanceof Error ? err.message : String(err),
+          type: 'error',
+        })
+      }
+    },
+    onDownloadPdf: () => {
+      downloadPdfBtn?.click()
+    },
+    onExportArxiv: () => {
+      arxivModal.open()
+    },
+    onVersionHistory: () => {
+      versionDialog.open()
+    },
+    onBackDashboard: () => {
+      showDashboard()
+    },
+    onSearch: () => {
+      searchDialog.open()
+    },
+    onReview: () => {
+      reviewManager.open()
+    },
+    onComments: () => {
+      commentsPanel.open()
+    },
+    onToggleSidebar: () => {
+      const sidebar = document.getElementById('file-tree-panel')
+      const divider = document.getElementById('divider-sidebar')
+      const btn = document.getElementById('btn-toggle-sidebar')
+      if (sidebar) {
+        const isCollapsed = sidebar.classList.toggle('collapsed')
+        divider?.classList.toggle('collapsed', isCollapsed)
+        btn?.classList.toggle('active', !isCollapsed)
+        window.dispatchEvent(new Event('resize'))
+      }
+    },
+    onTogglePreview: () => {
+      const preview = document.getElementById('preview-panel')
+      const divider = document.getElementById('divider-preview')
+      const btn = document.getElementById('btn-toggle-preview')
+      if (preview) {
+        const isCollapsed = preview.classList.toggle('collapsed')
+        divider?.classList.toggle('collapsed', isCollapsed)
+        btn?.classList.toggle('active', !isCollapsed)
+        if (editorWrapper) {
+          if (isCollapsed) {
+            editorWrapper.style.flex = '1 1 100%'
+          } else {
+            editorWrapper.style.flex = '1 1 50%'
+            preview.style.flex = '1 1 50%'
+          }
+        }
+        window.dispatchEvent(new Event('resize'))
+      }
+    },
+    onToggleLogs: () => {
+      diagDrawer?.classList.toggle('open')
+    },
+    onSetEditorMode: (mode) => {
+      if (mode === 'visual') btnModeVisual.click()
+      else if (mode === 'code') btnModeCode.click()
+      else btnModeSplit.click()
+    },
+    onOpenLibrary: () => {
+      navTabLibrary.click()
+    },
+    onToggleTheme: () => {
+      const nextTheme: ThemeMode =
+        currentThemeSetting === 'auto' ? 'dark' : currentThemeSetting === 'dark' ? 'light' : 'auto'
+      applyTheme(nextTheme)
+    },
+    onTikzScratchpad: () => {
+      tikzModal.open()
+    },
+    onAiAssistant: () => {
+      aiAssistantPanel.open()
+    },
+    onInsertSnippet: (snippet: string) => {
+      const monaco = editor.getMonacoEditor()
+      if (monaco) {
+        const selection = monaco.getSelection()
+        if (selection) {
+          monaco.executeEdits('desktop-menu', [
+            {
+              range: selection,
+              text: snippet,
+              forceMoveMarkers: true,
+            },
+          ])
+        }
+      }
+      if (activeFile.endsWith('.tex')) {
+        const c = editor.getFile(activeFile)
+        if (typeof c === 'string') visualEditor.setLatex(c)
+      }
+    },
+    onToggleLang: () => {
+      const nextLang = toggleLang()
+      applyLang(nextLang)
+    },
+  })
+
   document.getElementById('btn-theme-toggle')?.addEventListener('click', () => {
     const nextTheme: ThemeMode =
       currentThemeSetting === 'auto' ? 'dark' : currentThemeSetting === 'dark' ? 'light' : 'auto'
@@ -1146,64 +1280,28 @@ async function start() {
     if (langIcon) langIcon.textContent = `🌐 ${lang.toUpperCase()}`
 
     const backBtn = document.getElementById('btn-back-dashboard')
-    if (backBtn)
-      backBtn.innerHTML = `<span class="back-arrow">◀</span> [ ${t('DASHBOARD', 'DASHBOARD', lang)} ]`
-
-    const tabEditor = document.getElementById('nav-tab-editor')
-    if (tabEditor) {
-      tabEditor.title = t(
-        'Editor & Berkas Proyek (File Tree)',
-        'Editor & Project Files (File Tree)',
-        lang,
-      )
+    if (backBtn) {
+      backBtn.innerHTML = `<span class="back-arrow">◀</span> <span class="back-text">${t('Dashboard', 'Dashboard', lang)}</span>`
     }
 
-    const tabLibrary = document.getElementById('nav-tab-library')
-    if (tabLibrary) {
-      tabLibrary.title = t(
-        'Pustaka Riset / Research Library',
-        'Research Library (Papers & BibTeX)',
-        lang,
-      )
-    }
-
-    const btnReview = document.getElementById('btn-review')
-    if (btnReview) {
-      btnReview.title = t(
-        'Lacak Perubahan & Review (Track Changes)',
-        'Track Changes & Review',
-        lang,
-      )
-    }
-
-    const btnComments = document.getElementById('btn-comments')
-    if (btnComments) {
-      btnComments.title = t('Komentar Dokumen / Comments', 'Document Comments', lang)
-    }
-
-    const btnHistory = document.getElementById('btn-history')
-    if (btnHistory) {
-      btnHistory.title = t('Riwayat Versi / Version History', 'Project Version History', lang)
-    }
-
-    const btnAi = document.getElementById('btn-ai-assistant')
-    if (btnAi) {
-      btnAi.title = t('Asisten Riset & LaTeX AI', 'AI Research & LaTeX Assistant', lang)
-    }
+    const triggerFile = document.getElementById('menu-trigger-file')
+    if (triggerFile) triggerFile.textContent = t('Berkas', 'File', lang)
+    const triggerEdit = document.getElementById('menu-trigger-edit')
+    if (triggerEdit) triggerEdit.textContent = t('Sunting', 'Edit', lang)
+    const triggerView = document.getElementById('menu-trigger-view')
+    if (triggerView) triggerView.textContent = t('Tampilan', 'View', lang)
+    const triggerInsert = document.getElementById('menu-trigger-insert')
+    if (triggerInsert) triggerInsert.textContent = t('Sisipkan', 'Insert', lang)
+    const triggerHelp = document.getElementById('menu-trigger-help')
+    if (triggerHelp) triggerHelp.textContent = t('Bantuan', 'Help', lang)
 
     const btnRecompile = document.getElementById('recompile-btn')
     if (btnRecompile) {
-      btnRecompile.innerHTML = `
-        <span class="bracket-corner tl"></span>
-        <span class="bracket-corner tr"></span>
-        <span class="bracket-corner bl"></span>
-        <span class="bracket-corner br"></span>
-        <span class="cta-inner">▶ ${t('RECOMPILE PDF', 'RECOMPILE PDF', lang)} [F5]</span>
-      `
+      btnRecompile.innerHTML = `▶ <span class="recompile-text">${t('Kompilasi', 'Recompile', lang)}</span>`
     }
 
     const btnDownloadPdf = document.getElementById('download-pdf-btn')
-    if (btnDownloadPdf) btnDownloadPdf.textContent = `⬇ ${t('UNDUH PDF', 'DOWNLOAD PDF', lang)}`
+    if (btnDownloadPdf) btnDownloadPdf.textContent = `⬇ PDF`
 
     const btnTikz = document.getElementById('btn-tikz-scratchpad')
     if (btnTikz) {
