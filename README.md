@@ -13,7 +13,7 @@ Repository ini merupakan *fork* dari **WasmTex** (oleh Corca AI). Fokus utama fo
 
 - **Halaman Depan Publik & Gerbang Masuk Mandiri**: Landing page promosi arsitektur sistem dengan visual tour dan gerbang autentikasi (Login & Pendaftaran Akun).
 - **Multi-Akun Mandiri & Anti-Bentrok**: Penyimpanan dokumen terisolasi per pengguna menggunakan partisi `ownerId` di IndexedDB. Bebas membuat akun baru serta mengubah username dan password secara mandiri.
-- **Dashboard Manajer Folder & Tag**: Navigasi folder instan (Semua, Jurnal, Presentasi, Tesis, Tutorial), filter tag dinamis, pencarian real-time (`Ctrl+K`), dan tab khusus galeri 12 starter template akademik lengkap (IEEE, Beamer, Elsevier, Tesis, Nature, Technical Report, ACM, CV, Lab Metrologi, Poster, Assignment, Math).
+- **Dashboard Manajer Folder & Tag**: Navigasi folder instan (Semua, Jurnal, Presentasi, Tesis, Tutorial), filter tag dinamis, pencarian real-time (`Ctrl+K`), dan tab khusus galeri 20 starter template akademik lengkap (arXiv, IEEE, NeurIPS/ICML, Springer LNCS, Beamer, Elsevier, Tesis & Disertasi Ph.D., Nature, Technical Report, Industrial SOP, Grant Proposal, ACM, Modern 2-Col CV, Lab Metrologi, Poster, Buku Akademik, Math Paper). Dilengkapi tombol **Unduh ZIP langsung** untuk setiap template dan pengunduh online template dari repositori GitHub.
 - **Mode Editor 3-Arah & WYSIWYG KaTeX**: Mode Visual WYSIWYG, Monaco LaTeX Editor (dengan LSP & auto-complete), dan Dual Split View.
 - **Sinkronisasi 2-Arah SyncTeX**: Klik pada PDF langsung melompat ke nomor baris editor kode sekaligus menyorot elemen DOM visual editor (`data-line`), dan sebaliknya.
 - **Dukungan Dwibahasa Penuh (ID / EN)**: Seluruh tampilan antarmuka dapat diganti antara Bahasa Indonesia dan Bahasa Inggris secara instan via tombol `🌐 ID / EN`.
@@ -33,7 +33,8 @@ Repository ini merupakan *fork* dari **WasmTex** (oleh Corca AI). Fokus utama fo
   - Documents remain private to their respective creator and will never collide or overwrite other users' files.
   - Self-service account registration and in-app profile management (update username & change password).
 - **📁 Document Manager with Category Folders & Tags Explorer**:
-  - Dedicated `[ 🎨 TEMPLATES ]` tab with 12 publication-ready starter templates across Journals (IEEE, Elsevier, Nature, ACM), Presentations (Beamer 16:9, Research Poster), Thesis/Dissertations, Technical & Lab Reports, Academic CV/Resume, and University Problem Sets.
+  - Dedicated `[ 🎨 TEMPLATES ]` tab with 20 publication-ready starter templates across Journals (arXiv Preprint, IEEE, NeurIPS/ICML, Springer LNCS, Elsevier, Nature, ACM), Presentations (Beamer 16:9, Research Poster), Theses & Dissertations (Ph.D. Comprehensive Monograph), Technical & Lab Reports, Industrial SOP Manuals, Grant Proposals, Academic & Tech CVs, and University Textbooks.
+  - **1-Click ZIP Download & Online Template Importer**: Download any template directly as an offline `.zip` archive or import community templates directly from GitHub repositories or raw `.tex`/`.zip` URLs.
   - Dedicated `[ 📁 MY PROJECTS ]` tab isolated to user's manuscripts with Category Folders (`[ ALL ]`, `[ JOURNALS ]`, `[ SLIDES ]`, `[ THESIS ]`, `[ GUIDES ]`) and dynamic Tag Chips.
 - **🌐 Full Bilingual Support (ID & EN i18n)**:
   - Instant one-click toggle `🌐 ID / EN` across all screens: Public Home Showcase, Tactical Dashboard, Research Library, and Editor Workspace.

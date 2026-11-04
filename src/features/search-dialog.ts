@@ -1,4 +1,5 @@
 import { t } from '../ui/i18n'
+import { tacticalAlert } from '../ui/tactical-dialog'
 
 export interface SearchMatch {
   file: string
@@ -191,7 +192,7 @@ export class SearchDialog {
     })
   }
 
-  private replaceAll(query: string, replacement: string, matchCase: boolean, isRegex: boolean): void {
+  private async replaceAll(query: string, replacement: string, matchCase: boolean, isRegex: boolean): Promise<void> {
     const files = this.options.getFiles()
     let regex: RegExp
     try {
@@ -212,12 +213,15 @@ export class SearchDialog {
       }
     }
 
-    alert(
-      t(
+    await tacticalAlert({
+      title: t('Ganti Teks Selesai', 'Replace Completed'),
+      specTag: t('PENCARIAN // GANTI SEMUA', 'SEARCH // REPLACE ALL'),
+      message: t(
         `Berhasil mengganti teks di ${modifiedCount} berkas.`,
         `Replaced matches in ${modifiedCount} file(s).`
-      )
-    )
+      ),
+      type: 'success',
+    })
     this.options.onRecompile?.()
   }
 }

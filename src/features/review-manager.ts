@@ -1,4 +1,5 @@
 import { t } from '../ui/i18n'
+import { tacticalPrompt, tacticalAlert } from '../ui/tactical-dialog'
 
 export interface TextSuggestion {
   id: string
@@ -126,11 +127,23 @@ export class ReviewManager {
     this.options.onBadgeUpdate?.(pendingCount)
   }
 
-  private promptNewSuggestion(): void {
+  private async promptNewSuggestion(): Promise<void> {
     const file = this.options.getActiveFile()
-    const orig = prompt(t('Teks asli yang ingin diganti:', 'Original text to replace:'))
+    const orig = await tacticalPrompt({
+      title: t('Teks Asli', 'Original Text'),
+      specTag: t('REVISI // TEKS ASLI', 'REVISION // ORIGINAL TEXT'),
+      message: t('Teks asli yang ingin diganti dalam dokumen:', 'Original text to replace in the document:'),
+      placeholder: 'e.g. In conclusion, we show...',
+      multiline: true,
+    })
     if (!orig) return
-    const repl = prompt(t('Usulan teks pengganti (revisi):', 'Proposed replacement text:'))
+    const repl = await tacticalPrompt({
+      title: t('Usulan Revisi', 'Proposed Revision'),
+      specTag: t('REVISI // USULAN BARU', 'REVISION // PROPOSED TEXT'),
+      message: t('Usulan teks pengganti (revisi akademik):', 'Proposed replacement text (academic revision):'),
+      placeholder: 'e.g. Crucially, empirical evidence demonstrates...',
+      multiline: true,
+    })
     if (repl === null) return
 
     const newSug: TextSuggestion = {
@@ -209,18 +222,26 @@ export class ReviewManager {
     })
   }
 
-  private accept(id: string): void {
+  private async accept(id: string): Promise<void> {
     const sug = this.suggestions.find((s) => s.id === id)
     if (!sug) return
 
     const content = this.options.getFileContent(sug.file)
     if (typeof content !== 'string') {
-      alert(`File ${sug.file} bukan teks yang valid.`)
+      await tacticalAlert({
+        title: t('Berkas Tidak Valid', 'Invalid File'),
+        message: t(`Berkas ${sug.file} bukan teks yang valid.`, `File ${sug.file} is not a valid text file.`),
+        type: 'error',
+      })
       return
     }
 
     if (!content.includes(sug.originalText)) {
-      alert(`Teks asli "${sug.originalText}" tidak ditemukan di file ${sug.file}. Kemungkinan sudah diubah.`)
+      await tacticalAlert({
+        title: t('Teks Tidak Ditemukan', 'Text Not Found'),
+        message: t(`Teks asli "${sug.originalText}" tidak ditemukan di berkas ${sug.file}. Kemungkinan sudah diubah.`, `Original text "${sug.originalText}" not found in ${sug.file}. It may have been edited.`),
+        type: 'warning',
+      })
       return
     }
 
@@ -231,7 +252,12 @@ export class ReviewManager {
     this.updateBadge()
     this.renderList('pending')
     this.options.onRecompile()
-    alert('Revisi berhasil diterima dan diterapkan ke naskah!')
+    await tacticalAlert({
+      title: t('Revisi Diterapkan', 'Revision Applied'),
+      specTag: t('REVISI // SELESAI', 'REVISION // COMPLETED'),
+      message: t('Revisi berhasil diterima dan diterapkan ke naskah!', 'Revision accepted and applied to manuscript!'),
+      type: 'success',
+    })
   }
 
   private reject(id: string): void {

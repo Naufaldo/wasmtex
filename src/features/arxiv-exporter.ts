@@ -1,5 +1,6 @@
 import { createZipArchive } from '../fs/zip'
 import { t } from '../ui/i18n'
+import { tacticalAlert } from '../ui/tactical-dialog'
 
 const JUNK_EXTENSIONS = new Set([
   '.aux',
@@ -398,9 +399,14 @@ export class ArxivExportModal {
         URL.revokeObjectURL(url)
         this.close()
       } catch (err) {
-        alert(`Gagal membuat paket: ${String(err)}`)
+        await tacticalAlert({
+          title: t('Gagal Ekspor Paket', 'Package Export Failed'),
+          specTag: t('ARXIV // EKSPOR GAGAL', 'ARXIV // EXPORT ERROR'),
+          message: `${String(err)}`,
+          type: 'error',
+        })
         downloadBtn.disabled = false
-        downloadBtn.textContent = '⬇ UNDUH PAKET ARXIV (.ZIP)'
+        downloadBtn.textContent = t('⬇ UNDUH PAKET ARXIV (.ZIP)', '⬇ DOWNLOAD ARXIV PACKAGE (.ZIP)')
       }
     })
   }

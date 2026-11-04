@@ -1,12 +1,7 @@
-import { OVERLEAF_ICONS } from '../ui/logo'
-import { getLang, t, toggleLang, type Lang } from '../ui/i18n'
-import {
-  changePassword,
-  changeUsername,
-  getCurrentUser,
-  logoutUser,
-} from '../auth/auth-store'
+import { changePassword, changeUsername, getCurrentUser, logoutUser } from '../auth/auth-store'
+import { TEMPLATES } from '../fs/templates'
 import { unzipLatexProject } from '../fs/unzip'
+import { createZipArchive } from '../fs/zip'
 import {
   addPaperToProjectBibtex,
   deletePaper,
@@ -14,14 +9,11 @@ import {
   type ResearchPaper,
   savePaper,
 } from '../library/library-store'
-import {
-  deleteProject,
-  getAllProjects,
-  type ProjectItem,
-  saveProject,
-} from './project-store'
+import { getLang, type Lang, t, toggleLang } from '../ui/i18n'
+import { OVERLEAF_ICONS } from '../ui/logo'
+import { tacticalAlert, tacticalConfirm, tacticalPrompt } from '../ui/tactical-dialog'
+import { deleteProject, getAllProjects, type ProjectItem, saveProject } from './project-store'
 import { backupProjectToR2, checkR2StorageAvailable } from './r2-storage'
-import { TEMPLATES } from '../fs/templates'
 
 export interface DashboardViewOptions {
   onOpenProject: (project: ProjectItem) => void
@@ -114,7 +106,7 @@ export class DashboardView {
             <span class="strip-text">${t(
               'KLASIFIKASI: TERBUKA // CORTEX RESEARCH STUDIO // SPEC WASMTEX-V2',
               'CLASSIFICATION: OPEN // CORTEX RESEARCH STUDIO // SPEC WASMTEX-V2',
-              lang
+              lang,
             )}</span>
             <span class="strip-bracket">]</span>
           </div>
@@ -123,7 +115,7 @@ export class DashboardView {
             <span class="strip-text">${t(
               'ONLINE // WEBASSEMBLY ENGINE // TEX LIVE 2025-2026 // UTC+07',
               'ONLINE // WEBASSEMBLY ENGINE // TEX LIVE 2025-2026 // UTC+07',
-              lang
+              lang,
             )}</span>
           </div>
         </div>
@@ -240,7 +232,7 @@ export class DashboardView {
           </section>
           `
               : this.currentFilter === 'templates'
-              ? `
+                ? `
           <!-- Dedicated Starter Templates Gallery Section -->
           <section class="tactical-templates-section" style="padding-top: 28px;">
             <div class="archive-section-header">
@@ -252,7 +244,7 @@ export class DashboardView {
                     ${t(
                       'Pilih template standar produksi untuk presentasi (Beamer), jurnal internasional (IEEE/Elsevier/Nature/ACM), tesis/disertasi, laporan teknis industri, atau CV akademik.',
                       'Select verified production-ready starter templates: Conference Slides (Beamer), IEEE / Elsevier / Nature / ACM Journals, Thesis, Technical Reports, or Academic CV.',
-                      lang
+                      lang,
                     )}
                   </div>
                 </div>
@@ -276,12 +268,29 @@ export class DashboardView {
               <button class="tactical-tag-chip ${this.templateCategoryFilter === 'Academic' ? 'active' : ''}" data-tpl-cat="Academic">[ 💡 ${t('AKADEMIK & TUGAS', 'ACADEMIC & PSET', lang)} ]</button>
             </div>
 
+            <!-- Online Community Template Downloader / Importer -->
+            <div class="dash-online-template-box" style="margin-top: 12px; margin-bottom: 8px; padding: 10px 16px; background: var(--bg-primary); border: 1.5px solid var(--border-color); display: flex; align-items: center; justify-content: space-between; gap: 10px; flex-wrap: wrap;">
+              <div style="display: flex; align-items: center; gap: 8px;">
+                <span style="font-family: var(--font-mono); font-size: 11.5px; font-weight: 700; color: var(--accent-orange);">🌐 ${t('UNDUH DARI URL / GITHUB:', 'DOWNLOAD / IMPORT ONLINE:', lang)}</span>
+                <span style="font-family: var(--font-mono); font-size: 10.5px; color: var(--text-muted);">${t('(GitHub, Overleaf, link raw .tex / .zip)', '(GitHub repo, Overleaf, raw .tex / .zip)', lang)}</span>
+              </div>
+              <div style="display: flex; align-items: center; gap: 8px; flex: 1; min-width: 280px; justify-content: flex-end;">
+                <input type="text" id="dash-online-tpl-url" class="tactical-search-input" style="flex: 1; max-width: 440px; padding: 6px 10px; font-size: 11.5px;" placeholder="${t('Ketik URL repositori GitHub atau file .zip/.tex...', 'Enter GitHub repo, raw .tex, or .zip URL...', lang)}" />
+                <button id="dash-online-tpl-open-btn" class="tactical-cta-btn cta-orange" style="padding: 6px 12px; font-size: 11px; white-space: nowrap;">
+                  <span class="cta-inner">+ ${t('BUKA DI STUDIO', 'OPEN IN STUDIO', lang)}</span>
+                </button>
+                <button id="dash-online-tpl-zip-btn" class="tactical-cta-btn cta-secondary" style="padding: 6px 12px; font-size: 11px; white-space: nowrap;">
+                  <span class="cta-inner">⬇ ${t('UNDUH ZIP', 'DOWNLOAD ZIP', lang)}</span>
+                </button>
+              </div>
+            </div>
+
             <div class="templates-grid" id="dash-templates-grid">
               ${this.renderTemplateCards(lang)}
             </div>
           </section>
           `
-              : `
+                : `
           <!-- Compact Action Toolbar for My Projects -->
           <div class="dash-action-toolbar" style="padding: 18px 36px 14px 36px; background: var(--bg-primary); border-bottom: 1.5px solid var(--border-color); display: flex; align-items: center; justify-content: space-between; gap: 16px; flex-wrap: wrap;">
             <div style="display: flex; align-items: center; gap: 12px; flex-wrap: wrap;">
@@ -336,7 +345,7 @@ export class DashboardView {
                     ${t(
                       'Pilih folder atau filter tag di bawah untuk mencari naskah dengan cepat. Klik baris dokumen untuk membuka langsung di workspace.',
                       'Select category folder or filter by tags to locate documents. Click any row to open in workspace.',
-                      lang
+                      lang,
                     )}
                   </div>
                 </div>
@@ -562,7 +571,9 @@ export class DashboardView {
   private renderTemplateCards(lang: Lang): string {
     let list = TEMPLATES
     if (this.templateCategoryFilter !== 'all') {
-      list = list.filter((t) => t.category.toLowerCase() === this.templateCategoryFilter.toLowerCase())
+      list = list.filter(
+        (t) => t.category.toLowerCase() === this.templateCategoryFilter.toLowerCase(),
+      )
     }
     if (this.templateSearchQuery) {
       const q = this.templateSearchQuery.toLowerCase()
@@ -600,13 +611,16 @@ export class DashboardView {
           <div class="template-tags">
             ${tpl.tags.map((tag) => `<span class="t-badge">[ ${escapeHtml(tag)} ]</span>`).join(' ')}
           </div>
-          <div class="template-card-footer">
-            <button class="tactical-cta-btn cta-orange btn-use-template" data-template-id="${tpl.id}" style="width:100%; padding: 8px 14px;" title="${t('Gunakan template ini untuk membuat dokumen baru', 'Create new document with this template', lang)}">
+          <div class="template-card-footer" style="display: flex; gap: 8px;">
+            <button class="tactical-cta-btn cta-orange btn-use-template" data-template-id="${tpl.id}" style="flex: 1; padding: 8px 10px;" title="${t('Gunakan template ini untuk membuat dokumen baru', 'Create new document with this template', lang)}">
               <span class="bracket-corner tl"></span>
               <span class="bracket-corner tr"></span>
               <span class="bracket-corner bl"></span>
               <span class="bracket-corner br"></span>
-              <span class="cta-inner">+ ${t('GUNAKAN TEMPLATE', 'USE TEMPLATE', lang)}</span>
+              <span class="cta-inner">+ ${t('GUNAKAN', 'USE', lang)}</span>
+            </button>
+            <button class="tactical-cta-btn cta-secondary btn-download-template-zip" data-template-id="${tpl.id}" style="padding: 8px 12px; font-weight: 700;" title="${t('Unduh paket template lengkap sebagai file .ZIP', 'Download complete template package as .ZIP file', lang)}">
+              <span class="cta-inner">⬇ ZIP</span>
             </button>
           </div>
         </div>
@@ -625,21 +639,30 @@ export class DashboardView {
 
         const curUser = getCurrentUser()
         if (curUser?.role === 'viewer') {
-          alert(
-            t(
+          await tacticalAlert({
+            title: t('Akses Dibatasi', 'Access Restricted', getLang()),
+            message: t(
               'Mode Baca: Akun Viewer tidak memiliki izin membuat dokumen baru.',
               'Read-Only Mode: Viewer accounts cannot create new documents.',
               getLang(),
             ),
-          )
+            type: 'warning',
+          })
           return
         }
 
         const defaultTitle = getLang() === 'en' ? tpl.titleEn : tpl.titleId
-        const inputTitle = prompt(
-          t('Beri judul untuk manuskrip baru ini:', 'Enter a title for this new manuscript:', getLang()),
-          defaultTitle,
-        )
+        const inputTitle = await tacticalPrompt({
+          title: t('Judul Manuskrip Baru', 'New Manuscript Title', getLang()),
+          specTag: t('TEMPLATE // PEMBUATAN NASKAH', 'TEMPLATE // NEW MANUSCRIPT', getLang()),
+          message: t(
+            'Beri judul untuk manuskrip baru ini:',
+            'Enter a title for this new manuscript:',
+            getLang(),
+          ),
+          defaultValue: defaultTitle,
+          placeholder: 'e.g. IEEE Transactions Manuscript',
+        })
         if (inputTitle === null) return
         const finalTitle = inputTitle.trim() || defaultTitle
 
@@ -658,6 +681,177 @@ export class DashboardView {
         this.projects = await getAllProjects(curUser)
         this.options.onOpenProject(newProj)
       })
+    })
+
+    this.bindTemplateZipButtons()
+    this.bindOnlineTemplateDownloader()
+  }
+
+  private bindTemplateZipButtons(): void {
+    this.container.querySelectorAll('.btn-download-template-zip').forEach((btn) => {
+      btn.addEventListener('click', async (e) => {
+        e.stopPropagation()
+        const tplId = btn.getAttribute('data-template-id')
+        const tpl = TEMPLATES.find((t) => t.id === tplId)
+        if (!tpl) return
+
+        const origHtml = btn.innerHTML
+        btn.innerHTML = '<span class="cta-inner">⏳ ...</span>'
+        try {
+          const zipBytes = await createZipArchive(tpl.files)
+          const blob = new Blob([zipBytes as unknown as BlobPart], { type: 'application/zip' })
+          const url = URL.createObjectURL(blob)
+          const a = document.createElement('a')
+          a.href = url
+          a.download = `${tpl.id}.zip`
+          a.click()
+          URL.revokeObjectURL(url)
+        } catch (err: unknown) {
+          await tacticalAlert({
+            title: t('Gagal Mengunduh ZIP', 'ZIP Download Failed', getLang()),
+            specTag: t('TEMPLATE // DOWNLOAD', 'TEMPLATE // DOWNLOAD', getLang()),
+            message: `${String(err)}`,
+            type: 'error',
+          })
+        } finally {
+          btn.innerHTML = origHtml
+        }
+      })
+    })
+  }
+
+  private async fetchOnlineProjectFromUrl(
+    rawUrl: string,
+  ): Promise<{ files: Record<string, string>; title: string }> {
+    let url = rawUrl.trim()
+    if (!url) throw new Error('URL cannot be empty')
+
+    if (
+      url.includes('github.com') &&
+      !url.includes('/archive/') &&
+      !url.includes('raw.githubusercontent.com') &&
+      !url.endsWith('.tex') &&
+      !url.endsWith('.zip')
+    ) {
+      const clean = url.replace(/\/+$/, '')
+      url = `${clean}/archive/refs/heads/main.zip`
+    }
+
+    let resp = await fetch(url)
+    if (!resp.ok && url.includes('/main.zip')) {
+      url = url.replace('/main.zip', '/master.zip')
+      resp = await fetch(url)
+    }
+
+    if (!resp.ok) {
+      throw new Error(`Failed to fetch online template (${resp.status}: ${resp.statusText})`)
+    }
+
+    const buf = new Uint8Array(await resp.arrayBuffer())
+
+    if (buf.length >= 4 && buf[0] === 0x50 && buf[1] === 0x4b) {
+      const unzipped = await unzipLatexProject(buf)
+      return {
+        files: unzipped.files,
+        title: unzipped.suggestedTitle || 'Imported Template',
+      }
+    }
+
+    const text = new TextDecoder().decode(buf)
+    const urlParts = rawUrl.split('/')
+    const title = urlParts[urlParts.length - 1]?.replace(/\.tex$/i, '') || 'Online LaTeX Document'
+    return {
+      files: { 'main.tex': text },
+      title,
+    }
+  }
+
+  private bindOnlineTemplateDownloader(): void {
+    const urlInput = this.container.querySelector('#dash-online-tpl-url') as HTMLInputElement | null
+    const openBtn = this.container.querySelector(
+      '#dash-online-tpl-open-btn',
+    ) as HTMLButtonElement | null
+    const zipBtn = this.container.querySelector(
+      '#dash-online-tpl-zip-btn',
+    ) as HTMLButtonElement | null
+
+    openBtn?.addEventListener('click', async () => {
+      const url = urlInput?.value.trim()
+      if (!url) {
+        await tacticalAlert({
+          title: t('URL Diperlukan', 'URL Required', getLang()),
+          specTag: t('TEMPLATE // INPUT URL', 'TEMPLATE // INPUT URL', getLang()),
+          message: t('Silakan masukkan URL template GitHub atau link file terlebih dahulu.', 'Please enter GitHub template URL or file link first.', getLang()),
+          type: 'warning',
+        })
+        return
+      }
+
+      openBtn.disabled = true
+      openBtn.innerHTML = '<span class="cta-inner">⏳ MENGUNDUH...</span>'
+      try {
+        const result = await this.fetchOnlineProjectFromUrl(url)
+        const curUser = getCurrentUser()
+        const newProj: ProjectItem = {
+          id: `proj_${Date.now()}_${Math.random().toString(36).slice(2, 6)}`,
+          title: result.title,
+          owner: curUser?.name || curUser?.username || 'Researcher',
+          ownerId: curUser?.userId || 'usr_admin',
+          lastModified: Date.now(),
+          tags: ['Online-Import', 'Template'],
+          files: result.files,
+        }
+        await saveProject(newProj, curUser)
+        this.projects = await getAllProjects(curUser)
+        this.options.onOpenProject(newProj)
+      } catch (err: unknown) {
+        await tacticalAlert({
+          title: t('Gagal Impor Template', 'Template Import Failed', getLang()),
+          specTag: t('TEMPLATE // IMPORT ERROR', 'TEMPLATE // IMPORT ERROR', getLang()),
+          message: `${String(err)}`,
+          type: 'error',
+        })
+      } finally {
+        openBtn.disabled = false
+        openBtn.innerHTML = `<span class="cta-inner">+ ${t('BUKA DI STUDIO', 'OPEN IN STUDIO', getLang())}</span>`
+      }
+    })
+
+    zipBtn?.addEventListener('click', async () => {
+      const url = urlInput?.value.trim()
+      if (!url) {
+        await tacticalAlert({
+          title: t('URL Diperlukan', 'URL Required', getLang()),
+          specTag: t('TEMPLATE // INPUT URL', 'TEMPLATE // INPUT URL', getLang()),
+          message: t('Silakan masukkan URL template GitHub atau link file terlebih dahulu.', 'Please enter GitHub template URL or file link first.', getLang()),
+          type: 'warning',
+        })
+        return
+      }
+
+      zipBtn.disabled = true
+      zipBtn.innerHTML = '<span class="cta-inner">⏳ MENGUNDUH...</span>'
+      try {
+        const result = await this.fetchOnlineProjectFromUrl(url)
+        const zipBytes = await createZipArchive(result.files)
+        const blob = new Blob([zipBytes as unknown as BlobPart], { type: 'application/zip' })
+        const blobUrl = URL.createObjectURL(blob)
+        const a = document.createElement('a')
+        a.href = blobUrl
+        a.download = `${result.title.toLowerCase().replace(/[^a-z0-9]/g, '-') || 'template'}.zip`
+        a.click()
+        URL.revokeObjectURL(blobUrl)
+      } catch (err: unknown) {
+        await tacticalAlert({
+          title: t('Gagal Unduh ZIP', 'ZIP Download Failed', getLang()),
+          specTag: t('TEMPLATE // ZIP ERROR', 'TEMPLATE // ZIP ERROR', getLang()),
+          message: `${String(err)}`,
+          type: 'error',
+        })
+      } finally {
+        zipBtn.disabled = false
+        zipBtn.innerHTML = `<span class="cta-inner">⬇ ${t('UNDUH ZIP', 'DOWNLOAD ZIP', getLang())}</span>`
+      }
     })
   }
 
@@ -681,13 +875,21 @@ export class DashboardView {
           grid.innerHTML = this.renderTemplateCards(getLang())
           this.bindTemplateButtons()
         }
-        this.container.querySelectorAll('[data-tpl-cat]').forEach((b) => b.classList.remove('active'))
+        this.container
+          .querySelectorAll('[data-tpl-cat]')
+          .forEach((b) => {
+            b.classList.remove('active')
+          })
         btn.classList.add('active')
       })
     })
 
-    const tplSearchInput = this.container.querySelector('#dash-tpl-search-input') as HTMLInputElement | null
-    const tplSearchClear = this.container.querySelector('#dash-tpl-search-clear') as HTMLButtonElement | null
+    const tplSearchInput = this.container.querySelector(
+      '#dash-tpl-search-input',
+    ) as HTMLInputElement | null
+    const tplSearchClear = this.container.querySelector(
+      '#dash-tpl-search-clear',
+    ) as HTMLButtonElement | null
 
     tplSearchInput?.addEventListener('input', () => {
       this.templateSearchQuery = tplSearchInput.value.trim()
@@ -722,18 +924,24 @@ export class DashboardView {
     })
 
     // Research Library bindings on Dashboard
-    const libProjectSelect = this.container.querySelector('#dash-lib-project-select') as HTMLSelectElement | null
+    const libProjectSelect = this.container.querySelector(
+      '#dash-lib-project-select',
+    ) as HTMLSelectElement | null
     libProjectSelect?.addEventListener('change', () => {
       this.selectedLibraryProject = libProjectSelect.value
       this.renderLibraryRows()
     })
 
-    const libSearchInput = this.container.querySelector('#dash-lib-search-input') as HTMLInputElement | null
+    const libSearchInput = this.container.querySelector(
+      '#dash-lib-search-input',
+    ) as HTMLInputElement | null
     libSearchInput?.addEventListener('input', () => {
       this.renderLibraryRows(libSearchInput.value.trim().toLowerCase())
     })
 
-    const paperDialog = this.container.querySelector('#tactical-paper-dialog') as HTMLDialogElement | null
+    const paperDialog = this.container.querySelector(
+      '#tactical-paper-dialog',
+    ) as HTMLDialogElement | null
     const addPaperBtn = this.container.querySelector('#dash-lib-add-paper-btn')
     const paperClose = this.container.querySelector('#modal-paper-close')
     const paperForm = this.container.querySelector('#tactical-paper-form')
@@ -748,12 +956,23 @@ export class DashboardView {
 
     paperForm?.addEventListener('submit', async (e) => {
       e.preventDefault()
-      const title = (this.container.querySelector('#paper-input-title') as HTMLInputElement)?.value.trim()
-      const authors = (this.container.querySelector('#paper-input-authors') as HTMLInputElement)?.value.trim()
-      const yearVenue = (this.container.querySelector('#paper-input-year') as HTMLInputElement)?.value.trim()
-      const doi = (this.container.querySelector('#paper-input-doi') as HTMLInputElement)?.value.trim() || ''
-      const targetProjId = (this.container.querySelector('#paper-input-project') as HTMLSelectElement)?.value || undefined
-      const bibtex = (this.container.querySelector('#paper-input-bibtex') as HTMLTextAreaElement)?.value.trim()
+      const title = (
+        this.container.querySelector('#paper-input-title') as HTMLInputElement
+      )?.value.trim()
+      const authors = (
+        this.container.querySelector('#paper-input-authors') as HTMLInputElement
+      )?.value.trim()
+      const yearVenue = (
+        this.container.querySelector('#paper-input-year') as HTMLInputElement
+      )?.value.trim()
+      const doi =
+        (this.container.querySelector('#paper-input-doi') as HTMLInputElement)?.value.trim() || ''
+      const targetProjId =
+        (this.container.querySelector('#paper-input-project') as HTMLSelectElement)?.value ||
+        undefined
+      const bibtex = (
+        this.container.querySelector('#paper-input-bibtex') as HTMLTextAreaElement
+      )?.value.trim()
 
       if (title && authors && bibtex) {
         const id = `paper_${Date.now()}`
@@ -780,7 +999,20 @@ export class DashboardView {
         this.papers = await getAllPapers()
         paperDialog?.close()
         this.render()
-        alert(`✓ Literatur "${title}" berhasil disimpan ke Research Library!`)
+        await tacticalAlert({
+          title: t('Pustaka Disimpan', 'Library Saved', getLang()),
+          specTag: t(
+            'RESEARCH LIBRARY // PAPER ENTRY',
+            'RESEARCH LIBRARY // PAPER ENTRY',
+            getLang(),
+          ),
+          message: t(
+            `Literatur "${title}" berhasil disimpan ke Research Library!`,
+            `Paper "${title}" successfully saved to Research Library!`,
+            getLang(),
+          ),
+          type: 'success',
+        })
       }
     })
 
@@ -826,8 +1058,19 @@ export class DashboardView {
 
     // Logout button handler
     const logoutBtn = this.container.querySelector('#dash-logout-btn')
-    logoutBtn?.addEventListener('click', () => {
-      if (confirm('Keluar dari sesi operator dan kembali ke halaman utama?')) {
+    logoutBtn?.addEventListener('click', async () => {
+      const confirmed = await tacticalConfirm({
+        title: t('Keluar dari Akun', 'Confirm Sign Out', getLang()),
+        specTag: t('IAM // OPERATOR SESSION', 'IAM // OPERATOR SESSION', getLang()),
+        message: t(
+          'Keluar dari sesi operator dan kembali ke halaman utama?',
+          'Sign out of operator session and return to homepage?',
+          getLang(),
+        ),
+        confirmText: t('YA, KELUAR', 'YES, SIGN OUT', getLang()),
+        danger: true,
+      })
+      if (confirmed) {
         logoutUser()
         if (this.options.onLogout) {
           this.options.onLogout()
@@ -838,11 +1081,17 @@ export class DashboardView {
     })
 
     // Account settings dialog bindings
-    const accountDialog = this.container.querySelector('#tactical-account-dialog') as HTMLDialogElement | null
+    const accountDialog = this.container.querySelector(
+      '#tactical-account-dialog',
+    ) as HTMLDialogElement | null
     const accountSettingsBtn = this.container.querySelector('#dash-account-settings-btn')
     const accountCloseBtn = this.container.querySelector('#modal-account-close')
-    const formUsername = this.container.querySelector('#form-change-username') as HTMLFormElement | null
-    const formPassword = this.container.querySelector('#form-change-password') as HTMLFormElement | null
+    const formUsername = this.container.querySelector(
+      '#form-change-username',
+    ) as HTMLFormElement | null
+    const formPassword = this.container.querySelector(
+      '#form-change-password',
+    ) as HTMLFormElement | null
     const accUserMsg = this.container.querySelector('#acc-user-msg') as HTMLElement | null
     const accPassMsg = this.container.querySelector('#acc-pass-msg') as HTMLElement | null
 
@@ -851,7 +1100,9 @@ export class DashboardView {
       if (!curUser) return
       const idEl = this.container.querySelector('#acc-info-id')
       const roleEl = this.container.querySelector('#acc-info-role')
-      const userInput = this.container.querySelector('#acc-input-new-user') as HTMLInputElement | null
+      const userInput = this.container.querySelector(
+        '#acc-input-new-user',
+      ) as HTMLInputElement | null
       if (idEl) idEl.textContent = curUser.userId
       if (roleEl) {
         roleEl.textContent = curUser.role.toUpperCase()
@@ -871,7 +1122,9 @@ export class DashboardView {
       e.preventDefault()
       const curUser = getCurrentUser()
       if (!curUser) return
-      const newUsername = (this.container.querySelector('#acc-input-new-user') as HTMLInputElement)?.value.trim()
+      const newUsername = (
+        this.container.querySelector('#acc-input-new-user') as HTMLInputElement
+      )?.value.trim()
       const res = changeUsername(curUser.userId, newUsername)
       if (accUserMsg) {
         accUserMsg.style.display = 'block'
@@ -892,9 +1145,13 @@ export class DashboardView {
       e.preventDefault()
       const curUser = getCurrentUser()
       if (!curUser) return
-      const oldPass = (this.container.querySelector('#acc-input-old-pass') as HTMLInputElement)?.value
-      const newPass = (this.container.querySelector('#acc-input-new-pass') as HTMLInputElement)?.value
-      const confirmPass = (this.container.querySelector('#acc-input-confirm-pass') as HTMLInputElement)?.value
+      const oldPass = (this.container.querySelector('#acc-input-old-pass') as HTMLInputElement)
+        ?.value
+      const newPass = (this.container.querySelector('#acc-input-new-pass') as HTMLInputElement)
+        ?.value
+      const confirmPass = (
+        this.container.querySelector('#acc-input-confirm-pass') as HTMLInputElement
+      )?.value
 
       if (newPass !== confirmPass) {
         if (accPassMsg) {
@@ -923,13 +1180,16 @@ export class DashboardView {
     r2Btn?.addEventListener('click', async () => {
       const status = await checkR2StorageAvailable()
       if (!status.available) {
-        alert(
-          'Cloudflare R2 Bucket belum terhubung di runtime saat ini.\n\n' +
-            'Untuk mengaktifkan penyimpanan dokumen pribadi di R2:\n' +
-            '1. Buat bucket: npx wrangler r2 bucket create wasmtex-documents\n' +
-            '2. Binding MY_BUCKET sudah disiapkan di wrangler.jsonc\n' +
-            '3. Deploy: npm run deploy',
-        )
+        await tacticalAlert({
+          title: t('R2 Belum Terhubung', 'R2 Storage Not Connected', getLang()),
+          specTag: t('STORAGE // CLOUDFLARE R2', 'STORAGE // CLOUDFLARE R2', getLang()),
+          message: t(
+            'Cloudflare R2 Bucket belum terhubung di runtime saat ini.\n\nUntuk mengaktifkan penyimpanan dokumen pribadi di R2:\n1. Buat bucket: npx wrangler r2 bucket create wasmtex-documents\n2. Binding MY_BUCKET sudah disiapkan di wrangler.jsonc\n3. Deploy: npm run deploy',
+            'Cloudflare R2 Bucket is not connected in the current runtime.\n\nTo enable private document storage on R2:\n1. Create bucket: npx wrangler r2 bucket create wasmtex-documents\n2. Binding MY_BUCKET is ready in wrangler.jsonc\n3. Deploy: npm run deploy',
+            getLang(),
+          ),
+          type: 'warning',
+        })
         return
       }
 
@@ -938,7 +1198,16 @@ export class DashboardView {
         const ok = await backupProjectToR2(p)
         if (ok) successCount++
       }
-      alert(`Berhasil sinkronisasi ${successCount} dokumen ke Cloudflare R2 Bucket!`)
+      await tacticalAlert({
+        title: t('Sinkronisasi Berhasil', 'Sync Successful', getLang()),
+        specTag: t('STORAGE // CLOUDFLARE R2', 'STORAGE // CLOUDFLARE R2', getLang()),
+        message: t(
+          `Berhasil sinkronisasi ${successCount} dokumen ke Cloudflare R2 Bucket!`,
+          `Successfully synchronized ${successCount} document(s) to Cloudflare R2 Bucket!`,
+          getLang(),
+        ),
+        type: 'success',
+      })
     })
 
     this.container.querySelectorAll('.tactical-nav-btn').forEach((btn) => {
@@ -979,7 +1248,12 @@ export class DashboardView {
             files: unzipped.files,
           }
         } catch (err: any) {
-          alert(`Gagal mengekstrak arsip ZIP: ${err?.message || err}`)
+          await tacticalAlert({
+            title: t('Gagal Ekstrak ZIP', 'ZIP Extraction Failed', getLang()),
+            specTag: t('ARSIP // ZIP PARSER', 'ARCHIVE // ZIP PARSER', getLang()),
+            message: `${err?.message || err}`,
+            type: 'error',
+          })
           return
         }
       } else {
@@ -1050,7 +1324,9 @@ export class DashboardView {
         const lowerTags = p.tags?.map((t) => t.toLowerCase()) || []
         const titleLower = p.title.toLowerCase()
         return (
-          lowerTags.some((t) => ['journal', 'ieee', 'elsevier', 'nature', 'sensors', 'paper'].includes(t)) ||
+          lowerTags.some((t) =>
+            ['journal', 'ieee', 'elsevier', 'nature', 'sensors', 'paper'].includes(t),
+          ) ||
           titleLower.includes('journal') ||
           titleLower.includes('ieee') ||
           titleLower.includes('elsevier') ||
@@ -1152,7 +1428,11 @@ export class DashboardView {
 
     tbody.querySelectorAll('.tactical-row').forEach((row) => {
       row.addEventListener('click', (e) => {
-        if ((e.target as HTMLElement).closest('.tactical-btn-action') || (e.target as HTMLElement).closest('.btn-add-tag')) return
+        if (
+          (e.target as HTMLElement).closest('.tactical-btn-action') ||
+          (e.target as HTMLElement).closest('.btn-add-tag')
+        )
+          return
         const id = row.getAttribute('data-id')!
         const found = this.projects.find((p) => p.id === id)
         if (found) {
@@ -1178,9 +1458,22 @@ export class DashboardView {
         const id = (btn as HTMLElement).getAttribute('data-id')!
         const found = this.projects.find((p) => p.id === id)
         if (!found) return
-        const input = prompt(`Tag untuk "${found.title}" (pisahkan koma):`, found.tags?.join(', ') || '')
+        const input = await tacticalPrompt({
+          title: t('Edit Tag Proyek', 'Edit Project Tags', lang),
+          specTag: t('METADATA // TAGS', 'METADATA // TAGS', lang),
+          message: t(
+            `Kelola tag kata kunci untuk "${found.title}" (pisahkan koma):`,
+            `Manage tags for "${found.title}" (comma-separated):`,
+            lang,
+          ),
+          defaultValue: found.tags?.join(', ') || '',
+          placeholder: 'LaTeX, Journal, Draft',
+        })
         if (input !== null) {
-          found.tags = input.split(',').map((t) => t.trim()).filter(Boolean)
+          found.tags = input
+            .split(',')
+            .map((t) => t.trim())
+            .filter(Boolean)
           const curUser = getCurrentUser()
           await saveProject(found, curUser)
           this.projects = await getAllProjects(curUser)
@@ -1191,12 +1484,23 @@ export class DashboardView {
     })
 
     tbody.querySelectorAll('.btn-delete').forEach((btn) => {
-      btn.addEventListener('click', (e) => {
+      btn.addEventListener('click', async (e) => {
         e.stopPropagation()
         const id = (btn as HTMLElement).getAttribute('data-id')!
         const found = this.projects.find((p) => p.id === id)
         const docTitle = found?.title || 'manuskrip'
-        if (confirm(t(`Hapus manuskrip "${docTitle}" secara permanen?`, `Permanently delete manuscript "${docTitle}"?`, lang))) {
+        const confirmed = await tacticalConfirm({
+          title: t('Hapus Manuskrip', 'Delete Manuscript', lang),
+          specTag: t('PROYEK // HAPUS PERMANEN', 'PROJECT // PERMANENT DELETE', lang),
+          message: t(
+            `Hapus manuskrip "${docTitle}" secara permanen? Tindakan ini tidak dapat dibatalkan.`,
+            `Permanently delete manuscript "${docTitle}"? This action cannot be undone.`,
+            lang,
+          ),
+          confirmText: t('YA, HAPUS', 'YES, DELETE', lang),
+          danger: true,
+        })
+        if (confirmed) {
           const curUser = getCurrentUser()
           deleteProject(id, true, curUser).then(async () => {
             this.projects = await getAllProjects(curUser)
@@ -1208,6 +1512,7 @@ export class DashboardView {
   }
 
   private renderLibraryRows(searchQuery = ''): void {
+    const lang = getLang()
     const tbody = this.container.querySelector('#dash-lib-table-body')
     if (!tbody) return
 
@@ -1309,38 +1614,78 @@ export class DashboardView {
         if (!targetProj) {
           const activeProjects = this.projects.filter((p) => !p.trashed)
           if (activeProjects.length === 0) {
-            alert('Tidak ada proyek aktif. Silakan buat proyek baru terlebih dahulu.')
+            await tacticalAlert({
+              title: t('Tidak Ada Proyek', 'No Active Projects', lang),
+              specTag: t('BIBTEX // TARGET PROJECT', 'BIBTEX // TARGET PROJECT', lang),
+              message: t(
+                'Tidak ada proyek aktif. Silakan buat proyek baru terlebih dahulu.',
+                'No active projects. Please create a new project first.',
+                lang,
+              ),
+              type: 'warning',
+            })
             return
           }
           const promptText =
-            'Pilih nomor proyek tujuan untuk menambahkan BibTeX:\n' +
-            activeProjects.map((p, idx) => `${idx + 1}. ${p.title}`).join('\n')
-          const ans = prompt(promptText, '1')
+            t(
+              'Pilih nomor proyek tujuan untuk menambahkan BibTeX:\n',
+              'Select target project number to append BibTeX:\n',
+              lang,
+            ) + activeProjects.map((p, idx) => `${idx + 1}. ${p.title}`).join('\n')
+          const ans = await tacticalPrompt({
+            title: t('Pilih Proyek Tujuan', 'Select Target Project', lang),
+            specTag: t('BIBTEX // TARGET PROJECT', 'BIBTEX // TARGET PROJECT', lang),
+            message: promptText,
+            defaultValue: '1',
+          })
           if (!ans) return
           const selectedIdx = parseInt(ans.trim(), 10) - 1
           targetProj = activeProjects[selectedIdx]
         }
 
         if (!targetProj) {
-          alert('Pilihan proyek tidak valid.')
+          await tacticalAlert({
+            title: t('Pilihan Tidak Valid', 'Invalid Selection', lang),
+            message: t('Pilihan proyek tidak valid.', 'Invalid project selection.', lang),
+            type: 'error',
+          })
           return
         }
 
         const res = await addPaperToProjectBibtex(paper, targetProj)
-        alert(res.message)
+        await tacticalAlert({
+          title: t('Sitasi Ditambahkan', 'Citation Added', lang),
+          specTag: t('BIBTEX // INSERTION', 'BIBTEX // INSERTION', lang),
+          message: res.message,
+          type: 'success',
+        })
       })
     })
 
     tbody.querySelectorAll('.btn-copy-bibtex').forEach((btn) => {
-      btn.addEventListener('click', (e) => {
+      btn.addEventListener('click', async (e) => {
         e.stopPropagation()
         const id = btn.getAttribute('data-id')
         const paper = this.papers.find((p) => p.id === id)
         if (paper) {
-          navigator.clipboard
-            ?.writeText(paper.bibtex)
-            .then(() => alert(`✓ BibTeX [${paper.id}] berhasil disalin ke clipboard!`))
-            .catch(() => prompt('Salin kode BibTeX:', paper.bibtex))
+          if (navigator.clipboard) {
+            try {
+              await navigator.clipboard.writeText(paper.bibtex)
+              await tacticalAlert({
+                title: t('BibTeX Disalin', 'BibTeX Copied', lang),
+                message: `✓ BibTeX [${paper.id}] ${t('berhasil disalin ke clipboard!', 'copied to clipboard!', lang)}`,
+                type: 'success',
+              })
+              return
+            } catch {}
+          }
+          await tacticalPrompt({
+            title: 'BibTeX',
+            specTag: 'BIBTEX // CODE',
+            message: t('Salin kode BibTeX berikut:', 'Copy the following BibTeX code:', lang),
+            defaultValue: paper.bibtex,
+            multiline: true,
+          })
         }
       })
     })
@@ -1354,9 +1699,17 @@ export class DashboardView {
 
         const activeProjects = this.projects.filter((p) => !p.trashed)
         const promptText =
-          'Hubungkan literatur ini ke proyek mana?\n0. [ Global / Semua Proyek ]\n' +
-          activeProjects.map((p, idx) => `${idx + 1}. ${p.title}`).join('\n')
-        const ans = prompt(promptText, '0')
+          t(
+            'Hubungkan literatur ini ke proyek mana?\n0. [ Global / Semua Proyek ]\n',
+            'Link this paper to which project?\n0. [ Global / All Projects ]\n',
+            lang,
+          ) + activeProjects.map((p, idx) => `${idx + 1}. ${p.title}`).join('\n')
+        const ans = await tacticalPrompt({
+          title: t('Hubungkan Paper ke Proyek', 'Link Paper to Project', lang),
+          specTag: t('RESEARCH LIBRARY // LINKAGE', 'RESEARCH LIBRARY // LINKAGE', lang),
+          message: promptText,
+          defaultValue: '0',
+        })
         if (ans === null) return
         const idx = parseInt(ans.trim(), 10)
         if (idx === 0) {
@@ -1364,7 +1717,11 @@ export class DashboardView {
         } else if (activeProjects[idx - 1]) {
           paper.projectId = activeProjects[idx - 1]!.id
         } else {
-          alert('Pilihan tidak valid.')
+          await tacticalAlert({
+            title: t('Pilihan Tidak Valid', 'Invalid Selection', lang),
+            message: t('Pilihan tidak valid.', 'Invalid selection.', lang),
+            type: 'error',
+          })
           return
         }
 
@@ -1379,7 +1736,19 @@ export class DashboardView {
         e.stopPropagation()
         const id = btn.getAttribute('data-id')
         const paper = this.papers.find((p) => p.id === id)
-        if (paper && confirm(`Hapus "${paper.title}" dari Research Library?`)) {
+        if (!paper) return
+        const confirmed = await tacticalConfirm({
+          title: t('Hapus Literatur', 'Delete Paper', lang),
+          specTag: t('RESEARCH LIBRARY // DELETE', 'RESEARCH LIBRARY // DELETE', lang),
+          message: t(
+            `Hapus "${paper.title}" dari Research Library?`,
+            `Delete "${paper.title}" from Research Library?`,
+            lang,
+          ),
+          confirmText: t('YA, HAPUS', 'YES, DELETE', lang),
+          danger: true,
+        })
+        if (confirmed) {
           await deletePaper(paper.id)
           this.papers = await getAllPapers()
           this.render()
@@ -1388,19 +1757,44 @@ export class DashboardView {
     })
   }
 
-  private promptNewProject(): void {
-    const title = prompt('Judul Manuskrip Baru (LaTeX Document):')
+  private async promptNewProject(): Promise<void> {
+    const title = await tacticalPrompt({
+      title: t('Judul Manuskrip Baru', 'New Manuscript Title', getLang()),
+      specTag: t('PROYEK BARU // NEW PROJECT', 'NEW PROJECT // MANUSCRIPT', getLang()),
+      message: t(
+        'Masukkan judul untuk manuskrip LaTeX baru:',
+        'Enter title for the new LaTeX manuscript:',
+        getLang(),
+      ),
+      placeholder: 'e.g. Comparative Study on Machine Learning',
+      defaultValue: t('Manuskrip Baru', 'New Manuscript', getLang()),
+    })
     if (!title) return
 
-    const tagInput = prompt('Tag / Kategori (opsional, kosongkan jika tidak ada, pisahkan koma):', '')
-    const tags = tagInput ? tagInput.split(',').map((t) => t.trim()).filter(Boolean) : []
+    const tagInput = await tacticalPrompt({
+      title: t('Tag & Kategori Proyek', 'Project Tags & Categories', getLang()),
+      specTag: t('METADATA // TAGS', 'METADATA // TAGS', getLang()),
+      message: t(
+        'Tag / Kategori (opsional, kosongkan jika tidak ada, pisahkan koma):',
+        'Tags / Categories (optional, comma-separated):',
+        getLang(),
+      ),
+      defaultValue: 'Draft, Research',
+      placeholder: 'Journal, Thesis, IEEE',
+    })
+    const tags = tagInput
+      ? tagInput
+          .split(',')
+          .map((t) => t.trim())
+          .filter(Boolean)
+      : []
 
     const curUser = getCurrentUser()
     const authorName = curUser?.username || curUser?.name || 'Operator'
     const id = `proj_${Date.now()}`
     const newProj: ProjectItem = {
       id,
-      title,
+      title: title.trim(),
       owner: authorName,
       ownerId: curUser?.userId || 'usr_admin',
       lastModified: Date.now(),

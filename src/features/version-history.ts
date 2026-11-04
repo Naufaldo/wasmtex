@@ -1,4 +1,5 @@
 import { t } from '../ui/i18n'
+import { tacticalPrompt, tacticalConfirm, tacticalAlert } from '../ui/tactical-dialog'
 
 export interface ProjectVersion {
   id: string
@@ -144,39 +145,50 @@ export class VersionHistoryDialog {
       if (e.target === overlay) this.close()
     })
 
-    overlay.querySelector('#ver-snapshot-btn')?.addEventListener('click', () => {
-      const label = prompt(
-        t(
+    overlay.querySelector('#ver-snapshot-btn')?.addEventListener('click', async () => {
+      const label = await tacticalPrompt({
+        title: t('Labeli Versi Baru', 'Label Current Version'),
+        specTag: t('HISTORI // SNAPSHOT BARU', 'HISTORY // NEW SNAPSHOT'),
+        message: t(
           'Nama/label versi baru (contoh: "Draft Revisi Bab 2", "Pre-submission"):',
           'New version label (e.g. "Draft Revision Ch 2", "Pre-submission"):'
-        )
-      )
+        ),
+        defaultValue: t('Snapshot Manual', 'Manual Snapshot'),
+      })
       if (label) {
         const currentFiles = this.options.getCurrentFiles()
-        saveVersion(label, currentFiles, true).then(async () => {
-          this.versions = await getVersions()
-          this.selectedVersion = this.versions[0] || null
-          this.renderList()
-          this.renderPreview()
-        })
+        await saveVersion(label, currentFiles, true)
+        this.versions = await getVersions()
+        this.selectedVersion = this.versions[0] || null
+        this.renderList()
+        this.renderPreview()
       }
     })
 
-    overlay.querySelector('#ver-restore-btn')?.addEventListener('click', () => {
+    overlay.querySelector('#ver-restore-btn')?.addEventListener('click', async () => {
       if (!this.selectedVersion) return
-      const confirmMsg = t(
-        `Yakin ingin me-restore proyek ke versi "${this.selectedVersion.label}"? Perubahan saat ini yang belum dilabeli akan ditimpa.`,
-        `Are you sure you want to restore to version "${this.selectedVersion.label}"? Unsaved changes will be overwritten.`
-      )
-      if (confirm(confirmMsg)) {
+      const confirmed = await tacticalConfirm({
+        title: t('Kembalikan Versi', 'Restore Version'),
+        specTag: t('HISTORI // RESTORE DOKUMEN', 'HISTORY // RESTORE DOCUMENT'),
+        message: t(
+          `Yakin ingin me-restore proyek ke versi "${this.selectedVersion.label}"? Perubahan saat ini yang belum dilabeli akan ditimpa.`,
+          `Are you sure you want to restore to version "${this.selectedVersion.label}"? Unsaved changes will be overwritten.`
+        ),
+        confirmText: t('YA, RESTORE', 'YES, RESTORE'),
+        danger: true,
+      })
+      if (confirmed) {
         this.options.onRestore(this.selectedVersion.files)
         this.close()
-        alert(
-          t(
+        await tacticalAlert({
+          title: t('Versi Dipulihkan', 'Version Restored'),
+          specTag: t('HISTORI // RESTORE SELESAI', 'HISTORY // RESTORE COMPLETED'),
+          message: t(
             `Proyek berhasil dikembalikan ke versi "${this.selectedVersion.label}".`,
             `Project restored to version "${this.selectedVersion.label}".`
-          )
-        )
+          ),
+          type: 'success',
+        })
       }
     })
 

@@ -117,6 +117,8 @@ export async function unzipLatexProject(
   const rawExtracted: { path: string; bytes: Uint8Array }[] = []
   let cur = cdOffset
   const textDecoder = new TextDecoder('utf-8')
+  let totalExtractedBytes = 0
+  const MAX_TOTAL_UNCOMPRESSED_BYTES = 100 * 1024 * 1024 // 100 MB max archive capacity to prevent Zip Bomb DoS
 
   for (let e = 0; e < totalEntries; e++) {
     if (cur + 46 > bytes.length) break
@@ -143,6 +145,13 @@ export async function unzipLatexProject(
       cleanPath.endsWith('.DS_Store') ||
       cleanPath.endsWith('Thumbs.db')
     ) {
+      continue
+    }
+
+    // Zip Slip Defense: reject paths with '..' segments or null bytes
+    const segments = cleanPath.split('/')
+    if (segments.some((s) => s === '..') || cleanPath.includes('\0') || cleanPath.startsWith('/')) {
+      console.warn(`Potential Zip Slip path traversal ignored: ${rawPath}`)
       continue
     }
 
@@ -196,6 +205,11 @@ export async function unzipLatexProject(
     } else {
       console.warn(`Metode kompresi ${method} tidak didukung pada ${cleanPath}, diabaikan.`)
       continue
+    }
+
+    totalExtractedBytes += fileBytes.length
+    if (totalExtractedBytes > MAX_TOTAL_UNCOMPRESSED_BYTES) {
+      throw new Error(`Ditolak: Total ukuran uncompressed ZIP melebihi batas aman 100 MB (kemungkinan Zip Bomb).`)
     }
 
     rawExtracted.push({ path: cleanPath, bytes: fileBytes })

@@ -1,4 +1,5 @@
 import { t } from '../ui/i18n'
+import { tacticalPrompt } from '../ui/tactical-dialog'
 
 export interface TextComment {
   id: string
@@ -120,15 +121,20 @@ export class CommentsPanel {
     this.options.onBadgeUpdate?.(activeCount)
   }
 
-  private promptNewComment(): void {
+  private async promptNewComment(): Promise<void> {
     const file = this.options.getActiveFile()
     const sel = this.options.getActiveSelection() || { text: 'General comment', line: 1 }
 
-    const promptMsg = t(
-      `Komentar untuk "${sel.text.slice(0, 30)}..." (Baris ${sel.line}):`,
-      `Comment on "${sel.text.slice(0, 30)}..." (Line ${sel.line}):`
-    )
-    const text = prompt(promptMsg)
+    const text = await tacticalPrompt({
+      title: t('Komentar Baru', 'New Comment'),
+      specTag: t('KOMENTAR // DOKUMEN', 'COMMENTS // DOCUMENT'),
+      message: t(
+        `Komentar untuk "${sel.text.slice(0, 30)}..." (Baris ${sel.line}):`,
+        `Comment on "${sel.text.slice(0, 30)}..." (Line ${sel.line}):`
+      ),
+      placeholder: t('Tulis komentar atau catatan diskusi...', 'Write a comment or discussion note...'),
+      multiline: true,
+    })
     if (!text) return
 
     const newComment: TextComment = {

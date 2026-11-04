@@ -1,4 +1,5 @@
 import { t } from '../ui/i18n'
+import { tacticalPrompt, tacticalAlert } from '../ui/tactical-dialog'
 
 export interface TikzTemplate {
   id: string
@@ -390,31 +391,49 @@ export class TikzScratchpadModal {
     })
 
     // Save as .tex file
-    saveFileBtn.addEventListener('click', () => {
-      const promptMsg = t(
-        'Masukkan nama berkas diagram (contoh: figures/diagram_alur.tex):',
-        'Enter diagram file path (e.g. figures/flowchart.tex):'
-      )
-      const name = prompt(promptMsg, 'figures/fig_scratchpad.tex')
+    saveFileBtn.addEventListener('click', async () => {
+      const name = await tacticalPrompt({
+        title: t('Simpan Berkas Diagram', 'Save Diagram File'),
+        specTag: t('TIKZ // SIMPAN BERKAS', 'TIKZ // SAVE FILE'),
+        message: t(
+          'Masukkan nama berkas diagram (contoh: figures/diagram_alur.tex):',
+          'Enter diagram file path (e.g. figures/flowchart.tex):'
+        ),
+        defaultValue: 'figures/fig_scratchpad.tex',
+        placeholder: 'figures/diagram.tex',
+      })
       if (name) {
         this.options.onSaveAsFile(name.trim(), textarea.value)
-        alert(
-          t(
+        await tacticalAlert({
+          title: t('Berkas Disimpan', 'File Saved'),
+          specTag: t('TIKZ // BERKAS', 'TIKZ // FILE'),
+          message: t(
             `Berkas ${name.trim()} berhasil disimpan ke proyek.`,
             `File ${name.trim()} successfully saved to project.`
-          )
-        )
+          ),
+          type: 'success',
+        })
       }
     })
 
     // Insert to main document
-    insertBtn.addEventListener('click', () => {
-      const captionPrompt = t('Masukkan caption gambar:', 'Enter figure caption:')
+    insertBtn.addEventListener('click', async () => {
       const defaultCaption = t('Diagram Hasil Komputasi', 'Computational Results Diagram')
-      const caption = prompt(captionPrompt, defaultCaption) || defaultCaption
+      const caption =
+        (await tacticalPrompt({
+          title: t('Caption Gambar', 'Figure Caption'),
+          specTag: t('TIKZ // CAPTION', 'TIKZ // CAPTION'),
+          message: t('Masukkan caption gambar untuk dokumen:', 'Enter figure caption for document:'),
+          defaultValue: defaultCaption,
+        })) || defaultCaption
 
-      const labelPrompt = t('Masukkan label rujukan (misal fig:hasil):', 'Enter reference label (e.g. fig:results):')
-      const label = prompt(labelPrompt, 'fig:diagram') || 'fig:diagram'
+      const label =
+        (await tacticalPrompt({
+          title: t('Label Rujukan', 'Reference Label'),
+          specTag: t('TIKZ // LABEL', 'TIKZ // LABEL'),
+          message: t('Masukkan label rujukan (misal: fig:hasil):', 'Enter reference label (e.g. fig:results):'),
+          defaultValue: 'fig:diagram',
+        })) || 'fig:diagram'
 
       const block = formatFigureBlock(textarea.value, caption, label)
       this.options.onInsertToDocument(block)

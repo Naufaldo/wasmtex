@@ -725,4 +725,751 @@ Let $\\{u_k\\}$ be a minimizing sequence such that $\\lim_{k \\to \\infty} \\mat
 \\end{document}`,
     },
   },
+  {
+    id: 'tpl_arxiv',
+    title: 'arXiv / Machine Learning Research Preprint',
+    titleId: 'Preprint arXiv & Riset Machine Learning (2-Kolom)',
+    titleEn: 'arXiv / Machine Learning Research Preprint',
+    descriptionId: 'Format preprint standar arXiv untuk machine learning, computer vision, dan fisika komputasi dengan tabel booktabs dan algoritma.',
+    descriptionEn: 'Standard arXiv preprint format for machine learning, computer vision, and computational science with booktabs and algorithmic blocks.',
+    category: 'Journal',
+    badge: 'PREPRINT // ARXIV',
+    tags: ['arXiv', 'Preprint', 'Machine Learning', 'AI'],
+    files: {
+      'main.tex': `\\documentclass[10pt,twocolumn,letterpaper]{article}
+\\usepackage[top=2cm,bottom=2.2cm,left=1.8cm,right=1.8cm]{geometry}
+\\usepackage{amsmath,amssymb,amsfonts}
+\\usepackage{booktabs}
+\\usepackage{graphicx}
+\\usepackage{hyperref}
+\\usepackage{microtype}
+
+\\hypersetup{colorlinks=true,linkcolor=blue,citecolor=blue,urlcolor=blue}
+
+\\title{\\textbf{Scalable Zero-Server Neural Architectures for Real-Time Client-Side Inference}}
+\\author{
+  Alex Chen\\textsuperscript{1}, Maya Lin\\textsuperscript{2}, and David K. Thorne\\textsuperscript{1} \\\\
+  \\small \\textsuperscript{1}Department of Computer Science, University of Technology \\\\
+  \\small \\textsuperscript{2}Neural Systems Lab, Institute for Advanced Research \\\\
+  \\small \\texttt{\\{alex.chen, d.thorne\\}@tech.edu, maya@neurallab.org}
+}
+\\date{}
+
+\\begin{document}
+\\maketitle
+
+\\begin{abstract}
+Modern artificial intelligence models increasingly demand decentralized client-side deployment to eliminate server latency, reduce compute costs, and ensure absolute user data sovereignty. In this work, we propose a quantized neural compiler framework executed entirely within WebAssembly runtimes. Extensive benchmarks on standard ImageNet-1K and scientific benchmark tasks demonstrate a $3.4\\times$ speedup over conventional browser runtimes with zero degradation in empirical accuracy ($p < 0.001$).
+\\end{abstract}
+
+\\section{Introduction}
+Decentralized execution of scientific algorithms represents a paradigm shift in open reproducible research~\\cite{vaswani2017attention, devlin2018bert}. By leveraging compiled native instruction sets within isolated browser sandboxes, heavy matrix operators execute with near-native throughput.
+
+\\section{Methodology}
+Let $\\mathcal{X} \\in \\mathbb{R}^{B \\times D}$ represent an input feature tensor with batch size $B$ and hidden dimension $D$. The attention operator is formulated as:
+\\begin{equation}
+  \\label{eq:attention}
+  \\mathrm{Attn}(Q, K, V) = \\mathrm{softmax}\\left(\\frac{QK^T}{\\sqrt{d_k}}\\right) V
+\\end{equation}
+where $d_k$ denotes the projection dimension.
+
+\\subsection{Empirical Benchmark}
+Table~\\ref{tab:results} summarizes latency and memory footprints across multiple model configurations.
+
+\\begin{table}[htbp]
+  \\centering
+  \\caption{Performance comparison on standard benchmark suites.}
+  \\label{tab:results}
+  \\begin{tabular}{lcccc}
+    \\toprule
+    \\textbf{Model} & \\textbf{Params (M)} & \\textbf{Latency (ms)} & \\textbf{Throughput} & \\textbf{Memory} \\\\
+    \\midrule
+    Baseline FP32   & 110.2 & 148.6 & 67.3 tok/s & 440 MB \\\\
+    Ours (INT8)     & 110.2 & 43.8  & 228.1 tok/s & 112 MB \\\\
+    Ours (WASM-SIMD) & 110.2 & 32.1  & 311.5 tok/s & 98 MB \\\\
+    \\bottomrule
+  \\end{tabular}
+\\end{table}
+
+\\section{Conclusion}
+Our architecture proves that complex machine learning inference can be performed autonomously on client hardware with robust privacy guarantees.
+
+\\bibliographystyle{plain}
+\\bibliography{refs}
+
+\\end{document}`,
+      'refs.bib': `@article{vaswani2017attention,
+  title={Attention is all you need},
+  author={Vaswani, Ashish and Shazeer, Noam and Parmar, Niki and Uszkoreit, Jakob and Jones, Llion and Gomez, Aidan N and Kaiser, {\\L}ukasz and Polosukhin, Illia},
+  journal={Advances in Neural Information Processing Systems},
+  volume={30},
+  year={2017}
+}
+
+@article{devlin2018bert,
+  title={BERT: Pre-training of deep bidirectional transformers for language understanding},
+  author={Devlin, Jacob and Chang, Ming-Wei and Lee, Kenton and Toutanova, Kristina},
+  journal={arXiv preprint arXiv:1810.04805},
+  year={2018}
+}`,
+    },
+  },
+  {
+    id: 'tpl_lncs',
+    title: 'Springer LNCS Conference Manuscript',
+    titleId: 'Springer LNCS (Lecture Notes in Computer Science)',
+    titleEn: 'Springer LNCS Conference Manuscript',
+    descriptionId: 'Format konferensi ilmu komputer standar Springer LNCS dengan running headers, definisi masalah formal, dan sitasi terstruktur.',
+    descriptionEn: 'Standard Springer LNCS Computer Science conference format with running headers, formal problem definitions, and structured citations.',
+    category: 'Journal',
+    badge: 'SPRINGER // LNCS',
+    tags: ['Springer', 'LNCS', 'Algorithms', 'Computer Science'],
+    files: {
+      'main.tex': `\\documentclass[runningheads]{article}
+\\usepackage[top=2.5cm,bottom=2.5cm,left=2.5cm,right=2.5cm]{geometry}
+\\usepackage{amsmath,amssymb}
+\\usepackage{booktabs}
+\\usepackage{graphicx}
+\\usepackage{hyperref}
+
+\\begin{document}
+
+\\title{Provably Efficient Graph Traversal under Bounded Memory Constraints}
+\\author{Elena Rostova\\inst{1} \\and Marcus Vance\\inst{2}}
+\\authorrunning{E. Rostova and M. Vance}
+\\institute{
+  Max Planck Institute for Informatics, Saarbr\\"{u}cken, Germany \\\\
+  \\email{erostova@mpi-inf.mpg.de}
+  \\and
+  Stanford University, California, USA \\\\
+  \\email{mvance@stanford.edu}
+}
+
+\\maketitle
+
+\\begin{abstract}
+Graph exploration under sublinear memory bounds is a cornerstone problem in distributed network algorithms and computational biology. We introduce an adaptive sampling strategy that reduces space complexity from $\\mathcal{O}(|V|)$ to $\\mathcal{O}(\\sqrt{|V|} \\log |V|)$ while preserving exact diameter estimation with probability $1 - \\delta$.
+
+\\textbf{Keywords:} Distributed Algorithms, Graph Traversal, Memory-Constrained Computing, Diameter Estimation.
+\\end{abstract}
+
+\\section{Introduction}
+Given an undirected connected graph $G = (V, E)$, fundamental topological queries such as diameter calculation typically require breadth-first search queues proportional to $|V|$~\\cite{knuth1997art}. In large scale cyber-physical infrastructures, memory per worker node is strictly limited.
+
+\\section{Problem Formulation \\& Invariants}
+\\textbf{Definition 1 (Bounded Frontier).} A traversal queue $Q_t$ at step $t$ satisfies the $(k, \\epsilon)$-frontier invariant if:
+\\begin{equation}
+  |Q_t| \\le k \\cdot \\log(1 / \\epsilon), \\quad \\forall t \\ge 0
+\\end{equation}
+
+\\section{Experimental Results}
+We tested our algorithm on Stanford Large Network Dataset (SNAP) topologies. Table~\\ref{tab:comparison} demonstrates the memory compression achieved.
+
+\\begin{table}[htbp]
+  \\centering
+  \\caption{Memory footprint comparison across benchmark graph topologies.}
+  \\label{tab:comparison}
+  \\begin{tabular}{lrrr}
+    \\toprule
+    \\textbf{Network Dataset} & \\textbf{$|V|$} & \\textbf{Standard BFS (MB)} & \\textbf{Ours (MB)} \\\\
+    \\midrule
+    ca-GrQc        & 5,242   & 14.2 & 1.8 \\\\
+    wiki-Vote      & 7,115   & 22.6 & 2.4 \\\\
+    soc-Epinions1  & 75,879  & 184.1 & 12.9 \\\\
+    \\bottomrule
+  \\end{tabular}
+\\end{table}
+
+\\section{Concluding Discussion}
+The proposed bounded algorithm guarantees deterministic convergence with negligible memory overhead.
+
+\\bibliographystyle{plain}
+\\bibliography{refs}
+
+\\end{document}`,
+      'refs.bib': `@book{knuth1997art,
+  title={The Art of Computer Programming, Volume 1: Fundamental Algorithms},
+  author={Knuth, Donald E},
+  year={1997},
+  publisher={Addison-Wesley}
+}`,
+    },
+  },
+  {
+    id: 'tpl_neurips_ml',
+    title: 'NeurIPS / ICML Deep Learning Conference Paper',
+    titleId: 'Naskah Konferensi Deep Learning (NeurIPS / ICML Format)',
+    titleEn: 'NeurIPS / ICML Deep Learning Conference Paper',
+    descriptionId: 'Format paper konferensi AI papan atas (NeurIPS/ICML/ICLR) lengkap dengan formulasi loss, tabel ablasi, dan ethical impact statement.',
+    descriptionEn: 'Top-tier AI conference paper format (NeurIPS/ICML/ICLR) with loss formulation, ablation tables, and broader impact statements.',
+    category: 'Journal',
+    badge: 'CONF // NEURIPS',
+    tags: ['NeurIPS', 'ICML', 'Deep Learning', 'Neural Networks'],
+    files: {
+      'main.tex': `\\documentclass[11pt]{article}
+\\usepackage[margin=1in]{geometry}
+\\usepackage{amsmath,amssymb,bm}
+\\usepackage{booktabs}
+\\usepackage{graphicx}
+\\usepackage{hyperref}
+\\usepackage{microtype}
+
+\\title{\\LARGE \\textbf{Self-Supervised Representation Alignment via Contrastive Metric Learning}}
+\\author{
+  \\textbf{Jordan Riley}$^{*,1}$ \\quad \\textbf{Sofia Petrov}$^{*,2}$ \\quad \\textbf{Hassan Al-Mansoor}$^{1}$ \\\\
+  \\small $^{1}$Artificial Intelligence Research Lab, MIT \\quad $^{2}$ETH Z\\"{u}rich \\\\
+  \\small \\texttt{\\{jriley, hassan\\}@mit.edu, petrovs@ethz.ch}
+}
+\\date{}
+
+\\begin{document}
+\\maketitle
+\\def\\thefootnote{*}\\footnotetext{Equal contribution.}
+
+\\begin{abstract}
+Self-supervised contrastive learning maps high-dimensional sensory inputs into latent metrics where semantic transformations remain invariant. We introduce \\textsc{MetricAlign}, an objective that explicitly regularizes Riemannian curvature during representation optimization. Experiments across vision and multimodal tasks indicate superior out-of-distribution robustness (+4.8\\% accuracy) compared to existing self-supervised baselines.
+\\end{abstract}
+
+\\section{Introduction}
+Contrastive learning objectives maximize mutual information across correlated augmentations of an unlabeled observation~\\cite{he2020momentum, chen2020simple}. However, dimensional collapse often destabilizes latent geometry.
+
+\\section{Theoretical Formulation}
+Let $z_i, z_j \\in \\mathbb{S}^{d-1}$ be normalized embeddings of positive pairs. The proposed curvature-regularized contrastive loss is:
+\\begin{equation}
+  \\mathcal{L}_{\\mathrm{align}} = - \\log \\frac{\\exp(\\langle z_i, z_j \\rangle / \\tau)}{\\sum_{k=1}^{2N} \\mathbb{I}_{[k \\ne i]} \\exp(\\langle z_i, z_k \\rangle / \\tau)} + \\lambda \\mathcal{R}_{\\mathrm{curv}}(\\bm{Z})
+\\end{equation}
+where $\\tau$ is the temperature parameter and $\\mathcal{R}_{\\mathrm{curv}}$ penalizes non-isometric manifold deformations.
+
+\\section{Ablation Studies}
+Table~\\ref{tab:ablation} details the influence of each architectural component.
+
+\\begin{table}[htbp]
+  \\centering
+  \\caption{Ablation of regularizer components on CIFAR-100 linear evaluation.}
+  \\label{tab:ablation}
+  \\begin{tabular}{lccc}
+    \\toprule
+    \\textbf{Configuration} & \\textbf{Top-1 Acc (\\%)} & \\textbf{Top-5 Acc (\\%)} & \\textbf{OOD Robustness} \\\\
+    \\midrule
+    InfoNCE Baseline       & 74.2 & 91.8 & 62.1 \\\\
+    + Curvature Penalty    & 77.4 & 93.5 & 68.3 \\\\
+    + Full \\textsc{MetricAlign} & \\textbf{79.0} & \\textbf{94.7} & \\textbf{71.5} \\\\
+    \\bottomrule
+  \\end{tabular}
+\\end{table}
+
+\\section*{Broader Impact \\& Ethics Statement}
+This foundational research advances sample efficiency in machine learning. While broad deployment reduces training carbon footprints, automated decision models require domain audit before clinical or societal deployment.
+
+\\bibliographystyle{plain}
+\\bibliography{refs}
+
+\\end{document}`,
+      'refs.bib': `@inproceedings{he2020momentum,
+  title={Momentum contrast for unsupervised visual representation learning},
+  author={He, Kaiming and Fan, Haoqi and Wu, Yuxin and Xie, Saining and Girshick, Ross},
+  booktitle={Proceedings of the IEEE/CVF conference on computer vision and pattern recognition},
+  pages={9729--9738},
+  year={2020}
+}
+
+@inproceedings{chen2020simple,
+  title={A simple framework for contrastive learning of visual representations},
+  author={Chen, Ting and Kornblith, Simon and Norouzi, Mohammad and Hinton, Geoffrey},
+  booktitle={International conference on machine learning},
+  pages={1597--1607},
+  year={2020}
+}`,
+    },
+  },
+  {
+    id: 'tpl_phd_dissertation',
+    title: 'Ph.D. Comprehensive Dissertation (Multi-Chapter)',
+    titleId: 'Disertasi Doktoral & Tesis Komprehensif (Multi-Bab)',
+    titleEn: 'Ph.D. Comprehensive Dissertation (Multi-Chapter)',
+    descriptionId: 'Struktur komprehensif disertasi S3/tesis S2 dengan deklarasi orisinalitas, halaman pengesahan, kata pengantar, bab-bab terpisah (\\include), dan lampiran.',
+    descriptionEn: 'Comprehensive Ph.D./Master dissertation structure with originality declaration, dedication, modular chapters (\\include), and appendices.',
+    category: 'Thesis',
+    badge: 'DISSERTATION // PH.D.',
+    tags: ['Dissertation', 'Ph.D.', 'University', 'Monograph'],
+    files: {
+      'main.tex': `\\documentclass[12pt,oneside,a4paper]{report}
+\\usepackage[margin=3cm]{geometry}
+\\usepackage{amsmath,amssymb}
+\\usepackage{booktabs}
+\\usepackage{graphicx}
+\\usepackage{setspace}
+\\usepackage{hyperref}
+
+\\onehalfspacing
+
+\\begin{document}
+
+% Title Page
+\\begin{titlepage}
+  \\centering
+  \\vspace*{1cm}
+  {\\Large\\bfseries ADVANCED ADSORPTION PHENOMENA AND KINETIC MODELLING IN BENCHTOP CARBON DIOXIDE DIRECT AIR CAPTURE SYSTEMS\\par}
+  \\vspace{2cm}
+  {\\large A Dissertation Submitted for the Degree of Doctor of Philosophy\\par}
+  \\vspace{2cm}
+  {\\large\\textbf{Naufal Dean Alfarisi, S.T., M.Eng.}\\par}
+  \\vfill
+  {\\large Department of Chemical and Materials Engineering\\\\
+  Graduate School of Science and Engineering\\\\
+  Academic Year 2026\\par}
+\\end{titlepage}
+
+\\chapter*{Declaration of Originality}
+I hereby declare that this dissertation entitled \\textit{Advanced Adsorption Phenomena and Kinetic Modelling in Direct Air Capture Systems} is the result of my own bona fide research work, except where explicitly referenced.
+
+\\vspace{3em}
+\\noindent
+Bandung, \\today \\hfill \\textbf{Naufal Dean Alfarisi}
+
+\\chapter*{Abstract}
+Direct air capture (DAC) represents an essential technological component in meeting global net-zero greenhouse gas emission targets. This doctoral dissertation investigates mass transfer resistance, surface functionalization of porous biochar matrices, and high-frequency non-dispersive infrared sensing architectures. The proposed kinetic model demonstrates $R^2 > 0.992$ correlation with experimental breakthrough curves across 500 hours of continuous testbed operation.
+
+\\tableofcontents
+\\listoftables
+
+\\include{chapters/ch1_intro}
+\\include{chapters/ch2_method}
+
+\\chapter{Conclusions and Future Work}
+\\label{ch:conclusion}
+This research establishes reproducible experimental benchmarks for ambient direct air capture. Future investigations will couple solar-thermal desorption cycles to further minimize regeneration energy penalties.
+
+\\bibliographystyle{plain}
+\\bibliography{refs}
+
+\\appendix
+\\chapter{Sensor Calibration Certificates}
+\\label{app:calibration}
+Detailed calibration logs for differential mass balance instruments and NDIR gas analyzers (MPM486 and Wingel PCM2052 series).
+
+\\end{document}`,
+      'chapters/ch1_intro.tex': `\\chapter{Introduction and Objectives}
+\\label{ch:intro}
+
+\\section{Background and Motivation}
+Atmospheric carbon dioxide concentrations have surpassed 420 ppm, accelerating anthropogenic climate shifts~\\cite{ipcc2023}. While point-source emission abatement remains mandatory, negative emission technologies such as Direct Air Capture (DAC) are indispensable for mitigating hard-to-abate historical emissions.
+
+\\section{Research Questions}
+This dissertation addresses three key engineering challenges:
+\\begin{enumerate}
+  \\item How do pore volume distributions and amine loadings in biochar affect low-concentration $\\mathrm{CO}_2$ capture kinetics?
+  \\item What sensor fusion algorithms eliminate baseline drift in long-term continuous measurement?
+  \\item Can localized desorption cycles reduce thermal regeneration penalties below $4.2\\,\\mathrm{GJ/t}\\,\\mathrm{CO}_2$?
+\\end{enumerate}`,
+      'chapters/ch2_method.tex': `\\chapter{Materials and Experimental Methodology}
+\\label{ch:method}
+
+\\section{Adsorbent Synthesis}
+Porous agricultural biochar feedstocks were pyrolyzed at $650^\\circ\\mathrm{C}$ under an inert nitrogen sweep ($200\\,\\mathrm{mL/min}$). Chemical activation with potassium hydroxide (KOH) was executed at an impregnation ratio of 3:1.
+
+\\section{Differential Packed-Bed Reactor Setup}
+Breakthrough dynamics were quantified in a temperature-controlled differential packed-bed reactor. Real-time gas concentrations were analyzed downstream using dual NDIR optical sensors calibrated against certified gas standards ($400\\,\\mathrm{ppm}$ and $1000\\,\\mathrm{ppm}\\,\\mathrm{CO}_2$).`,
+      'refs.bib': `@misc{ipcc2023,
+  title={Climate Change 2023: Synthesis Report. Contribution of Working Groups I, II and III to the Sixth Assessment Report},
+  author={{IPCC}},
+  year={2023},
+  publisher={Intergovernmental Panel on Climate Change}
+}`,
+    },
+  },
+  {
+    id: 'tpl_modern_cv',
+    title: 'Modern 2-Column Academic & Industry CV',
+    titleId: 'CV & Resume Akademik / Tech 2-Kolom Modern',
+    titleEn: 'Modern 2-Column Academic & Industry CV',
+    descriptionId: 'Curriculum Vitae dua-kolom bergaya modern (AltaCV style murni LaTeX) dengan sidebar kontak/keahlian dan kolom utama publikasi serta pengalaman kerja.',
+    descriptionEn: 'Modern 2-column curriculum vitae (AltaCV style in pure LaTeX) with skills sidebar and main column for experience, grants, and publications.',
+    category: 'Resume',
+    badge: 'CV // MODERN 2-COL',
+    tags: ['CV', 'Resume', 'Curriculum Vitae', 'Career'],
+    files: {
+      'main.tex': `\\documentclass[10pt,a4paper]{article}
+\\usepackage[top=1.2cm,bottom=1.2cm,left=1.2cm,right=1.2cm]{geometry}
+\\usepackage{paracol}
+\\usepackage{xcolor}
+\\usepackage{hyperref}
+\\usepackage{enumitem}
+
+\\definecolor{primary}{HTML}{003366}
+\\definecolor{accent}{HTML}{E65100}
+\\definecolor{darkslate}{HTML}{1A1A1A}
+\\definecolor{lightgrey}{HTML}{F4F4F6}
+
+\\hypersetup{colorlinks=true,urlcolor=accent}
+\\pagestyle{empty}
+\\setlist[itemize]{leftmargin=1.2em,itemsep=0.2em,topsep=0.2em}
+
+\\begin{document}
+
+% Header Block
+\\begin{center}
+  {\\Huge\\bfseries\\color{primary} DR. IR. NAUFALDO ALFARISI, M.ENG.} \\\\[0.3em]
+  {\\large\\bfseries\\color{accent} Industrial Automation & Chemical Process Systems Engineer} \\\\[0.4em]
+  \\small Email: \\href{mailto:naufal@research.id}{naufal@research.id} \\quad | \\quad
+  Web: \\href{https://naufaldo.github.io}{naufaldo.github.io} \\quad | \\quad
+  Bandung, Indonesia \\quad | \\quad
+  GitHub: \\href{https://github.com/Naufaldo}{github.com/Naufaldo}
+\\end{center}
+
+\\vspace{0.8em}
+\\hrule height 1.5pt
+\\vspace{0.8em}
+
+\\columnratio{0.32}
+\\begin{paracol}{2}
+
+% Left Column: Profile & Skills
+\\textbf{\\large\\color{primary} CORE COMPETENCIES} \\\\[0.4em]
+\\textbf{Industrial Automation:}
+\\begin{itemize}
+  \\item PLC Programming (IEC 61131-3)
+  \\item SCADA & HMI Systems
+  \\item Modbus RTU / TCP, EtherCAT
+  \\item VFD Speed Control & PID
+\\end{itemize}
+
+\\vspace{0.6em}
+\\textbf{Software & Systems:}
+\\begin{itemize}
+  \\item C/C++, Rust, TypeScript
+  \\item WebAssembly (WASM) Systems
+  \\item Python, MATLAB Analysis
+  \\item Docker & Linux Edge Runtime
+\\end{itemize}
+
+\\vspace{0.6em}
+\\textbf{Chemical Instrumentation:}
+\\begin{itemize}
+  \\item NDIR Sensors & Flowmeters
+  \\item P&ID & Electrical CAD
+  \\item Adsorption Breakthrough Lab
+\\end{itemize}
+
+\\vspace{0.8em}
+\\textbf{\\large\\color{primary} CERTIFICATIONS} \\\\[0.4em]
+\\begin{itemize}
+  \\item Licensed Professional Engineer (IPM)
+  \\item Certified Automation Professional (ISA)
+\\end{itemize}
+
+\\switchcolumn
+
+% Right Column: Experience & Publications
+\\textbf{\\large\\color{primary} PROFESSIONAL WORK EXPERIENCE} \\\\[0.4em]
+
+\\textbf{Senior Control Systems Lead} \\hfill \\textit{2023 -- Present} \\\\
+\\textit{Trafindo Power Automation Division}
+\\begin{itemize}
+  \\item Led engineering for dual pump testing facility (45\\,kW and 160\\,kW motor drives) with automated pressure & flow telemetry.
+  \\item Engineered configuration-driven Node-RED telemetry pipeline with WebSocket integration and zero manual UI wiring.
+\\end{itemize}
+
+\\vspace{0.6em}
+\\textbf{Research Fellow in DAC & Chemical Sensing} \\hfill \\textit{2021 -- 2023} \\\\
+\\textit{Green Energy Research Center, ITB}
+\\begin{itemize}
+  \\item Architected automated benchtop DAC biochar adsorption rig with synchronized temperature and optical NDIR telemetry.
+  \\item Fit non-linear breakthrough curves and authored 4 peer-reviewed manuscripts with Elsevier standard multi-panel graphics.
+\\end{itemize}
+
+\\vspace{0.8em}
+\\textbf{\\large\\color{primary} SELECTED PEER-REVIEWED PUBLICATIONS} \\\\[0.4em]
+\\begin{itemize}
+  \\item \\textbf{Alfarisi, N.} et al. (2025). \\textit{High-speed zero-server WebAssembly LaTeX compilation engines for sovereign research}. Journal of Open Research Software, 13(2), 114--128.
+  \\item \\textbf{Alfarisi, N.} et al. (2024). \\textit{Drift compensation in low-concentration ambient NDIR carbon dioxide sensing}. IEEE Transactions on Instrumentation and Measurement, 73, 1--12.
+\\end{itemize}
+
+\\vspace{0.8em}
+\\textbf{\\large\\color{primary} EDUCATION} \\\\[0.4em]
+\\textbf{Ph.D. in Chemical & Process Engineering} \\hfill \\textit{2021 -- 2024} \\\\
+Institut Teknologi Bandung (ITB) \\quad | \\quad \\textit{Summa Cum Laude} \\\\
+\\textbf{B.Eng. in Electrical & Control Engineering} \\hfill \\textit{2017 -- 2021} \\\\
+Institut Teknologi Bandung (ITB)
+
+\\end{paracol}
+
+\\end{document}`,
+    },
+  },
+  {
+    id: 'tpl_grant_proposal',
+    title: 'Scientific Research Grant Proposal',
+    titleId: 'Proposal Hibah Riset Ilmiah (NSF / NIH / BRIN Style)',
+    titleEn: 'Scientific Research Grant Proposal',
+    descriptionId: 'Struktur proposal pendanaan riset formal: Specific Aims, Research Strategy, Signifikansi, Metodologi, Tabel Gantt Chart, dan Justifikasi Anggaran.',
+    descriptionEn: 'Formal research grant funding proposal: Specific Aims, Research Strategy, Significance, Methodology, Gantt Chart timeline, and Budget Justification.',
+    category: 'Academic',
+    badge: 'PROPOSAL // GRANT',
+    tags: ['Grant', 'Proposal', 'Funding', 'Research Project'],
+    files: {
+      'main.tex': `\\documentclass[11pt,a4paper]{article}
+\\usepackage[margin=2.5cm]{geometry}
+\\usepackage{amsmath,amssymb}
+\\usepackage{booktabs}
+\\usepackage{graphicx}
+\\usepackage{xcolor}
+\\usepackage{hyperref}
+
+\\hypersetup{colorlinks=true,linkcolor=blue,citecolor=blue}
+
+\\begin{document}
+
+\\begin{center}
+  {\\LARGE\\bfseries RESEARCH GRANT PROPOSAL\\\\}
+  \\vspace{0.5em}
+  {\\Large Autonomous Client-Side Scientific Computing via WebAssembly Virtualization\\par}
+  \\vspace{1em}
+  \\textbf{Principal Investigator:} Prof. Dr. Sarah Jenkins, Ph.D. \\\\
+  \\textbf{Host Institution:} National Institute for Advanced Computational Sciences \\\\
+  \\textbf{Proposed Project Duration:} 24 Months \\quad | \\quad \\textbf{Requested Budget:} \\$480,000
+\\end{center}
+
+\\vspace{1em}
+\\hrule height 1pt
+\\vspace{1.5em}
+
+\\section{Specific Aims}
+Data privacy regulations and network latency barriers severely constrain collaborative document engineering in defense, biotechnology, and classified research domains. This project aims to:
+\\begin{enumerate}
+  \\item \\textbf{Aim 1:} Implement memory-isolated WebAssembly runtime kernels executing unmodified TeX Live engines in edge browsers.
+  \\item \\textbf{Aim 2:} Develop deterministic AST-based incremental compilation algorithms achieving $< 100$\\,ms re-typeset latency.
+  \\item \\textbf{Aim 3:} Validate zero-trust cryptographic provenance binding for distributed research artifacts.
+\\end{enumerate}
+
+\\section{Significance and Background}
+Current collaborative platforms rely heavily on centralized monolithic servers, exposing proprietary research data to third-party cloud vulnerabilities~\\cite{grantRef2025}. By transitioning compiler engines into client-side WASM sandboxes, complete operational sovereignty is restored to individual research laboratories.
+
+\\section{Research Plan and Work Packages}
+\\subsection{Work Package 1: Low-Latency Virtual Filesystems}
+We will build in-memory virtual filesystems capable of synchronizing multi-gigabyte project structures across worker threads with zero serialization overhead.
+
+\\subsection{Project Schedule and Gantt Milestones}
+Table~\\ref{tab:gantt} illustrates the timeline of project deliverables across the 24-month funding cycle.
+
+\\begin{table}[htbp]
+  \\centering
+  \\caption{Project milestones and timeline schedule.}
+  \\label{tab:gantt}
+  \\begin{tabular}{lcccc}
+    \\toprule
+    \\textbf{Milestone Deliverable} & \\textbf{Q1--Q2} & \\textbf{Q3--Q4} & \\textbf{Q5--Q6} & \\textbf{Q7--Q8} \\\\
+    \\midrule
+    Engine WASM Compilation & \\textbf{X} & & & \\\\
+    Incremental Snapshotting & & \\textbf{X} & & \\\\
+    Multi-engine XeLaTeX/LuaTeX & & & \\textbf{X} & \\\\
+    Full Security Audit & & & & \\textbf{X} \\\\
+    \\bottomrule
+  \\end{tabular}
+\\end{table}
+
+\\section{Budget Justification}
+\\begin{itemize}
+  \\item \\textbf{Personnel (\\$320,000):} 1 Postdoctoral Fellow (24 mo) and 2 Graduate Research Assistants.
+  \\item \\textbf{Hardware & Benchmarking Nodes (\\$65,000):} Dedicated workstations for parallel profiling.
+  \\item \\textbf{Publication & Dissemination (\\$25,000):} Open-access fees and conference registrations.
+  \\item \\textbf{Institutional Indirect Costs (\\$70,000):} Standard institutional overhead rate.
+\\end{itemize}
+
+\\bibliographystyle{plain}
+\\bibliography{refs}
+
+\\end{document}`,
+      'refs.bib': `@article{grantRef2025,
+  title={Sovereign cloud architectures for academic research integrity},
+  author={Jenkins, Sarah and Thorne, David},
+  journal={Science and Public Policy},
+  volume={52},
+  number={1},
+  pages={45--59},
+  year={2025}
+}`,
+    },
+  },
+  {
+    id: 'tpl_sop_industrial',
+    title: 'Industrial Standard Operating Procedure (SOP)',
+    titleId: 'SOP & Manual Teknis Pengoperasian Industri',
+    titleEn: 'Industrial Standard Operating Procedure (SOP)',
+    descriptionId: 'Manual prosedur operasional standar industri (SOP) dengan blok kendali dokumen, rambu keselamatan DANGER/CAUTION, diagram langkah kerja, dan tabel audit tanda tangan.',
+    descriptionEn: 'Industrial standard operating procedure (SOP) manual with document control metadata, safety warnings, step-by-step checklist, and sign-off table.',
+    category: 'Report',
+    badge: 'MANUAL // INDUSTRIAL SOP',
+    tags: ['SOP', 'Manual', 'Engineering', 'Safety', 'Industrial'],
+    files: {
+      'main.tex': `\\documentclass[11pt,a4paper]{article}
+\\usepackage[top=2cm,bottom=2cm,left=2cm,right=2cm]{geometry}
+\\usepackage{amsmath,amssymb}
+\\usepackage{booktabs}
+\\usepackage{xcolor}
+\\usepackage{fancyhdr}
+\\usepackage{tcolorbox}
+
+\\definecolor{dangerred}{HTML}{B91C1C}
+\\definecolor{warningamber}{HTML}{D97706}
+\\definecolor{cortexblue}{HTML}{1E3A8A}
+
+\\pagestyle{fancy}
+\\fancyhf{}
+\\fancyhead[L]{\\small\\textbf{STANDARD OPERATING PROCEDURE}}
+\\fancyhead[R]{\\small DOC-ID: SOP-TB-PUMP-002}
+\\fancyfoot[C]{\\thepage}
+
+\\begin{document}
+
+% Document Control Block
+\\begin{tabular}{|l|p{7cm}|l|p{4cm}|}
+  \\hline
+  \\textbf{Title:} & Dual Pump Testing Procedure & \\textbf{Rev:} & 3.2 \\\\
+  \\hline
+  \\textbf{Facility:} & 160 kW Pump Test Bed Rig & \\textbf{Date:} & \\today \\\\
+  \\hline
+  \\textbf{Author:} & Lead Automation Engineer & \\textbf{Approver:} & Plant Director \\\\
+  \\hline
+\\end{tabular}
+
+\\vspace{1.5em}
+
+\\section{Purpose and Operational Scope}
+This SOP delineates the safety checkpoints, valve sequencing, and variable-frequency drive (VFD) parameters required for testing 4-inch (TB1 45\\,kW) and 8-inch (TB2 160\\,kW) industrial centrifugal pump assemblies.
+
+\\section{Safety Prerequisites and Personal Protective Equipment (PPE)}
+\\begin{tcolorbox}[colback=dangerred!10,colframe=dangerred,title=\\textbf{DANGER: HIGH VOLTAGE \& HIGH PRESSURE HAZARD}]
+  Before initiating pump rotation, confirm 1000\\,V main transformer isolation and verify Emergency Stop (ESTOP) circuit continuity. Never exceed maximum operating discharge pressure ($P_{\\max} = 16.0\\,\\mathrm{bar}$).
+\\end{tcolorbox}
+
+\\section{Pre-Start Verification Checklist}
+\\begin{enumerate}
+  \\item Verify water reservoir level is above $85\\%$ tank capacity.
+  \\item Ensure suction suction line butterfly valve (BV101) is fully open ($100\\%$).
+  \\item Check MPM486 pressure transmitter zero-calibration reading on HMI panel.
+  \\item Confirm Yaskawa GA700 VFD communication over Modbus RS-485 / Node-RED WebSocket gateway.
+\\end{enumerate}
+
+\\section{Step-by-Step Testing Execution}
+\\subsection{Phase 1: Priming and Cavitation Purge}
+Engage vacuum priming pump for 120 seconds until continuous fluid stream flows through sight glass.
+
+\\subsection{Phase 2: Ramped Frequency Acceleration}
+Table~\\ref{tab:parameters} lists nominal frequency stages and required monitoring limits.
+
+\\begin{table}[htbp]
+  \\centering
+  \\caption{Step-wise frequency test stages and parameter tolerances.}
+  \\label{tab:parameters}
+  \\begin{tabular}{ccccc}
+    \\toprule
+    \\textbf{Step} & \\textbf{VFD Freq (Hz)} & \\textbf{Flow Rate (m$^3$/h)} & \\textbf{Pressure (bar)} & \\textbf{Max Temp ($^\\circ$C)} \\\\
+    \\midrule
+    1 & 15.0 & 45.0  & 2.8 & 42 \\\\
+    2 & 30.0 & 92.5  & 5.4 & 48 \\\\
+    3 & 45.0 & 138.0 & 8.9 & 55 \\\\
+    4 & 60.0 & 185.0 & 12.4 & 62 \\\\
+    \\bottomrule
+  \\end{tabular}
+\\end{table}
+
+\\section{Emergency Shutdown Protocol}
+In the event of pipe burst, cavitational vibration $> 4.5\\,\\mathrm{mm/s}$, or motor overheat:
+\\begin{enumerate}
+  \\item Hit physical red mushroom ESTOP push button on local cabinet or HMI virtual trigger.
+  \\item VFD will immediately trigger Safe Torque Off (STO) and open discharge bypass valve.
+\\end{enumerate}
+
+\\section{Audit Sign-Off and Operator Verification}
+\\vspace{1em}
+\\noindent
+\\begin{tabular}{p{7cm}p{7cm}}
+  \\textbf{Operator on Duty:} \\hrulefill & \\textbf{Safety Inspector:} \\hrulefill \\\\[1.5em]
+  \\textbf{Signature / Date:} \\hrulefill & \\textbf{Signature / Date:} \\hrulefill \\\\
+\\end{tabular}
+
+\\end{document}`,
+    },
+  },
+  {
+    id: 'tpl_academic_book',
+    title: 'Academic Monograph & Textbook',
+    titleId: 'Buku Akademik & Monograf Ilmiah (Textbook)',
+    titleEn: 'Academic Monograph & Textbook',
+    descriptionId: 'Struktur buku/monograf lengkap dengan bab, sub-bab, kotak definisi, rangkuman, latihan soal (exercises), daftar pustaka, dan indeks subjek.',
+    descriptionEn: 'Comprehensive academic textbook/monograph structure with frontmatter, chapters, definition callouts, exercises, and bibliography.',
+    category: 'Academic',
+    badge: 'BOOK // MONOGRAPH',
+    tags: ['Book', 'Textbook', 'Monograph', 'Publishing'],
+    files: {
+      'main.tex': `\\documentclass[11pt,a4paper,openany]{book}
+\\usepackage[margin=2.8cm]{geometry}
+\\usepackage{amsmath,amssymb}
+\\usepackage{booktabs}
+\\usepackage{graphicx}
+\\usepackage{hyperref}
+
+\\title{\\textbf{\\Huge Principles of Decentralized Scientific Computing}\\\\[0.5em] \\Large Theory, Architecture, and Practical WebAssembly Implementations}
+\\author{\\textbf{\\Large Dr. Elizabeth Vance} \\\\ Senior Research Chair in Computer Science}
+\\date{First Edition --- 2026}
+
+\\begin{document}
+
+\\frontmatter
+\\maketitle
+
+\\chapter{Preface}
+This textbook provides a rigorous introduction to sovereign, zero-server computing architectures. It is designed for graduate courses in distributed systems, scientific software engineering, and applied cryptography.
+
+\\tableofcontents
+
+\\mainmatter
+
+\\part{Foundations of In-Browser Compilation}
+
+\\include{chapter1}
+
+\\chapter{Incremental AST Checkpointing and Fast Splicing}
+\\label{ch:splicing}
+
+\\section{The Sub-Second Recompilation Problem}
+Interactive document authoring requires immediate visual feedback. When an author modifies a sentence in Chapter 4, compiling the entire 300-page manuscript incurs unacceptable latency.
+
+\\section{Heap Memory Snapshotting}
+By instrumenting the WebAssembly engine with Asyncify stack unwind/rewind checkpoints, memory state is captured directly prior to the edited source line. This allows resuming execution with zero overhead.
+
+\\backmatter
+
+\\bibliographystyle{plain}
+\\bibliography{refs}
+
+\\end{document}`,
+      'chapter1.tex': `\\chapter{Introduction to Client-Side Execution}
+\\label{ch:intro}
+
+\\section{Historical Context}
+For decades, scientific document compilation relied upon heavyweight server installations of TeX Live, consuming gigabytes of remote disk space and exposing sensitive research manuscripts to external network channels~\\cite{knuth1984}.
+
+\\section{WebAssembly as a Universal Target}
+WebAssembly (WASM) provides a memory-safe, sandboxed binary execution environment running at near-native CPU speeds across modern web browsers.
+
+\\subsection{Core Architectural Invariants}
+\\begin{enumerate}
+  \\item \\textbf{Deterministic Execution:} Identical source files yield bit-for-bit identical PDF binaries.
+  \\item \\textbf{Zero Network Egress:} User documents never leave the browser client memory.
+  \\item \\textbf{On-Demand Resource Streaming:} TeX packages stream on-the-fly and persist in local IndexedDB caches.
+\\end{enumerate}`,
+      'refs.bib': `@article{knuth1984,
+  title={Literate programming},
+  author={Knuth, Donald Ervin},
+  journal={The Computer Journal},
+  volume={27},
+  number={2},
+  pages={97--111},
+  year={1984},
+  publisher={Oxford University Press}
+}`,
+    },
+  },
 ]

@@ -21,6 +21,7 @@ import { getProject, type ProjectItem, saveProject } from './projects/project-st
 import type { AppStatus, WarmupCache } from './types'
 import { HomeView } from './ui/home-view'
 import { getLang, type Lang, t, toggleLang } from './ui/i18n'
+import { tacticalPrompt, tacticalConfirm, tacticalAlert } from './ui/tactical-dialog'
 import { configurePdfjsWorker } from './viewer/pdf-viewer'
 import { WasmTex } from './wasmtex'
 import './styles.css'
@@ -218,10 +219,17 @@ function renderFileList(files: string[]): void {
       del.className = 'delete-btn'
       del.textContent = '✕'
       del.title = `Delete ${filePath}`
-      del.addEventListener('click', (event) => {
+      del.addEventListener('click', async (event) => {
         event.stopPropagation()
 
-        if (!confirm(`Hapus file "${filePath}"?`)) return
+        const confirmed = await tacticalConfirm({
+          title: t('Hapus Berkas', 'Delete File', getLang()),
+          specTag: t('VFS // HAPUS BERKAS', 'VFS // DELETE FILE', getLang()),
+          message: t(`Yakin ingin menghapus berkas "${filePath}"? Tindakan ini tidak dapat dibatalkan.`, `Are you sure you want to delete file "${filePath}"? This cannot be undone.`, getLang()),
+          confirmText: t('YA, HAPUS', 'YES, DELETE', getLang()),
+          danger: true,
+        })
+        if (!confirmed) return
 
         if (editorRef) {
           editorRef.deleteFile(filePath)
@@ -475,14 +483,19 @@ async function start() {
   // Initialize Research Library
   const libraryContainer = document.getElementById('library-container')!
   const libraryView = new LibraryView(libraryContainer, {
-    onInsertBibtex: (bibtex) => {
+    onInsertBibtex: async (bibtex) => {
       const existing = (editor.getFile('refs.bib') as string) || ''
       const updated = existing.trim() ? `${existing.trim()}\n\n${bibtex}\n` : `${bibtex}\n`
       editor.setFile('refs.bib', updated)
       editor.openFile('refs.bib')
       renderFileList(editor.listFiles())
       persistActiveProject()
-      alert('Entri BibTeX berhasil disisipkan ke refs.bib!')
+      await tacticalAlert({
+        title: 'BibTeX',
+        specTag: t('BIBTEX // INTEGRASI', 'BIBTEX // INTEGRATION', getLang()),
+        message: t('Entri BibTeX berhasil disisipkan ke refs.bib!', 'BibTeX citation appended to refs.bib!', getLang()),
+        type: 'success',
+      })
     },
   })
   libraryView.init()
@@ -553,9 +566,14 @@ async function start() {
   })
 
   const downloadPdfBtn = document.getElementById('download-pdf-btn')
-  downloadPdfBtn?.addEventListener('click', () => {
+  downloadPdfBtn?.addEventListener('click', async () => {
     if (!latestPdfBytes) {
-      alert('PDF belum siap. Klik Recompile terlebih dahulu.')
+      await tacticalAlert({
+        title: t('PDF Belum Siap', 'PDF Not Ready', getLang()),
+        specTag: t('KOMPILER // STATUS', 'COMPILER // STATUS', getLang()),
+        message: t('PDF belum siap. Klik Recompile terlebih dahulu.', 'PDF is not ready yet. Please click Recompile first.', getLang()),
+        type: 'warning',
+      })
       return
     }
     const blob = new Blob([latestPdfBytes.buffer as ArrayBuffer], { type: 'application/pdf' })
@@ -1003,7 +1021,12 @@ async function start() {
           editor.openFile(unzipped.mainFile)
         }
       } catch (err: any) {
-        alert(`Gagal mengekstrak ZIP: ${err?.message || err}`)
+        await tacticalAlert({
+          title: t('Gagal Ekstrak ZIP', 'ZIP Extraction Failed', getLang()),
+          specTag: t('BERKAS // ZIP', 'FILES // ZIP', getLang()),
+          message: `${err?.message || err}`,
+          type: 'error',
+        })
       }
     } else if (FILE_EXTENSIONS_THAT_ARE_BINARY.test(file.name)) {
       const buf = new Uint8Array(await file.arrayBuffer())
@@ -1016,8 +1039,13 @@ async function start() {
     persistActiveProject()
   })
 
-  document.getElementById('add-folder-btn')?.addEventListener('click', () => {
-    const folder = prompt('Nama folder baru (contoh: "chapters", "sections", "figures"):')
+  document.getElementById('add-folder-btn')?.addEventListener('click', async () => {
+    const folder = await tacticalPrompt({
+      title: t('Folder Baru', 'New Folder', getLang()),
+      specTag: t('BERKAS // DIREKTORI BARU', 'FILES // NEW DIRECTORY', getLang()),
+      message: t('Nama folder baru (contoh: "chapters", "sections", "figures"):', 'New folder name (e.g. "chapters", "sections", "figures"):', getLang()),
+      placeholder: 'chapters',
+    })
     if (folder) {
       const clean = folder.replace(/^\/+|\/+$/g, '')
       if (clean) {
@@ -1028,9 +1056,15 @@ async function start() {
     }
   })
 
-  addFileButton.addEventListener('click', () => {
+  addFileButton.addEventListener('click', async () => {
+    const filePath = await tacticalPrompt({
+      title: t('Berkas Baru', 'New File', getLang()),
+      specTag: t('BERKAS // BUAT BERKAS', 'FILES // CREATE FILE', getLang()),
+      message: t('Path berkas baru (contoh: "notes.tex" atau "chapters/section1.tex"):', 'New file path (e.g. "notes.tex" or "chapters/section1.tex"):', getLang()),
+      placeholder: 'chapters/intro.tex',
+    })
     const decision = resolveAddFile(
-      prompt('Path file baru (contoh: "notes.tex" atau "chapters/section1.tex"):'),
+      filePath,
       (p) => editor.getFile(p) !== null,
     )
     if (decision.action === 'cancel') return
