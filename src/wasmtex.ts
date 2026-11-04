@@ -1042,6 +1042,11 @@ export class WasmTex {
     }
   }
 
+  /** Get the VirtualFS instance backing this editor. */
+  getVirtualFileSystem(): VirtualFS {
+    return this.fs
+  }
+
   /** Read file content. */
 
   getFile(path: string): string | Uint8Array | null {

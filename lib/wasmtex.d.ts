@@ -1,3 +1,4 @@
+import { VirtualFS } from './fs/virtual-fs.js';
 import { WasmTexEventMap, WasmTexOptions } from './component-types.js';
 import { CompletionSnapshotState } from './types.js';
 import { PdfViewer } from './viewer/pdf-viewer.js';
@@ -123,6 +124,8 @@ export declare class WasmTex {
     openFile(path: string): void;
     /** Update or create a single file. */
     setFile(path: string, content: string | Uint8Array): void;
+    /** Get the VirtualFS instance backing this editor. */
+    getVirtualFileSystem(): VirtualFS;
     /** Read file content. */
     getFile(path: string): string | Uint8Array | null;
     /** Delete a file. */

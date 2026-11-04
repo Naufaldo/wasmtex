@@ -19,6 +19,7 @@ For a running example, follow [browser setup](howto.md). On this page: [options]
 | `wasmtex/warmup` | Dependency-light preload and learned dependency-set helpers. |
 | `wasmtex/syntax` | Stable, versioned syntax snapshots shared by language and semantic services. |
 | `wasmtex/synctex` | SyncTeX parser + PDF↔source mapping (`SynctexParser`, `TextMapper`). |
+| `wasmtex/ai` | AI Research & LaTeX Agent SDK (Adapters, Tools, Skills & Compactor). |
 | `wasmtex/style.css` | Optional built-in UI/viewer styles. |
 
 <a id="node-host-installation"></a>

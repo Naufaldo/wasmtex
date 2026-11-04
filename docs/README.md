@@ -20,6 +20,7 @@ audits are in [license evidence](license-evidence/README.md).
 | [Syntax API](syntax-api.md) | Shared source snapshots, stable document identity and schema contracts. |
 | [SyncTeX API](synctex-api.md) | Parse output, map coordinates and support custom PDF viewers. |
 | [Bibliography](bibliography.md) | BibTeX, biblatex-lite and remote Biber behavior. |
+| [AI Research Agent](ai-integration.md) | Agentic assistant, model adapters (9router, Ollama, OpenAI, Anthropic), learned skills, and context compactor. |
 | [Warmup](warmup.md) | Preload APIs, learned dependency sets, cache scope and preparation costs. |
 | [Nested output](nested-output.md) | Main-file/output-path contract and links to regression coverage. |
 

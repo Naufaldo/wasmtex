@@ -18,6 +18,7 @@ Repository ini merupakan *fork* dari **WasmTex** (oleh Corca AI). Fokus utama fo
 - **Sinkronisasi 2-Arah SyncTeX**: Klik pada PDF langsung melompat ke nomor baris editor kode sekaligus menyorot elemen DOM visual editor (`data-line`), dan sebaliknya.
 - **Dukungan Dwibahasa Penuh (ID / EN)**: Seluruh tampilan antarmuka dapat diganti antara Bahasa Indonesia dan Bahasa Inggris secara instan via tombol `🌐 ID / EN`.
 - **Research Library**: Manajemen sitasi BibTeX dan sinkronisasi referensi 1-klik ke naskah proyek.
+- **AI Research & LaTeX Agent**: Asisten AI agen otonom berbasis *tool-use* dengan *approval gate* keamanan, integrasi gateway fleksibel (9router, OpenRouter, OpenAI, Anthropic, Ollama lokal), sistem pustaka skill pembelajaran (Hermes-style), kompresi riwayat hemat token, dan pembaca paper PDF terintegrasi.
 - **Kontras Tinggi Ergonomis**: Mode Gelap & Mode Terang dengan tipografi tegas, ramah mata, dan kontras tajam sesuai standar desain taktis brutalist.
 - **Kompilasi Client-Side**: Kompilasi berjalan langsung di browser via WebAssembly tanpa perlu menginstal TeX Live di server/komputer.
 - **Deploy Mandiri**: Siap dijalankan lokal (`npm run dev`) atau di-deploy langsung ke Cloudflare Workers (`npm run deploy`).
@@ -66,6 +67,14 @@ Repository ini merupakan *fork* dari **WasmTex** (oleh Corca AI). Fokus utama fo
 - **📝 Review & Track Changes**: Suggestion mode with accept/reject diffs.
 - **💬 Contextual Comments**: Add comments on specific text selections, reply, and resolve threads.
 - **🕒 Version History & Snapshots**: Automatic and manual snapshot checkpoints with 1-click restore.
+- **🤖 AI Research & LaTeX Assistant (`wasmtex/ai`)**:
+  - **Tool-Use & Safe Approval Gate**: Multi-step reasoning loop able to read project files, compile, inspect log outputs, and propose edits; destructive operations (`write_file`, `delete_file`) require explicit human approval before execution.
+  - **Multi-Gateway Compatibility**: Connect any model provider via preset configuration — `9router` (`https://9router.com/v1`), `OpenRouter` (`https://openrouter.ai/api/v1`), `OpenAI`, `Anthropic Claude`, local `Ollama` (`http://localhost:11434`), or custom enterprise proxies with private API keys.
+  - **Hermes-Style Learned Skills**: Procedural memory that records reusable writing/LaTeX guidelines (`booktabs-tables`, `ams-math-equations`, `academic-citations`, etc.) with dynamic keyword trigger activation.
+  - **Community Skills Hub & 1-Click Install**: Pre-curated presets from `blader/humanizer` (strips AI-isms like "not X but Y", "let that sink in") and `K-Dense-AI/scientific-agent-skills` (rigorous empirical manuscript guidelines, figure dimensions, statistical data reporting), plus dynamic installer from any GitHub repository or raw `SKILL.md` URL.
+  - **Project Episodic Memory & Context Compactor**: Stores manuscript objectives, active chapter focus, and notation conventions per project. Automatically prunes verbose history to save 40–60% input tokens while preserving critical decision context.
+  - **Research Paper Reader**: Client-side PDF text extraction via `pdfjs-dist`, structured paper summarization (objectives, methodology, findings, conclusions), instant BibTeX extraction, and comparative analysis against author drafts.
+  - **Interactive Drawer Interface**: 5 dedicated tabs (`💬 Chat`, `🛠️ Errors`, `✍️ Writing`, `📚 Paper`, `🧠 Skills`, `⚙️ Config`) accessible directly from the topbar navigation.
 - **🔍 Global Project Search**: Find and replace across all project files (`Ctrl+Shift+F` / `Ctrl+K`).
 - **⚡ 100% Client-Side WebAssembly Compilation**: Compiles pdfLaTeX, XeLaTeX, and LuaLaTeX directly inside Web Workers.
 - **🌐 Cloudflare Worker Proxy & Edge Ready**: Preconfigured with Cloudflare Workers (`wrangler.jsonc` + `worker/index.ts`) for CORS-free TeX Live package streaming and instant edge deployment.

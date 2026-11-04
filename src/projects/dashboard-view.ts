@@ -438,8 +438,8 @@ export class DashboardView {
             <span class="bracket-corner bl"></span>
             <span class="bracket-corner br"></span>
             <div class="tactical-modal-header">
-              <span class="modal-spec-tag">[ KREDENSIAL &amp; PROFIL AKUN // IAM IDENTITY ]</span>
-              <button type="button" class="modal-close-x" id="modal-account-close" title="Tutup">✕</button>
+              <span class="modal-spec-tag">[ ${t('KREDENSIAL & PROFIL AKUN // IAM IDENTITY', 'ACCOUNT CREDENTIALS & PROFILE // IAM IDENTITY', lang)} ]</span>
+              <button type="button" class="modal-close-x" id="modal-account-close" title="${t('Tutup', 'Close', lang)}">✕</button>
             </div>
             <div class="tactical-modal-body">
               <div class="acc-meta-card" style="padding:10px 14px; background:var(--bg-secondary); border:1px solid var(--border-color); margin-bottom:14px; font-family:var(--font-mono); font-size:11px;">
@@ -447,43 +447,43 @@ export class DashboardView {
                   <span>USER ID: <code id="acc-info-id">...</code></span>
                   <span>ROLE: <span id="acc-info-role" class="role-badge">...</span></span>
                 </div>
-                <div style="color:var(--text-secondary); font-size:10px;">PROYEK ANDA TERISOLASI SECARA PENUH PADA SANDBOX PENGGUNA INI</div>
+                <div style="color:var(--text-secondary); font-size:10px;">${t('PROYEK ANDA TERISOLASI SECARA PENUH PADA SANDBOX PENGGUNA INI', 'YOUR PROJECTS ARE FULLY ISOLATED WITHIN THIS USER SANDBOX', lang)}</div>
               </div>
 
               <!-- Section 1: Change Username -->
               <div class="form-sub-section" style="border:1px solid var(--border-color); padding:12px; margin-bottom:14px; background:var(--bg-primary);">
-                <div class="sub-sec-title" style="font-family:var(--font-mono); font-size:11px; font-weight:700; color:var(--text-primary); margin-bottom:8px;">[ 1. UBAH USERNAME / OPERATOR ID ]</div>
+                <div class="sub-sec-title" style="font-family:var(--font-mono); font-size:11px; font-weight:700; color:var(--text-primary); margin-bottom:8px;">[ 1. ${t('UBAH USERNAME / OPERATOR ID', 'CHANGE USERNAME / OPERATOR ID', lang)} ]</div>
                 <div id="acc-user-msg" class="msg-box" style="display:none; padding:6px 10px; margin-bottom:8px; font-size:11px; font-family:var(--font-mono);"></div>
                 <form id="form-change-username">
                   <div class="form-field-group">
-                    <label for="acc-input-new-user" class="form-field-label">USERNAME BARU</label>
+                    <label for="acc-input-new-user" class="form-field-label">${t('USERNAME BARU', 'NEW USERNAME', lang)}</label>
                     <input type="text" id="acc-input-new-user" class="tactical-form-input" required />
                   </div>
                   <button type="submit" class="tactical-cta-btn cta-secondary" style="padding: 7px 14px; width: 100%; margin-top:6px;">
-                    <span class="cta-inner">SIMPAN USERNAME BARU</span>
+                    <span class="cta-inner">${t('SIMPAN USERNAME BARU', 'SAVE NEW USERNAME', lang)}</span>
                   </button>
                 </form>
               </div>
 
               <!-- Section 2: Change Password -->
               <div class="form-sub-section" style="border:1px solid var(--border-color); padding:12px; background:var(--bg-primary);">
-                <div class="sub-sec-title" style="font-family:var(--font-mono); font-size:11px; font-weight:700; color:var(--text-primary); margin-bottom:8px;">[ 2. UBAH PASSWORD (KATA SANDI) ]</div>
+                <div class="sub-sec-title" style="font-family:var(--font-mono); font-size:11px; font-weight:700; color:var(--text-primary); margin-bottom:8px;">[ 2. ${t('UBAH PASSWORD (KATA SANDI)', 'CHANGE PASSWORD', lang)} ]</div>
                 <div id="acc-pass-msg" class="msg-box" style="display:none; padding:6px 10px; margin-bottom:8px; font-size:11px; font-family:var(--font-mono);"></div>
                 <form id="form-change-password">
                   <div class="form-field-group">
-                    <label for="acc-input-old-pass" class="form-field-label">PASSWORD SAAT INI</label>
+                    <label for="acc-input-old-pass" class="form-field-label">${t('PASSWORD SAAT INI', 'CURRENT PASSWORD', lang)}</label>
                     <input type="password" id="acc-input-old-pass" class="tactical-form-input" required />
                   </div>
                   <div class="form-field-group">
-                    <label for="acc-input-new-pass" class="form-field-label">PASSWORD BARU (MIN 6 KARAKTER)</label>
+                    <label for="acc-input-new-pass" class="form-field-label">${t('PASSWORD BARU (MIN 6 KARAKTER)', 'NEW PASSWORD (MIN 6 CHARS)', lang)}</label>
                     <input type="password" id="acc-input-new-pass" class="tactical-form-input" required />
                   </div>
                   <div class="form-field-group">
-                    <label for="acc-input-confirm-pass" class="form-field-label">KONFIRMASI PASSWORD BARU</label>
+                    <label for="acc-input-confirm-pass" class="form-field-label">${t('KONFIRMASI PASSWORD BARU', 'CONFIRM NEW PASSWORD', lang)}</label>
                     <input type="password" id="acc-input-confirm-pass" class="tactical-form-input" required />
                   </div>
                   <button type="submit" class="tactical-cta-btn cta-orange" style="padding: 7px 14px; width: 100%; margin-top:6px;">
-                    <span class="cta-inner">GANTI PASSWORD</span>
+                    <span class="cta-inner">${t('GANTI PASSWORD', 'CHANGE PASSWORD', lang)}</span>
                   </button>
                 </form>
               </div>
@@ -499,33 +499,33 @@ export class DashboardView {
             <span class="bracket-corner bl"></span>
             <span class="bracket-corner br"></span>
             <div class="tactical-modal-header">
-              <span class="modal-spec-tag">[ NEW LITERATURE ENTRY // RESEARCH REPOSITORY ]</span>
-              <button type="button" class="modal-close-x" id="modal-paper-close" title="Tutup">✕</button>
+              <span class="modal-spec-tag">[ ${t('MASUKKAN LITERATUR BARU // RESEARCH REPOSITORY', 'NEW LITERATURE ENTRY // RESEARCH REPOSITORY', lang)} ]</span>
+              <button type="button" class="modal-close-x" id="modal-paper-close" title="${t('Tutup', 'Close', lang)}">✕</button>
             </div>
             <form id="tactical-paper-form" class="tactical-modal-body">
               <div class="form-field-group">
-                <label for="paper-input-title" class="form-field-label">PAPER TITLE</label>
+                <label for="paper-input-title" class="form-field-label">${t('JUDUL MAKALAH / PAPER', 'PAPER TITLE', lang)}</label>
                 <input type="text" id="paper-input-title" class="tactical-form-input" placeholder="e.g. Attention Is All You Need" required autofocus />
               </div>
               <div style="display:grid; grid-template-columns: 1fr 1fr; gap:10px;">
                 <div class="form-field-group">
-                  <label for="paper-input-authors" class="form-field-label">AUTHORS</label>
+                  <label for="paper-input-authors" class="form-field-label">${t('PENULIS', 'AUTHORS', lang)}</label>
                   <input type="text" id="paper-input-authors" class="tactical-form-input" placeholder="e.g. Vaswani et al." required />
                 </div>
                 <div class="form-field-group">
-                  <label for="paper-input-year" class="form-field-label">YEAR / VENUE</label>
+                  <label for="paper-input-year" class="form-field-label">${t('TAHUN / VENUE', 'YEAR / VENUE', lang)}</label>
                   <input type="text" id="paper-input-year" class="tactical-form-input" placeholder="e.g. 2026 · NeurIPS" required />
                 </div>
               </div>
               <div style="display:grid; grid-template-columns: 1fr 1fr; gap:10px;">
                 <div class="form-field-group">
-                  <label for="paper-input-doi" class="form-field-label">DOI / ARXIV LINK (OPTIONAL)</label>
+                  <label for="paper-input-doi" class="form-field-label">${t('LINK DOI / ARXIV (OPSIONAL)', 'DOI / ARXIV LINK (OPTIONAL)', lang)}</label>
                   <input type="text" id="paper-input-doi" class="tactical-form-input" placeholder="e.g. 10.48550/arXiv..." />
                 </div>
                 <div class="form-field-group">
-                  <label for="paper-input-project" class="form-field-label">LINK TO PROJECT</label>
+                  <label for="paper-input-project" class="form-field-label">${t('HUBUNGKAN KE PROYEK', 'LINK TO PROJECT', lang)}</label>
                   <select id="paper-input-project" class="tactical-form-select">
-                    <option value="">[ GLOBAL / ALL PROJECTS ]</option>
+                    <option value="">[ ${t('GLOBAL / SEMUA PROYEK', 'GLOBAL / ALL PROJECTS', lang)} ]</option>
                     ${this.projects
                       .filter((p) => !p.trashed)
                       .map((p) => `<option value="${p.id}">${escapeHtml(p.title)}</option>`)
@@ -534,12 +534,12 @@ export class DashboardView {
                 </div>
               </div>
               <div class="form-field-group">
-                <label for="paper-input-bibtex" class="form-field-label">BIBTEX CITATION</label>
+                <label for="paper-input-bibtex" class="form-field-label">${t('SITASI BIBTEX', 'BIBTEX CITATION', lang)}</label>
                 <textarea id="paper-input-bibtex" class="tactical-form-textarea" rows="4" placeholder="@article{...}" required></textarea>
               </div>
               <div class="form-actions-row">
                 <button type="submit" class="tactical-cta-btn cta-orange" style="padding: 9px 18px;">
-                  <span class="cta-inner">[ ▶ SAVE TO LIBRARY ]</span>
+                  <span class="cta-inner">[ ▶ ${t('SIMPAN KE PUSTAKA', 'SAVE TO LIBRARY', lang)} ]</span>
                 </button>
               </div>
             </form>

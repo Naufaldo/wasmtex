@@ -1,3 +1,5 @@
+import { t } from '../ui/i18n'
+
 export interface TextComment {
   id: string
   file: string
@@ -62,15 +64,20 @@ export class CommentsPanel {
     panel.className = 'comments-drawer'
     panel.innerHTML = `
       <div class="drawer-header">
-        <span class="drawer-title">💬 Document Comments</span>
+        <div class="header-title-block">
+          <span class="modal-spec-tag">[ ${t('DISKUSI & KOMENTAR // COMMENTS', 'DOCUMENT COMMENTS // REVIEW')} ]</span>
+          <span class="drawer-title">💬 ${t('Komentar Dokumen', 'Document Comments')}</span>
+        </div>
         <div style="display: flex; gap: 8px; align-items: center;">
-          <button id="add-comment-btn" class="lib-btn lib-btn-primary">+ New Comment</button>
-          <button class="modal-close-btn" id="drawer-close">&times;</button>
+          <button id="add-comment-btn" class="tactical-cta-btn cta-blue" style="padding: 5px 12px; font-size: 11px;">
+            <span class="cta-inner">+ ${t('KOMENTAR BARU', 'NEW COMMENT')}</span>
+          </button>
+          <button class="modal-close-btn" id="drawer-close" title="${t('Tutup', 'Close')}">&times;</button>
         </div>
       </div>
       <div class="drawer-filter">
-        <button id="tab-comments-active" class="drawer-filter-btn active">Active</button>
-        <button id="tab-comments-resolved" class="drawer-filter-btn">Resolved</button>
+        <button id="tab-comments-active" class="drawer-filter-btn active">${t('Aktif', 'Active')}</button>
+        <button id="tab-comments-resolved" class="drawer-filter-btn">${t('Selesai', 'Resolved')}</button>
       </div>
       <div class="drawer-content" id="comments-list"></div>
     `
@@ -117,7 +124,11 @@ export class CommentsPanel {
     const file = this.options.getActiveFile()
     const sel = this.options.getActiveSelection() || { text: 'General comment', line: 1 }
 
-    const text = prompt(`Komentar untuk "${sel.text.slice(0, 30)}..." (Baris ${sel.line}):`)
+    const promptMsg = t(
+      `Komentar untuk "${sel.text.slice(0, 30)}..." (Baris ${sel.line}):`,
+      `Comment on "${sel.text.slice(0, 30)}..." (Line ${sel.line}):`
+    )
+    const text = prompt(promptMsg)
     if (!text) return
 
     const newComment: TextComment = {
@@ -145,7 +156,11 @@ export class CommentsPanel {
     const filtered = this.comments.filter((c) => c.resolved === showResolved)
 
     if (filtered.length === 0) {
-      listEl.innerHTML = `<div class="lib-empty">Tidak ada komentar ${showResolved ? 'terselesaikan' : 'aktif'}.</div>`
+      const stateText = showResolved ? t('terselesaikan', 'resolved') : t('aktif', 'active')
+      listEl.innerHTML = `<div class="lib-empty">${t(
+        `Tidak ada komentar ${stateText}.`,
+        `No ${stateText} comments.`
+      )}</div>`
       return
     }
 
@@ -164,10 +179,10 @@ export class CommentsPanel {
           <div class="comment-actions">
             ${
               c.resolved
-                ? `<button class="lib-btn lib-btn-sm lib-btn-outline btn-reopen" data-id="${c.id}">Reopen</button>`
-                : `<button class="lib-btn lib-btn-sm lib-btn-success btn-resolve" data-id="${c.id}">✓ Resolve</button>`
+                ? `<button class="tactical-btn-action btn-reopen" style="font-size: 10px; padding: 3px 8px;" data-id="${c.id}">${t('Buka Lagi', 'Reopen')}</button>`
+                : `<button class="tactical-btn-action btn-resolve" style="font-size: 10px; padding: 3px 8px; color: #22c55e;" data-id="${c.id}">✓ ${t('Selesai', 'Resolve')}</button>`
             }
-            <button class="lib-btn lib-btn-sm lib-btn-danger btn-delete" data-id="${c.id}">Delete</button>
+            <button class="tactical-btn-action btn-delete" style="font-size: 10px; padding: 3px 8px; color: #ef4444;" data-id="${c.id}">${t('Hapus', 'Delete')}</button>
           </div>
         </div>
       `,

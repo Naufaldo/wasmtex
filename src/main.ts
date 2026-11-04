@@ -1,24 +1,28 @@
+import { getCurrentUser } from './auth/auth-store'
 import type { WasmTexOptions } from './component-types'
+import { VisualEditor } from './editor/visual-editor'
 import { configureMonacoWorkers } from './editor/workers'
 import { warmup } from './engine/warmup'
-import { defaultFileContent } from './fs/default-file-content'
-import type { SectionDef } from './lsp/types'
-import { mergeDiagnostics, type PanelDiagnostic, resolveAddFile } from './main-helpers'
-import type { AppStatus, WarmupCache } from './types'
-import { configurePdfjsWorker } from './viewer/pdf-viewer'
-import { WasmTex } from './wasmtex'
-import { VisualEditor } from './editor/visual-editor'
-import { LibraryView } from './library/library-view'
-import { SearchDialog } from './features/search-dialog'
-import { VersionHistoryDialog } from './features/version-history'
+import { AiAssistantPanel } from './features/ai-assistant-panel'
+import { ArxivExportModal } from './features/arxiv-exporter'
 import { CommentsPanel } from './features/comments-panel'
 import { ReviewManager } from './features/review-manager'
-import { DashboardView } from './projects/dashboard-view'
-import { HomeView } from './ui/home-view'
-import { getLang, t, toggleLang, type Lang } from './ui/i18n'
-import { getCurrentUser } from './auth/auth-store'
-import { type ProjectItem, getProject, saveProject } from './projects/project-store'
+import { SearchDialog } from './features/search-dialog'
+import { TikzScratchpadModal } from './features/tikz-scratchpad'
+import { VersionHistoryDialog } from './features/version-history'
+import { defaultFileContent } from './fs/default-file-content'
 import { unzipLatexProject } from './fs/unzip'
+import { WasmTexCompiler } from './headless'
+import { LibraryView } from './library/library-view'
+import type { SectionDef } from './lsp/types'
+import { mergeDiagnostics, type PanelDiagnostic, resolveAddFile } from './main-helpers'
+import { DashboardView } from './projects/dashboard-view'
+import { getProject, type ProjectItem, saveProject } from './projects/project-store'
+import type { AppStatus, WarmupCache } from './types'
+import { HomeView } from './ui/home-view'
+import { getLang, type Lang, t, toggleLang } from './ui/i18n'
+import { configurePdfjsWorker } from './viewer/pdf-viewer'
+import { WasmTex } from './wasmtex'
 import './styles.css'
 
 // Start warmup immediately — fetches TeX Live files in parallel while
@@ -45,7 +49,7 @@ const addFileButton = document.getElementById('add-file-btn') as HTMLButtonEleme
 const texliveVersionSelect = document.getElementById('texlive-version') as HTMLSelectElement
 const statusElement = document.getElementById('status') as HTMLSpanElement
 const statusDetailElement = document.getElementById('status-detail') as HTMLSpanElement
-let activeProjectId = 'default'
+const activeProjectId = 'default'
 let editorRef: WasmTex | null = null
 let visualEditorRef: VisualEditor | null = null
 let lastCompileErrors: PanelDiagnostic[] = []
@@ -154,7 +158,8 @@ function renderFileList(files: string[]): void {
   const normalized = [...new Set(files)].sort((a, b) => a.localeCompare(b))
 
   if (normalized.length === 0) {
-    fileTreeContainer.innerHTML = '<div class="file-item" style="color: var(--text-muted); font-style: italic;">No files</div>'
+    fileTreeContainer.innerHTML =
+      '<div class="file-item" style="color: var(--text-muted); font-style: italic;">No files</div>'
     return
   }
 
@@ -557,7 +562,8 @@ async function start() {
     const url = URL.createObjectURL(blob)
     const a = document.createElement('a')
     a.href = url
-    const docTitle = (document.getElementById('doc-title-input') as HTMLInputElement)?.value || 'manuscript'
+    const docTitle =
+      (document.getElementById('doc-title-input') as HTMLInputElement)?.value || 'manuscript'
     a.download = `${docTitle.trim().replace(/[^a-z0-9_-]/gi, '_')}.pdf`
     a.click()
     URL.revokeObjectURL(url)
@@ -665,7 +671,122 @@ async function start() {
       }
     },
   })
-  document.getElementById('btn-review')?.addEventListener('click', () => reviewManager.togglePanel())
+  document
+    .getElementById('btn-review')
+    ?.addEventListener('click', () => reviewManager.togglePanel())
+
+  // 5. ArXiv / Camera-Ready Package Exporter
+  const arxivModal = new ArxivExportModal({
+    getFiles: () => {
+      const map: Record<string, string | Uint8Array> = {}
+      for (const f of editor.listFiles()) {
+        const c = editor.getFile(f)
+        if (c !== null) map[f] = c
+      }
+      return map
+    },
+    getMainFile: () => activeFile || 'main.tex',
+    getLastPdf: () => latestPdfBytes,
+  })
+  document.getElementById('btn-arxiv-export')?.addEventListener('click', () => arxivModal.open())
+
+  // 6. Isolated TikZ / Figure Scratchpad
+  let figureCompiler: WasmTexCompiler | null = null
+  const tikzModal = new TikzScratchpadModal({
+    compileFigure: async (fullLatex: string) => {
+      if (!figureCompiler) {
+        figureCompiler = new WasmTexCompiler({
+          mainFile: 'figure.tex',
+          texliveUrl: `${window.location.origin}/texlive/${config.texliveVersion}/`,
+        })
+        await figureCompiler.init()
+      }
+      figureCompiler.setFile('figure.tex', fullLatex)
+      const res = await figureCompiler.compile()
+      return res.pdf ?? null
+    },
+    onInsertToDocument: (snippet: string) => {
+      const monaco = editor.getMonacoEditor()
+      const selection = monaco?.getSelection()
+      if (monaco && selection) {
+        monaco.executeEdits('tikz-insert', [
+          {
+            range: selection,
+            text: `\n\n${snippet}\n\n`,
+            forceMoveMarkers: true,
+          },
+        ])
+      } else {
+        const currentContent = (editor.getFile(activeFile) as string) || ''
+        editor.setFile(activeFile, `${currentContent}\n\n${snippet}\n\n`)
+      }
+      if (activeFile.endsWith('.tex')) {
+        const c = editor.getFile(activeFile)
+        if (typeof c === 'string') visualEditor.setLatex(c)
+      }
+      editor.compile()
+    },
+    onSaveAsFile: (filename: string, content: string) => {
+      editor.setFile(filename, content)
+      renderFileList(editor.listFiles())
+      persistActiveProject()
+    },
+  })
+  document.getElementById('btn-tikz-scratchpad')?.addEventListener('click', () => tikzModal.open())
+
+  // 7. AI Research & LaTeX Assistant Panel
+  const aiAssistantPanel = new AiAssistantPanel({
+    getEditor: () => editor,
+    getCompilerErrors: () => lastCompileErrors,
+    getProjectId: () => activeProjectId,
+    onRecompile: () => editor.compile(),
+    onInsertText: (text: string) => {
+      const monaco = editor.getMonacoEditor()
+      if (monaco) {
+        const selection = monaco.getSelection()
+        if (selection) {
+          monaco.executeEdits('ai-assistant', [
+            {
+              range: selection,
+              text,
+              forceMoveMarkers: true,
+            },
+          ])
+        } else {
+          const currentContent = (editor.getFile(activeFile) as string) || ''
+          editor.setFile(activeFile, `${currentContent}\n\n${text}\n\n`)
+        }
+      }
+      if (activeFile.endsWith('.tex')) {
+        const c = editor.getFile(activeFile)
+        if (typeof c === 'string') visualEditor.setLatex(c)
+      }
+      editor.compile()
+    },
+    onReplaceSelection: (text: string) => {
+      const monaco = editor.getMonacoEditor()
+      if (monaco) {
+        const selection = monaco.getSelection()
+        if (selection) {
+          monaco.executeEdits('ai-assistant', [
+            {
+              range: selection,
+              text,
+              forceMoveMarkers: true,
+            },
+          ])
+        }
+      }
+      if (activeFile.endsWith('.tex')) {
+        const c = editor.getFile(activeFile)
+        if (typeof c === 'string') visualEditor.setLatex(c)
+      }
+      editor.compile()
+    },
+  })
+  document
+    .getElementById('btn-ai-assistant')
+    ?.addEventListener('click', () => aiAssistantPanel.toggle())
 
   // Theme Management (Light / Dark mode toggle)
   let isDark = localStorage.getItem('wasmtex_theme') === 'dark'
@@ -755,13 +876,16 @@ async function start() {
     if (langIcon) langIcon.textContent = `🌐 ${lang.toUpperCase()}`
 
     const backBtn = document.getElementById('btn-back-dashboard')
-    if (backBtn) backBtn.innerHTML = `<span class="back-arrow">◀</span> [ ${t('DASHBOARD', 'DASHBOARD', lang)} ]`
+    if (backBtn)
+      backBtn.innerHTML = `<span class="back-arrow">◀</span> [ ${t('DASHBOARD', 'DASHBOARD', lang)} ]`
 
     const tabEditor = document.getElementById('nav-tab-editor')
-    if (tabEditor) tabEditor.textContent = `[ ${t('✍️ WORKSPACE EDITOR', '✍️ WORKSPACE EDITOR', lang)} ]`
+    if (tabEditor)
+      tabEditor.textContent = `[ ${t('✍️ WORKSPACE EDITOR', '✍️ WORKSPACE EDITOR', lang)} ]`
 
     const tabLibrary = document.getElementById('nav-tab-library')
-    if (tabLibrary) tabLibrary.textContent = `[ ${t('📚 RESEARCH LIBRARY', '📚 RESEARCH LIBRARY', lang)} ]`
+    if (tabLibrary)
+      tabLibrary.textContent = `[ ${t('📚 RESEARCH LIBRARY', '📚 RESEARCH LIBRARY', lang)} ]`
 
     const btnReview = document.getElementById('btn-review')
     if (btnReview) {
@@ -770,7 +894,8 @@ async function start() {
     }
 
     const btnHistory = document.getElementById('btn-history')
-    if (btnHistory) btnHistory.innerHTML = `<span class="icon-svg">🕒</span> ${t('HISTORY', 'HISTORY', lang)}`
+    if (btnHistory)
+      btnHistory.innerHTML = `<span class="icon-svg">🕒</span> ${t('HISTORY', 'HISTORY', lang)}`
 
     const btnRecompile = document.getElementById('recompile-btn')
     if (btnRecompile) {
@@ -786,14 +911,36 @@ async function start() {
     const btnDownloadPdf = document.getElementById('download-pdf-btn')
     if (btnDownloadPdf) btnDownloadPdf.textContent = `⬇ ${t('UNDUH PDF', 'DOWNLOAD PDF', lang)}`
 
+    const btnTikz = document.getElementById('btn-tikz-scratchpad')
+    if (btnTikz) {
+      btnTikz.innerHTML = `<span class="icon-svg">📐</span> ${t('TIKZ', 'TIKZ', lang)}`
+      btnTikz.title = t('Editor Diagram TikZ / Figure Scratchpad', 'TikZ / Figure Scratchpad (Quick Diagram Editor)', lang)
+    }
+
+    const btnArxiv = document.getElementById('btn-arxiv-export')
+    if (btnArxiv) {
+      btnArxiv.textContent = `📦 ${t('ARXIV', 'ARXIV', lang)}`
+      btnArxiv.title = t('Ekspor Paket arXiv / Camera-Ready (.zip)', 'Export arXiv / Camera-Ready Package (.zip)', lang)
+    }
+
+    const btnSearch = document.getElementById('btn-search')
+    if (btnSearch) btnSearch.title = t('Cari di Proyek (Ctrl+Shift+F)', 'Search in Project (Ctrl+Shift+F)', lang)
+
     const sidebarFilesLabel = document.querySelector('.sidebar-files-label')
-    if (sidebarFilesLabel) sidebarFilesLabel.textContent = `[ ${t('BERKAS PROYEK', 'PROJECT FILES', lang)} ]`
+    if (sidebarFilesLabel)
+      sidebarFilesLabel.textContent = `[ ${t('BERKAS PROYEK', 'PROJECT FILES', lang)} ]`
 
     const outlineHeader = document.querySelector('.outline-header')
-    if (outlineHeader) outlineHeader.textContent = `[ ${t('STRUKTUR DOKUMEN // OUTLINE', 'DOCUMENT OUTLINE', lang)} ]`
+    if (outlineHeader)
+      outlineHeader.textContent = `[ ${t('STRUKTUR DOKUMEN // OUTLINE', 'DOCUMENT OUTLINE', lang)} ]`
 
     const drawerTitle = document.querySelector('.drawer-title')
-    if (drawerTitle) drawerTitle.textContent = t('Diagnostik & Log Kompiler', 'Diagnostics & Compiler Output', lang)
+    if (drawerTitle)
+      drawerTitle.textContent = t(
+        'Diagnostik & Log Kompiler',
+        'Diagnostics & Compiler Output',
+        lang,
+      )
   }
 
   document.getElementById('btn-lang-toggle')?.addEventListener('click', () => {

@@ -1,3 +1,5 @@
+import { t } from '../ui/i18n'
+
 export interface TextSuggestion {
   id: string
   file: string
@@ -70,15 +72,20 @@ export class ReviewManager {
     panel.className = 'comments-drawer'
     panel.innerHTML = `
       <div class="drawer-header">
-        <span class="drawer-title">📝 Track Changes & Review</span>
+        <div class="header-title-block">
+          <span class="modal-spec-tag">[ ${t('LACAK PERUBAHAN & TINJAUAN // TRACK CHANGES', 'TRACK CHANGES & EDIT REVIEW')} ]</span>
+          <span class="drawer-title">📝 ${t('Lacak Perubahan & Revisi', 'Track Changes & Review')}</span>
+        </div>
         <div style="display: flex; gap: 8px; align-items: center;">
-          <button id="add-suggestion-btn" class="lib-btn lib-btn-primary">+ Propose Edit</button>
-          <button class="modal-close-btn" id="review-close">&times;</button>
+          <button id="add-suggestion-btn" class="tactical-cta-btn cta-blue" style="padding: 5px 12px; font-size: 11px;">
+            <span class="cta-inner">+ ${t('AJUKAN REVISI', 'PROPOSE EDIT')}</span>
+          </button>
+          <button class="modal-close-btn" id="review-close" title="${t('Tutup', 'Close')}">&times;</button>
         </div>
       </div>
       <div class="drawer-filter">
-        <button id="tab-suggestions-pending" class="drawer-filter-btn active">Pending</button>
-        <button id="tab-suggestions-history" class="drawer-filter-btn">History</button>
+        <button id="tab-suggestions-pending" class="drawer-filter-btn active">${t('Tertunda', 'Pending')}</button>
+        <button id="tab-suggestions-history" class="drawer-filter-btn">${t('Riwayat', 'History')}</button>
       </div>
       <div class="drawer-content" id="suggestions-list"></div>
     `
@@ -121,9 +128,9 @@ export class ReviewManager {
 
   private promptNewSuggestion(): void {
     const file = this.options.getActiveFile()
-    const orig = prompt('Teks asli yang ingin diganti:')
+    const orig = prompt(t('Teks asli yang ingin diganti:', 'Original text to replace:'))
     if (!orig) return
-    const repl = prompt('Usulan teks pengganti (revisi):')
+    const repl = prompt(t('Usulan teks pengganti (revisi):', 'Proposed replacement text:'))
     if (repl === null) return
 
     const newSug: TextSuggestion = {
@@ -152,7 +159,11 @@ export class ReviewManager {
     )
 
     if (filtered.length === 0) {
-      listEl.innerHTML = `<div class="lib-empty">Tidak ada usulan revisi ${filter === 'pending' ? 'tertunda' : 'sebelumnya'}.</div>`
+      const stateText = filter === 'pending' ? t('tertunda', 'pending') : t('riwayat', 'history')
+      listEl.innerHTML = `<div class="lib-empty">${t(
+        `Tidak ada usulan revisi ${stateText}.`,
+        `No ${stateText} suggestions.`
+      )}</div>`
       return
     }
 
@@ -172,8 +183,8 @@ export class ReviewManager {
             s.status === 'pending'
               ? `
             <div class="comment-actions">
-              <button class="lib-btn lib-btn-sm lib-btn-success btn-accept" data-id="${s.id}">✓ Accept</button>
-              <button class="lib-btn lib-btn-sm lib-btn-danger btn-reject" data-id="${s.id}">✗ Reject</button>
+              <button class="tactical-btn-action btn-accept" style="font-size: 10px; padding: 3px 8px; color: #22c55e;" data-id="${s.id}">✓ ${t('Terima', 'Accept')}</button>
+              <button class="tactical-btn-action btn-reject" style="font-size: 10px; padding: 3px 8px; color: #ef4444;" data-id="${s.id}">✗ ${t('Tolak', 'Reject')}</button>
             </div>
           `
               : ''

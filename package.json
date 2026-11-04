@@ -56,6 +56,10 @@
       "types": "./lib/syntax.d.ts",
       "import": "./lib/syntax.js"
     },
+    "./ai": {
+      "types": "./lib/ai/index.d.ts",
+      "import": "./lib/ai/index.js"
+    },
     "./style.css": "./lib/wasmtex.css",
     "./wasmtex.css": "./lib/wasmtex.css"
   },

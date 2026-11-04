@@ -1,3 +1,5 @@
+import { t } from '../ui/i18n'
+
 export interface ProjectVersion {
   id: string
   timestamp: number
@@ -104,12 +106,17 @@ export class VersionHistoryDialog {
     const overlay = document.createElement('div')
     overlay.className = 'feature-modal-overlay'
     overlay.innerHTML = `
-      <div class="version-modal">
+      <div class="version-modal tactical-modal-frame">
         <div class="modal-header">
-          <span class="modal-title">🕒 Project Version History</span>
-          <div style="display: flex; gap: 8px; align-items: center;">
-            <button id="ver-snapshot-btn" class="lib-btn lib-btn-primary">📸 Label Current Version</button>
-            <button class="modal-close-btn" id="ver-modal-close">&times;</button>
+          <div class="header-title-block">
+            <span class="modal-spec-tag">[ ${t('RIWAYAT VERSI // VERSION SNAPSHOTS', 'PROJECT VERSION HISTORY // SNAPSHOTS')} ]</span>
+            <h2 class="modal-title">🕒 ${t('Riwayat Versi Proyek', 'Project Version History')}</h2>
+          </div>
+          <div style="display: flex; gap: 10px; align-items: center;">
+            <button id="ver-snapshot-btn" class="tactical-cta-btn cta-blue" style="padding: 6px 14px;">
+              <span class="cta-inner">📸 ${t('LABELI VERSI SAAT INI', 'LABEL CURRENT VERSION')}</span>
+            </button>
+            <button class="modal-close-btn" id="ver-modal-close" title="${t('Tutup', 'Close')}">&times;</button>
           </div>
         </div>
         <div class="version-modal-body">
@@ -118,8 +125,10 @@ export class VersionHistoryDialog {
           </aside>
           <main class="version-preview-panel">
             <div class="version-preview-header">
-              <span id="ver-detail-title" class="ver-detail-title">Version Details</span>
-              <button id="ver-restore-btn" class="lib-btn lib-btn-success" style="display: none;">↺ Restore This Version</button>
+              <span id="ver-detail-title" class="ver-detail-title">${t('Detail Versi', 'Version Details')}</span>
+              <button id="ver-restore-btn" class="tactical-cta-btn cta-orange" style="display: none; padding: 6px 14px;">
+                <span class="cta-inner">↺ ${t('KEMBALIKAN KE VERSI INI', 'RESTORE THIS VERSION')}</span>
+              </button>
             </div>
             <div id="version-preview-content" class="version-preview-content"></div>
           </main>
@@ -136,7 +145,12 @@ export class VersionHistoryDialog {
     })
 
     overlay.querySelector('#ver-snapshot-btn')?.addEventListener('click', () => {
-      const label = prompt('Nama/label versi baru (contoh: "Draft Revisi Bab 2", "Pre-submission"):')
+      const label = prompt(
+        t(
+          'Nama/label versi baru (contoh: "Draft Revisi Bab 2", "Pre-submission"):',
+          'New version label (e.g. "Draft Revision Ch 2", "Pre-submission"):'
+        )
+      )
       if (label) {
         const currentFiles = this.options.getCurrentFiles()
         saveVersion(label, currentFiles, true).then(async () => {
@@ -150,10 +164,19 @@ export class VersionHistoryDialog {
 
     overlay.querySelector('#ver-restore-btn')?.addEventListener('click', () => {
       if (!this.selectedVersion) return
-      if (confirm(`Yakin ingin me-restore proyek ke versi "${this.selectedVersion.label}"? Perubahan saat ini yang belum dilabeli akan ditimpa.`)) {
+      const confirmMsg = t(
+        `Yakin ingin me-restore proyek ke versi "${this.selectedVersion.label}"? Perubahan saat ini yang belum dilabeli akan ditimpa.`,
+        `Are you sure you want to restore to version "${this.selectedVersion.label}"? Unsaved changes will be overwritten.`
+      )
+      if (confirm(confirmMsg)) {
         this.options.onRestore(this.selectedVersion.files)
         this.close()
-        alert(`Proyek berhasil dikembalikan ke versi "${this.selectedVersion.label}".`)
+        alert(
+          t(
+            `Proyek berhasil dikembalikan ke versi "${this.selectedVersion.label}".`,
+            `Project restored to version "${this.selectedVersion.label}".`
+          )
+        )
       }
     })
 
@@ -174,7 +197,10 @@ export class VersionHistoryDialog {
     if (!listEl) return
 
     if (this.versions.length === 0) {
-      listEl.innerHTML = '<div class="lib-empty">Belum ada versi yang disimpan. Klik "Label Current Version" untuk menyimpan snapshot.</div>'
+      listEl.innerHTML = `<div class="lib-empty">${t(
+        'Belum ada versi yang disimpan. Klik "Label Current Version" untuk menyimpan snapshot.',
+        'No versions saved yet. Click "Label Current Version" to save a snapshot.'
+      )}</div>`
       return
     }
 
@@ -209,9 +235,9 @@ export class VersionHistoryDialog {
     const contentEl = this.overlay.querySelector('#version-preview-content') as HTMLElement
 
     if (!this.selectedVersion) {
-      titleEl.textContent = 'Version Details'
+      titleEl.textContent = t('Detail Versi', 'Version Details')
       restoreBtn.style.display = 'none'
-      contentEl.innerHTML = '<div class="lib-empty">Pilih versi dari daftar di sebelah kiri</div>'
+      contentEl.innerHTML = `<div class="lib-empty">${t('Pilih versi dari daftar di sebelah kiri', 'Select a version from the left panel')}</div>`
       return
     }
 

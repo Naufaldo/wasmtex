@@ -1,3 +1,5 @@
+import { t } from '../ui/i18n'
+
 export interface SearchMatch {
   file: string
   line: number
@@ -29,22 +31,27 @@ export class SearchDialog {
     const overlay = document.createElement('div')
     overlay.className = 'feature-modal-overlay'
     overlay.innerHTML = `
-      <div class="search-modal">
+      <div class="search-modal tactical-modal-frame">
         <div class="modal-header">
-          <span class="modal-title">🔍 Project Search & Replace</span>
-          <button class="modal-close-btn" id="search-modal-close">&times;</button>
+          <div class="header-title-block">
+            <span class="modal-spec-tag">[ ${t('PENCARIAN PROYEK // SEARCH & REPLACE', 'PROJECT SEARCH & REPLACE // GREP')} ]</span>
+            <h2 class="modal-title">🔍 ${t('Cari & Ganti Kode', 'Project Search & Replace')}</h2>
+          </div>
+          <button class="modal-close-btn" id="search-modal-close" title="${t('Tutup', 'Close')}">&times;</button>
         </div>
         <div class="modal-body">
           <div class="search-inputs">
-            <input type="text" id="search-query" class="search-field" placeholder="Search across all files (Regex supported)..." autofocus />
-            <input type="text" id="replace-query" class="search-field" placeholder="Replace with..." />
+            <input type="text" id="search-query" class="search-field" placeholder="${t('Cari di seluruh berkas (Regex didukung)...', 'Search across all files (Regex supported)...')}" autofocus />
+            <input type="text" id="replace-query" class="search-field" placeholder="${t('Ganti dengan...', 'Replace with...')}" />
             <div class="search-options">
-              <label><input type="checkbox" id="search-match-case" /> Match Case</label>
-              <label><input type="checkbox" id="search-regex" /> Use Regex</label>
-              <button id="search-replace-btn" class="lib-btn lib-btn-primary" style="margin-left: auto;">Replace All</button>
+              <label class="search-opt-label"><input type="checkbox" id="search-match-case" /> ${t('Cocokkan Huruf Besar/Kecil', 'Match Case')}</label>
+              <label class="search-opt-label"><input type="checkbox" id="search-regex" /> ${t('Gunakan Regex', 'Use Regex')}</label>
+              <button id="search-replace-btn" class="tactical-cta-btn cta-orange" style="margin-left: auto; padding: 6px 14px;">
+                <span class="cta-inner">${t('GANTI SEMUA', 'REPLACE ALL')}</span>
+              </button>
             </div>
           </div>
-          <div class="search-results-summary" id="search-summary">Type to search...</div>
+          <div class="search-results-summary" id="search-summary">${t('Ketik untuk mulai mencari...', 'Type to search...')}</div>
           <div class="search-results-list" id="search-results"></div>
         </div>
       </div>
@@ -68,7 +75,10 @@ export class SearchDialog {
     const doSearch = () => {
       const q = searchInput.value
       if (!q) {
-        (overlay.querySelector('#search-summary') as HTMLElement).textContent = 'Type to search...'
+        (overlay.querySelector('#search-summary') as HTMLElement).textContent = t(
+          'Ketik untuk mulai mencari...',
+          'Type to search...'
+        )
         ;(overlay.querySelector('#search-results') as HTMLElement).innerHTML = ''
         return
       }
@@ -146,10 +156,14 @@ export class SearchDialog {
     const summary = this.overlay.querySelector('#search-summary') as HTMLElement
     const list = this.overlay.querySelector('#search-results') as HTMLElement
 
-    summary.textContent = `Found ${matches.length} match${matches.length === 1 ? '' : 'es'} in ${new Set(matches.map((m) => m.file)).size} file(s)`
+    const fileCount = new Set(matches.map((m) => m.file)).size
+    summary.textContent = t(
+      `Ditemukan ${matches.length} kecocokan pada ${fileCount} berkas`,
+      `Found ${matches.length} match${matches.length === 1 ? '' : 'es'} in ${fileCount} file(s)`
+    )
 
     if (matches.length === 0) {
-      list.innerHTML = '<div class="lib-empty">No results found</div>'
+      list.innerHTML = `<div class="lib-empty">${t('Tidak ada hasil yang ditemukan', 'No results found')}</div>`
       return
     }
 
@@ -159,7 +173,7 @@ export class SearchDialog {
         <div class="search-result-item" data-file="${escapeHtml(m.file)}" data-line="${m.line}">
           <div class="search-result-header">
             <span class="search-result-file">📄 ${escapeHtml(m.file)}</span>
-            <span class="search-result-line">Line ${m.line}</span>
+            <span class="search-result-line">${t('Baris', 'Line')} ${m.line}</span>
           </div>
           <div class="search-result-snippet">${escapeHtml(m.text.trim())}</div>
         </div>
@@ -198,7 +212,12 @@ export class SearchDialog {
       }
     }
 
-    alert(`Replaced matches in ${modifiedCount} file(s).`)
+    alert(
+      t(
+        `Berhasil mengganti teks di ${modifiedCount} berkas.`,
+        `Replaced matches in ${modifiedCount} file(s).`
+      )
+    )
     this.options.onRecompile?.()
   }
 }
