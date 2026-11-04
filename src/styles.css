@@ -558,6 +558,348 @@ body {
 /* ==========================================================================
    Top Application Bar (Overleaf/CorTeX Style)
    ========================================================================== */
+/* ==========================================================================
+   Compact Topbar & Desktop Menu Bar (Overleaf/Word Style)
+   ========================================================================== */
+.compact-topbar {
+  height: 42px;
+  min-height: 42px;
+  padding: 0 12px;
+  background: var(--bg-primary);
+  border-bottom: 1.5px solid var(--border-color);
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+  z-index: 50;
+  box-sizing: border-box;
+}
+
+.topbar-left-zone {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  flex: 1;
+  min-width: 0;
+}
+
+.compact-back-btn {
+  background: transparent;
+  border: 1px solid transparent;
+  color: var(--text-secondary);
+  font-family: var(--font-mono);
+  font-size: 11px;
+  font-weight: 700;
+  padding: 4px 8px;
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  gap: 4px;
+  border-radius: 0;
+  transition: all 0.15s ease;
+  white-space: nowrap;
+}
+
+.compact-back-btn:hover {
+  background: var(--bg-secondary);
+  color: var(--accent-orange);
+  border-color: var(--border-color);
+}
+
+.topbar-vsep {
+  width: 1px;
+  height: 18px;
+  background: var(--border-color);
+  opacity: 0.6;
+  flex-shrink: 0;
+}
+
+.project-title-wrapper {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  flex-shrink: 0;
+}
+
+.brand-logo-mini {
+  font-size: 14px;
+}
+
+.compact-title-input {
+  font-family: var(--font-mono);
+  font-size: 12px;
+  font-weight: 700;
+  background: transparent;
+  color: var(--text-primary);
+  border: 1px solid transparent;
+  padding: 3px 6px;
+  border-radius: 0;
+  width: 180px;
+  max-width: 240px;
+  text-overflow: ellipsis;
+  outline: none;
+  transition: all 0.15s ease;
+}
+
+.compact-title-input:hover,
+.compact-title-input:focus {
+  background: var(--bg-secondary);
+  border-color: var(--border-color);
+}
+
+/* Desktop Menu Bar (File, Edit, View, Insert, Help) */
+.desktop-menu-bar {
+  display: flex;
+  align-items: center;
+  gap: 2px;
+  position: relative;
+  flex-shrink: 0;
+}
+
+.menu-item-dropdown {
+  position: relative;
+}
+
+.menu-trigger-btn {
+  background: transparent;
+  border: 1px solid transparent;
+  font-family: var(--font-sans);
+  font-size: 12.5px;
+  font-weight: 500;
+  color: var(--text-secondary);
+  padding: 3px 8px;
+  cursor: pointer;
+  border-radius: 0;
+  transition: all 0.12s ease;
+}
+
+.menu-trigger-btn:hover,
+.menu-item-dropdown:hover .menu-trigger-btn {
+  background: var(--bg-secondary);
+  color: var(--text-primary);
+  border-color: var(--border-color);
+}
+
+.menu-dropdown-content {
+  display: none;
+  position: absolute;
+  top: 100%;
+  left: 0;
+  min-width: 220px;
+  background: var(--bg-primary);
+  border: 1.5px solid var(--border-color);
+  box-shadow: 0 10px 30px rgba(0, 0, 0, 0.4);
+  padding: 4px 0;
+  z-index: 1000;
+  flex-direction: column;
+}
+
+.menu-dropdown-content.open {
+  display: flex;
+}
+
+.dropdown-row {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  padding: 6px 14px;
+  background: transparent;
+  border: none;
+  color: var(--text-primary);
+  font-family: var(--font-sans);
+  font-size: 12px;
+  text-align: left;
+  cursor: pointer;
+  width: 100%;
+  box-sizing: border-box;
+  transition: background 0.1s ease;
+}
+
+.dropdown-row:hover {
+  background: var(--bg-tertiary);
+  color: var(--accent-orange);
+}
+
+.dropdown-row .row-icon {
+  font-size: 13px;
+  width: 18px;
+  display: inline-flex;
+  justify-content: center;
+}
+
+.dropdown-row .row-text {
+  flex: 1;
+}
+
+.dropdown-row kbd {
+  font-family: var(--font-mono);
+  font-size: 9.5px;
+  color: var(--text-muted);
+  background: var(--bg-secondary);
+  padding: 1px 4px;
+  border: 1px solid var(--border-color);
+}
+
+.dropdown-divider {
+  height: 1px;
+  background: var(--border-color);
+  margin: 4px 0;
+  opacity: 0.6;
+}
+
+/* Center Mode Segmented Control */
+.topbar-center-zone {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  flex-shrink: 0;
+}
+
+.compact-mode-toggle {
+  display: flex;
+  background: var(--bg-secondary);
+  border: 1.5px solid var(--border-color);
+  padding: 2px;
+  gap: 2px;
+}
+
+.mode-pill {
+  padding: 3px 12px;
+  font-family: var(--font-mono);
+  font-size: 11px;
+  font-weight: 700;
+  background: transparent;
+  border: none;
+  color: var(--text-muted);
+  cursor: pointer;
+  border-radius: 0;
+  transition: all 0.15s ease;
+}
+
+.mode-pill:hover {
+  color: var(--text-primary);
+}
+
+.mode-pill.active {
+  background: var(--bg-primary);
+  color: var(--accent-orange);
+  box-shadow: 0 1px 3px rgba(0, 0, 0, 0.2);
+}
+
+/* Right Fast Action Zone */
+.topbar-right-zone {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  flex-shrink: 0;
+}
+
+.compact-icon-btn {
+  background: transparent;
+  border: 1px solid var(--border-color);
+  color: var(--text-secondary);
+  width: 28px;
+  height: 28px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  cursor: pointer;
+  font-size: 13px;
+  transition: all 0.15s ease;
+  border-radius: 0;
+}
+
+.compact-icon-btn:hover {
+  background: var(--bg-secondary);
+  color: var(--accent-orange);
+}
+
+.compact-icon-btn.active {
+  background: var(--bg-secondary);
+  color: var(--accent-orange);
+  border-color: var(--accent-orange);
+}
+
+.compact-ai-btn {
+  background: var(--bg-secondary);
+  border: 1px solid var(--border-color);
+  color: var(--accent-orange);
+  font-family: var(--font-mono);
+  font-size: 11px;
+  font-weight: 700;
+  padding: 4px 10px;
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  gap: 4px;
+  border-radius: 0;
+}
+
+.compact-ai-btn:hover {
+  background: var(--bg-tertiary);
+}
+
+.compact-recompile-btn {
+  background: #15803d;
+  border: 1px solid #16a34a;
+  color: #ffffff;
+  font-family: var(--font-mono);
+  font-size: 11px;
+  font-weight: 700;
+  padding: 4px 12px;
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  gap: 5px;
+  border-radius: 0;
+  transition: background 0.15s ease;
+}
+
+.compact-recompile-btn:hover {
+  background: #16a34a;
+}
+
+.compact-pdf-btn {
+  background: var(--bg-secondary);
+  border: 1px solid var(--border-color);
+  color: var(--text-primary);
+  font-family: var(--font-mono);
+  font-size: 11px;
+  font-weight: 700;
+  padding: 4px 10px;
+  cursor: pointer;
+  border-radius: 0;
+}
+
+.compact-pdf-btn:hover {
+  border-color: var(--accent-orange);
+}
+
+/* Splitters & Collapsible Panels */
+.divider.splitter-sidebar,
+.divider.splitter-preview {
+  width: 5px;
+  cursor: col-resize;
+  background: var(--border-color);
+  flex-shrink: 0;
+  transition: background 0.15s ease;
+  position: relative;
+  z-index: 10;
+}
+
+.divider.splitter-sidebar:hover,
+.divider.splitter-sidebar:active,
+.divider.splitter-preview:hover,
+.divider.splitter-preview:active {
+  background: var(--accent-orange);
+}
+
+#file-tree-panel.collapsed,
+#preview-panel.collapsed,
+.divider.collapsed {
+  display: none !important;
+}
+
 .app-topbar {
   height: 50px;
   background: var(--bg-primary);
@@ -3889,6 +4231,28 @@ body {
   color: var(--bg-primary);
 }
 
+.topbar-settings-btn {
+  background: var(--bg-tertiary);
+  border: 1px solid var(--border-color);
+  border-radius: 0;
+  padding: 5px 10px;
+  font-family: var(--font-mono);
+  font-size: 11.5px;
+  font-weight: 700;
+  cursor: pointer;
+  color: var(--text-primary);
+  display: flex;
+  align-items: center;
+  gap: 5px;
+  letter-spacing: 0.05em;
+  transition: all 0.15s ease;
+}
+
+.topbar-settings-btn:hover {
+  background: var(--text-primary);
+  color: var(--bg-primary);
+}
+
 .topbar-divider {
   width: 1px;
   height: 20px;
@@ -4325,6 +4689,293 @@ body {
   font-size: 11px;
   font-weight: 700;
   letter-spacing: 0.05em;
+}
+
+/* ==========================================================================
+   WasmTex Studio Settings & Preferences Modal (Overleaf-Style)
+   ========================================================================== */
+.settings-modal-backdrop {
+  position: fixed;
+  inset: 0;
+  background: rgba(0, 0, 0, 0.65);
+  backdrop-filter: blur(4px);
+  z-index: 999;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 20px;
+  animation: settingsFadeIn 0.15s ease-out;
+}
+
+@keyframes settingsFadeIn {
+  from {
+    opacity: 0;
+    transform: scale(0.98);
+  }
+  to {
+    opacity: 1;
+    transform: scale(1);
+  }
+}
+
+.settings-modal-card {
+  background: var(--bg-primary);
+  border: 2px solid var(--border-color);
+  border-radius: 6px;
+  width: 740px;
+  max-width: 95vw;
+  height: 560px;
+  max-height: 90vh;
+  display: flex;
+  flex-direction: column;
+  overflow: hidden;
+  box-shadow: 0 12px 36px rgba(0, 0, 0, 0.4);
+}
+
+.settings-modal-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 12px 18px;
+  background: var(--bg-secondary);
+  border-bottom: 1.5px solid var(--border-color);
+  flex-shrink: 0;
+}
+
+.settings-modal-title {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  font-family: var(--font-mono);
+  font-size: 13px;
+  font-weight: 700;
+  color: var(--text-primary);
+  letter-spacing: 0.05em;
+}
+
+.settings-icon {
+  font-size: 15px;
+}
+
+.settings-close-btn {
+  background: transparent;
+  border: none;
+  font-size: 22px;
+  cursor: pointer;
+  color: var(--text-muted);
+  line-height: 1;
+  padding: 0 4px;
+}
+
+.settings-close-btn:hover {
+  color: var(--text-primary);
+}
+
+.settings-modal-layout {
+  display: flex;
+  flex: 1;
+  min-height: 0;
+  overflow: hidden;
+}
+
+.settings-nav-sidebar {
+  width: 210px;
+  background: var(--bg-secondary);
+  border-right: 1.5px solid var(--border-color);
+  display: flex;
+  flex-direction: column;
+  padding: 12px 8px;
+  gap: 4px;
+  flex-shrink: 0;
+  overflow-y: auto;
+}
+
+.settings-nav-item {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  padding: 10px 12px;
+  border: 1px solid transparent;
+  border-radius: 4px;
+  background: transparent;
+  color: var(--text-secondary);
+  font-family: var(--font-sans, -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif);
+  font-size: 12.5px;
+  font-weight: 600;
+  text-align: left;
+  cursor: pointer;
+  transition: all 0.12s ease;
+}
+
+.settings-nav-item:hover {
+  background: var(--bg-tertiary);
+  color: var(--text-primary);
+}
+
+.settings-nav-item.active {
+  background: var(--bg-primary);
+  border-color: var(--border-color);
+  color: var(--accent-orange, #ff6600);
+  font-weight: 700;
+  box-shadow: 0 1px 3px rgba(0, 0, 0, 0.08);
+}
+
+.settings-nav-item .nav-icon {
+  font-size: 14px;
+}
+
+.settings-tab-content {
+  flex: 1;
+  padding: 22px 26px;
+  overflow-y: auto;
+  background: var(--bg-primary);
+}
+
+.settings-section {
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+}
+
+.settings-section-title {
+  font-size: 15px;
+  font-weight: 700;
+  color: var(--text-primary);
+  margin: 0;
+  font-family: var(--font-sans, -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif);
+}
+
+.settings-section-desc {
+  font-size: 12px;
+  color: var(--text-muted);
+  margin: 0 0 8px 0;
+  line-height: 1.45;
+}
+
+.settings-row {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 16px;
+  padding: 12px 0;
+  border-bottom: 1px solid var(--border-color);
+}
+
+.settings-row:last-child {
+  border-bottom: none;
+}
+
+.settings-row-info {
+  display: flex;
+  flex-direction: column;
+  gap: 3px;
+  flex: 1;
+}
+
+.settings-label {
+  font-size: 13px;
+  font-weight: 700;
+  color: var(--text-primary);
+  cursor: pointer;
+}
+
+.settings-subdesc {
+  font-size: 11.5px;
+  color: var(--text-muted);
+  line-height: 1.35;
+}
+
+.settings-row-control {
+  flex-shrink: 0;
+}
+
+.settings-select {
+  background: var(--bg-secondary);
+  border: 1.5px solid var(--border-color);
+  color: var(--text-primary);
+  padding: 6px 12px;
+  border-radius: 4px;
+  font-family: var(--font-sans, -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif);
+  font-size: 12px;
+  font-weight: 600;
+  outline: none;
+  cursor: pointer;
+  min-width: 180px;
+}
+
+.settings-select:focus {
+  border-color: var(--accent-orange, #ff6600);
+}
+
+.settings-checkbox {
+  width: 18px;
+  height: 18px;
+  accent-color: var(--accent-orange, #ff6600);
+  cursor: pointer;
+}
+
+.settings-modal-footer {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 12px 18px;
+  background: var(--bg-secondary);
+  border-top: 1.5px solid var(--border-color);
+  flex-shrink: 0;
+}
+
+.settings-footer-right {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+}
+
+.settings-btn-save {
+  background: #0e8a16;
+  color: #ffffff;
+  border: none;
+  border-radius: 4px;
+  padding: 7px 18px;
+  font-size: 12px;
+  font-weight: 700;
+  cursor: pointer;
+  box-shadow: 0 1px 3px rgba(0, 0, 0, 0.15);
+  transition: background 0.15s ease;
+}
+
+.settings-btn-save:hover {
+  background: #15803d;
+}
+
+.settings-btn-cancel {
+  background: var(--bg-primary);
+  border: 1px solid var(--border-color);
+  color: var(--text-secondary);
+  border-radius: 4px;
+  padding: 7px 14px;
+  font-size: 12px;
+  font-weight: 600;
+  cursor: pointer;
+  transition: all 0.15s ease;
+}
+
+.settings-btn-cancel:hover {
+  color: var(--text-primary);
+  border-color: var(--text-primary);
+}
+
+.settings-btn-reset {
+  background: transparent;
+  border: none;
+  color: var(--text-muted);
+  font-size: 12px;
+  font-weight: 600;
+  cursor: pointer;
+  transition: color 0.15s ease;
+}
+
+.settings-btn-reset:hover {
+  color: #ef4444;
 }
 
 /* ==========================================================================

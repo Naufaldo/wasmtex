@@ -22,72 +22,181 @@
 
     <!-- View 2: Overleaf-style Editor Workspace -->
     <div id="view-workspace" class="app-page-view">
-      <!-- Editor Top Bar (CorTeX Tactical Compact) -->
-      <header class="app-topbar">
-        <div class="topbar-left">
-          <button id="btn-back-dashboard" class="topbar-back-btn" title="Kembali ke Dashboard">
-            <span class="back-arrow">◀</span> [ DASHBOARD ]
+      <!-- Editor Top Bar: Compact Overleaf/Word Style with Desktop Menu Bar -->
+      <header class="app-topbar compact-topbar">
+        <div class="topbar-left-zone">
+          <button id="btn-back-dashboard" class="compact-back-btn" title="Kembali ke Dashboard">
+            <span class="back-arrow">◀</span> <span class="back-text">Dashboard</span>
           </button>
-          <div class="topbar-divider"></div>
-          <span class="brand-logo-small">📐</span>
-          <input type="text" id="doc-title-input" class="doc-title-input" value="Academic Paper Manuscript" title="Klik untuk mengubah judul naskah" />
+          <div class="topbar-vsep"></div>
+          <div class="project-title-wrapper">
+            <span class="brand-logo-mini">📐</span>
+            <input type="text" id="doc-title-input" class="compact-title-input" value="Academic Paper Manuscript" title="Klik untuk mengubah judul naskah" />
+          </div>
+          <div class="topbar-vsep"></div>
+
+          <!-- Desktop Menu Bar: File, Edit, View, Insert, Help -->
+          <nav class="desktop-menu-bar" id="desktop-menu-bar">
+            <!-- File Menu -->
+            <div class="menu-item-dropdown">
+              <button class="menu-trigger-btn" id="menu-trigger-file">File</button>
+              <div class="menu-dropdown-content" id="menu-dropdown-file">
+                <button class="dropdown-row" id="menu-file-new">
+                  <span class="row-icon">📄</span> <span class="row-text">Berkas Baru...</span> <kbd>+File</kbd>
+                </button>
+                <button class="dropdown-row" id="menu-file-folder">
+                  <span class="row-icon">📁</span> <span class="row-text">Folder Baru...</span> <kbd>+Dir</kbd>
+                </button>
+                <label class="dropdown-row" style="cursor:pointer; margin:0;">
+                  <span class="row-icon">⬆️</span> <span class="row-text">Unggah Berkas / ZIP</span>
+                  <input type="file" id="menu-upload-input" style="display:none;" />
+                </label>
+                <div class="dropdown-divider"></div>
+                <button class="dropdown-row" id="menu-file-download-pdf">
+                  <span class="row-icon">⬇️</span> <span class="row-text">Unduh PDF</span>
+                </button>
+                <button class="dropdown-row" id="menu-file-arxiv">
+                  <span class="row-icon">📦</span> <span class="row-text">Ekspor Paket arXiv (.zip)</span>
+                </button>
+                <button class="dropdown-row" id="menu-file-history">
+                  <span class="row-icon">🕒</span> <span class="row-text">Riwayat Versi / Snapshot</span>
+                </button>
+                <div class="dropdown-divider"></div>
+                <button class="dropdown-row" id="menu-file-exit">
+                  <span class="row-icon">◀</span> <span class="row-text">Kembali ke Dashboard</span>
+                </button>
+              </div>
+            </div>
+
+            <!-- Edit Menu -->
+            <div class="menu-item-dropdown">
+              <button class="menu-trigger-btn" id="menu-trigger-edit">Edit</button>
+              <div class="menu-dropdown-content" id="menu-dropdown-edit">
+                <button class="dropdown-row" id="menu-edit-search">
+                  <span class="row-icon">🔍</span> <span class="row-text">Cari & Ganti (Search)...</span> <kbd>Ctrl+Shift+F</kbd>
+                </button>
+                <button class="dropdown-row" id="menu-edit-review">
+                  <span class="row-icon">📝</span> <span class="row-text">Track Changes & Review</span>
+                </button>
+                <button class="dropdown-row" id="menu-edit-comments">
+                  <span class="row-icon">💬</span> <span class="row-text">Komentar Dokumen</span>
+                </button>
+              </div>
+            </div>
+
+            <!-- View Menu -->
+            <div class="menu-item-dropdown">
+              <button class="menu-trigger-btn" id="menu-trigger-view">View</button>
+              <div class="menu-dropdown-content" id="menu-dropdown-view">
+                <button class="dropdown-row" id="menu-view-sidebar">
+                  <span class="row-icon">📁</span> <span class="row-text">Tampilkan/Sembunyikan Berkas</span>
+                </button>
+                <button class="dropdown-row" id="menu-view-preview">
+                  <span class="row-icon">👁️</span> <span class="row-text">Tampilkan/Sembunyikan Pratinjau PDF</span>
+                </button>
+                <button class="dropdown-row" id="menu-view-logs">
+                  <span class="row-icon">📄</span> <span class="row-text">Tampilkan/Sembunyikan Log Kompiler</span>
+                </button>
+                <div class="dropdown-divider"></div>
+                <button class="dropdown-row" id="menu-view-visual">
+                  <span class="row-icon">✍️</span> <span class="row-text">Editor Visual (WYSIWYG)</span>
+                </button>
+                <button class="dropdown-row" id="menu-view-code">
+                  <span class="row-icon">💻</span> <span class="row-text">Editor Kode (Monaco)</span>
+                </button>
+                <button class="dropdown-row" id="menu-view-split">
+                  <span class="row-icon">🔀</span> <span class="row-text">Editor Split (Visual + Code)</span>
+                </button>
+                <div class="dropdown-divider"></div>
+                <button class="dropdown-row" id="menu-view-library">
+                  <span class="row-icon">📚</span> <span class="row-text">Pustaka Riset / Library</span>
+                </button>
+                <button class="dropdown-row" id="menu-view-theme">
+                  <span class="row-icon" id="menu-theme-icon">🌙</span> <span class="row-text">Ganti Mode Gelap/Terang</span>
+                </button>
+              </div>
+            </div>
+
+            <!-- Insert Menu -->
+            <div class="menu-item-dropdown">
+              <button class="menu-trigger-btn" id="menu-trigger-insert">Insert</button>
+              <div class="menu-dropdown-content" id="menu-dropdown-insert">
+                <button class="dropdown-row" id="menu-insert-tikz">
+                  <span class="row-icon">📐</span> <span class="row-text">TikZ / Figure Scratchpad</span>
+                </button>
+                <button class="dropdown-row" id="menu-insert-ai">
+                  <span class="row-icon">✨</span> <span class="row-text">AI Research Assistant</span>
+                </button>
+                <div class="dropdown-divider"></div>
+                <button class="dropdown-row" id="menu-insert-eq">
+                  <span class="row-icon">∑</span> <span class="row-text">Persamaan Matematika</span>
+                </button>
+                <button class="dropdown-row" id="menu-insert-table">
+                  <span class="row-icon">📊</span> <span class="row-text">Tabel Akademik (3x3)</span>
+                </button>
+                <button class="dropdown-row" id="menu-insert-fig">
+                  <span class="row-icon">🖼️</span> <span class="row-text">Lingkungan Gambar (Figure)</span>
+                </button>
+              </div>
+            </div>
+
+            <!-- Help Menu -->
+            <div class="menu-item-dropdown">
+              <button class="menu-trigger-btn" id="menu-trigger-help">Help</button>
+              <div class="menu-dropdown-content" id="menu-dropdown-help">
+                <button class="dropdown-row" id="menu-help-lang">
+                  <span class="row-icon">🌐</span> <span class="row-text">Ganti Bahasa (ID / EN)</span>
+                </button>
+                <button class="dropdown-row" id="menu-help-about">
+                  <span class="row-icon">ℹ️</span> <span class="row-text">Tentang WasmTex Studio</span>
+                </button>
+              </div>
+            </div>
+          </nav>
         </div>
 
-        <div class="topbar-center">
-          <div class="editor-mode-toggle" id="editor-mode-toggle">
-            <button id="btn-mode-visual" class="mode-btn active" title="Visual WYSIWYG Mode">[ VISUAL ]</button>
-            <button id="btn-mode-code" class="mode-btn" title="Monaco Code Mode">[ CODE ]</button>
-            <button id="btn-mode-split" class="mode-btn" title="Split Visual & Code Mode">[ SPLIT ]</button>
+        <!-- Center: Visual / Code / Split Segmented Control -->
+        <div class="topbar-center-zone">
+          <div class="compact-mode-toggle" id="editor-mode-toggle">
+            <button id="btn-mode-visual" class="mode-pill active" title="Visual WYSIWYG Mode">Visual</button>
+            <button id="btn-mode-code" class="mode-pill" title="Monaco Code Mode">Code</button>
+            <button id="btn-mode-split" class="mode-pill" title="Split Screen Mode">Split</button>
           </div>
         </div>
 
-        <div class="topbar-actions">
-          <!-- Tactical indicators if needed, Recompile moved to PDF preview pane -->
+        <!-- Right: Fast Actions (Toggle Sidebar, Toggle Preview, AI) -->
+        <div class="topbar-right-zone">
+          <button id="btn-toggle-sidebar" class="compact-icon-btn active" title="Buka/Tutup Sidebar Berkas (Toggle)">
+            📁
+          </button>
+          <button id="btn-toggle-preview" class="compact-icon-btn active" title="Buka/Tutup Pratinjau PDF (Toggle)">
+            👁️
+          </button>
+          <button id="btn-ai-assistant" class="compact-ai-btn" title="AI Research Assistant">
+            ✨ AI
+          </button>
         </div>
       </header>
 
-      <!-- Main Workspace Views with Left Activity Bar -->
+      <!-- Main Workspace Views with Resizable Splitters -->
       <main class="app-main-view">
-        <!-- Far-Left Activity Bar (Icon Dock, 48px) -->
-        <nav class="tactical-activity-bar" id="tactical-activity-bar">
-          <div class="activity-bar-top">
-            <button id="nav-tab-editor" class="act-bar-btn active" title="Editor & Berkas Proyek (File Tree)">
-              <span class="act-icon">📁</span>
-            </button>
-            <button id="btn-search" class="act-bar-btn" title="Cari di Proyek (Ctrl+Shift+F)">
-              <span class="act-icon">🔍</span>
-            </button>
-            <button id="btn-ai-assistant" class="act-bar-btn" title="AI Research Assistant">
-              <span class="act-icon">✨</span>
-            </button>
-            <button id="btn-review" class="act-bar-btn" title="Track Changes & Review">
-              <span class="act-icon">📝</span>
-              <span id="badge-review" class="act-badge" style="display:none">0</span>
-            </button>
-            <button id="btn-comments" class="act-bar-btn" title="Komentar Dokumen">
-              <span class="act-icon">💬</span>
-              <span id="badge-comments" class="act-badge" style="display:none">0</span>
-            </button>
-            <button id="btn-tikz-scratchpad" class="act-bar-btn" title="TikZ / Figure Scratchpad (Editor Diagram Cepat)">
-              <span class="act-icon">📐</span>
-            </button>
-            <button id="btn-history" class="act-bar-btn" title="Riwayat Versi / History">
-              <span class="act-icon">🕒</span>
-            </button>
-            <div class="act-bar-divider"></div>
-            <button id="nav-tab-library" class="act-bar-btn" title="Pustaka Riset / Research Library">
-              <span class="act-icon">📚</span>
-            </button>
-          </div>
-          <div class="activity-bar-bottom">
-            <button id="btn-theme-toggle" class="act-bar-btn" title="Ganti Mode Gelap / Terang">
-              <span id="theme-icon" class="act-icon">🌙</span>
-            </button>
-            <button id="btn-lang-toggle" class="act-bar-btn" title="Ganti Bahasa (ID / EN)">
-              <span id="lang-icon" class="act-icon act-lang-text">ID</span>
-            </button>
-          </div>
-        </nav>
+        <!-- Hidden container holding legacy buttons so existing handlers never fail -->
+        <div style="display:none;" id="legacy-action-holders">
+          <button id="btn-search"></button>
+          <button id="btn-review"></button>
+          <button id="btn-comments"></button>
+          <button id="btn-history"></button>
+          <button id="btn-tikz-scratchpad"></button>
+          <button id="btn-theme-toggle"></button>
+          <button id="btn-lang-toggle"></button>
+          <button id="nav-tab-editor"></button>
+          <button id="nav-tab-library"></button>
+          <span id="badge-review">0</span>
+          <span id="badge-comments">0</span>
+          <span id="theme-icon">🌙</span>
+          <span id="lang-icon">ID</span>
+        </div>
+
         <!-- 1. Editor View -->
         <div id="view-editor" class="view-panel active">
           <!-- Tactical Brutalist Left Sidebar -->
@@ -112,7 +221,8 @@
             </div>
           </aside>
 
-          <div class="divider"></div>
+          <!-- Resizable Divider 1: Sidebar Splitter -->
+          <div class="divider splitter-sidebar" id="divider-sidebar" title="Geser untuk mengubah lebar sidebar"></div>
 
           <!-- Center Editor Area (Supports Visual, Code, and Split modes) -->
           <div id="editor-wrapper" class="editor-wrapper mode-visual">
@@ -120,7 +230,8 @@
             <div id="editor-container" class="le-editor panel"></div>
           </div>
 
-          <div class="divider"></div>
+          <!-- Resizable Divider 2: Preview Splitter -->
+          <div class="divider splitter-preview" id="divider-preview" title="Geser untuk mengubah proporsi Editor vs PDF"></div>
 
           <!-- Right PDF Preview & Overleaf-Style Compilation Pane -->
           <div id="preview-panel" class="overleaf-preview-panel le-viewer panel">

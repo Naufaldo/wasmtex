@@ -5,9 +5,18 @@ import { configureMonacoWorkers } from './editor/workers'
 import { warmup } from './engine/warmup'
 import { AiAssistantPanel } from './features/ai-assistant-panel'
 import { ArxivExportModal } from './features/arxiv-exporter'
+import { DesktopMenuBar } from './features/desktop-menu'
 import { CommentsPanel } from './features/comments-panel'
 import { ReviewManager } from './features/review-manager'
 import { SearchDialog } from './features/search-dialog'
+import {
+  type AppSettings,
+  loadSettings,
+  resolveEffectiveTheme,
+  saveSettings,
+  SettingsModal,
+  type ThemeMode,
+} from './features/settings-modal'
 import { TikzScratchpadModal } from './features/tikz-scratchpad'
 import { VersionHistoryDialog } from './features/version-history'
 import { defaultFileContent } from './fs/default-file-content'
@@ -938,26 +947,97 @@ async function start() {
     .getElementById('btn-ai-assistant')
     ?.addEventListener('click', () => aiAssistantPanel.toggle())
 
-  // Theme Management (Light / Dark mode toggle)
-  let isDark = localStorage.getItem('wasmtex_theme') === 'dark'
-  const applyTheme = (dark: boolean) => {
-    isDark = dark
-    localStorage.setItem('wasmtex_theme', dark ? 'dark' : 'light')
+  // Settings & Theme Management (Editor, Spelling, Compiler, Reference, Appearance with OS/Browser Auto)
+  let currentSettings: AppSettings = loadSettings()
+  let currentThemeSetting: ThemeMode = currentSettings.theme
+
+  const applyTheme = (theme: ThemeMode) => {
+    currentThemeSetting = theme
+    currentSettings.theme = theme
+    saveSettings(currentSettings)
+    localStorage.setItem('wasmtex_theme', theme)
+    const effective = resolveEffectiveTheme(theme)
     const app = document.getElementById('app')
     if (app) {
-      app.className = dark ? 'app-root theme-dark' : 'app-root theme-light'
+      app.className = effective === 'dark' ? 'app-root theme-dark' : 'app-root theme-light'
     }
     const themeIcon = document.getElementById('theme-icon')
-    if (themeIcon) themeIcon.textContent = dark ? '☀️' : '🌙'
+    if (themeIcon) {
+      themeIcon.textContent = theme === 'auto' ? '🖥️' : effective === 'dark' ? '☀️' : '🌙'
+      themeIcon.title = theme === 'auto' ? 'Theme: Auto (System OS)' : `Theme: ${effective}`
+    }
     const monacoGlobal = (globalThis as Record<string, unknown>).monaco as
       | { editor?: { setTheme?: (t: string) => void } }
       | undefined
-    monacoGlobal?.editor?.setTheme?.(dark ? 'vs-dark' : 'vs')
+    monacoGlobal?.editor?.setTheme?.(effective === 'dark' ? 'vs-dark' : 'vs')
   }
-  applyTheme(isDark)
+
+  // OS / Browser color scheme change listener (auto theme adaptation)
+  if (typeof window !== 'undefined' && window.matchMedia) {
+    window.matchMedia('(prefers-color-scheme: dark)').addEventListener('change', () => {
+      if (currentThemeSetting === 'auto') {
+        applyTheme('auto')
+      }
+    })
+  }
+
+  const applyAllSettings = (settings: AppSettings) => {
+    applyTheme(settings.theme)
+
+    // Update Monaco editor options
+    const monaco = editor.getMonacoEditor()
+    monaco?.updateOptions({
+      fontSize: settings.fontSize,
+      tabSize: settings.tabSize,
+      wordWrap: settings.wordWrap ? 'on' : 'off',
+      autoClosingBrackets: settings.autoCloseBrackets ? 'always' : 'never',
+      autoClosingQuotes: settings.autoCloseBrackets ? 'always' : 'never',
+    })
+
+    // Update Visual Editor font size & spellcheck
+    const visualContainer = document.getElementById('visual-editor-container')
+    if (visualContainer) {
+      visualContainer.style.fontSize = `${settings.fontSize}px`
+      visualContainer.setAttribute('spellcheck', String(settings.spellcheck))
+      if (settings.spellcheck && settings.spellcheckLang !== 'off') {
+        visualContainer.setAttribute('lang', settings.spellcheckLang.replace('_', '-'))
+      }
+    }
+
+    // Update TeX Live release selector if present
+    if (texliveVersionSelect && texliveVersionSelect.value !== settings.texliveVersion) {
+      texliveVersionSelect.value = settings.texliveVersion
+    }
+  }
+
+  applyAllSettings(currentSettings)
+
+  const settingsModal = new SettingsModal({
+    onApplySettings: (newSettings) => {
+      currentSettings = newSettings
+      applyAllSettings(newSettings)
+    },
+  })
+
+  document.getElementById('btn-open-settings')?.addEventListener('click', () => {
+    settingsModal.open()
+  })
+  document.getElementById('btn-sidebar-settings')?.addEventListener('click', () => {
+    settingsModal.open()
+  })
+
+  // Keyboard shortcut Ctrl+, or Cmd+,
+  window.addEventListener('keydown', (e) => {
+    if ((e.ctrlKey || e.metaKey) && e.key === ',') {
+      e.preventDefault()
+      settingsModal.open()
+    }
+  })
 
   document.getElementById('btn-theme-toggle')?.addEventListener('click', () => {
-    applyTheme(!isDark)
+    const nextTheme: ThemeMode =
+      currentThemeSetting === 'auto' ? 'dark' : currentThemeSetting === 'dark' ? 'light' : 'auto'
+    applyTheme(nextTheme)
   })
 
   // Overleaf Diagnostics Drawer Toggle & Controls
@@ -1177,16 +1257,22 @@ async function start() {
     onLoginSuccess: (_session) => {
       showDashboard()
     },
-    onToggleTheme: () => applyTheme(!isDark),
-    isDarkMode: () => isDark,
+    onToggleTheme: () => {
+      const currentEff = resolveEffectiveTheme(currentThemeSetting)
+      applyTheme(currentEff === 'dark' ? 'light' : 'dark')
+    },
+    isDarkMode: () => resolveEffectiveTheme(currentThemeSetting) === 'dark',
     onToggleLang: () => applyLang(getLang()),
   })
 
   const dashboardContainer = document.getElementById('dashboard-container')!
   dashboardView = new DashboardView(dashboardContainer, {
     onOpenProject: showWorkspace,
-    onToggleTheme: () => applyTheme(!isDark),
-    isDarkMode: () => isDark,
+    onToggleTheme: () => {
+      const currentEff = resolveEffectiveTheme(currentThemeSetting)
+      applyTheme(currentEff === 'dark' ? 'light' : 'dark')
+    },
+    isDarkMode: () => resolveEffectiveTheme(currentThemeSetting) === 'dark',
     onLogout: () => showHome(),
     onToggleLang: () => applyLang(getLang()),
   })
