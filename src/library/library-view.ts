@@ -2,6 +2,7 @@ import * as pdfjsLib from 'pdfjs-dist'
 import { configurePdfjsWorker, ensurePdfWorker } from '../viewer/pdf-viewer'
 import { deletePaper, getAllPapers, type ResearchPaper, savePaper } from './library-store'
 import { getLang, t } from '../ui/i18n'
+import { tacticalPrompt, tacticalConfirm, tacticalAlert } from '../ui/tactical-dialog'
 
 export interface LibraryViewOptions {
   onInsertBibtex: (bibtex: string) => void
@@ -246,8 +247,19 @@ export class LibraryView {
       this.undoLastAnnotation()
     })
 
-    toolClear?.addEventListener('click', () => {
-      if (confirm('Bersihkan semua coretan dan stabilo pada halaman ini?')) {
+    toolClear?.addEventListener('click', async () => {
+      const confirmed = await tacticalConfirm({
+        title: t('Bersihkan Coretan', 'Clear Annotations', getLang()),
+        specTag: t('PDF // ANOTASI', 'PDF // ANNOTATIONS', getLang()),
+        message: t(
+          'Bersihkan semua coretan dan stabilo pada halaman ini?',
+          'Clear all annotations and highlights on this page?',
+          getLang()
+        ),
+        confirmText: t('YA, BERSIHKAN', 'YES, CLEAR', getLang()),
+        danger: true,
+      })
+      if (confirmed) {
         delete this.pageAnnotations[this.currentPage]
         this.redrawAnnotationCanvas()
       }
@@ -268,7 +280,16 @@ export class LibraryView {
       if (!this.selectedPaper) return
       this.selectedPaper.pdfAnnotations = JSON.stringify(this.pageAnnotations)
       await savePaper(this.selectedPaper)
-      alert('✓ Seluruh coretan, catatan teks, dan stabilo berhasil disimpan ke database!')
+      await tacticalAlert({
+        title: t('Anotasi Disimpan', 'Annotations Saved', getLang()),
+        specTag: t('PDF // DATABASE', 'PDF // DATABASE', getLang()),
+        message: t(
+          '✓ Seluruh coretan, catatan teks, dan stabilo berhasil disimpan ke database!',
+          '✓ All annotations, text notes, and highlights saved to database!',
+          getLang()
+        ),
+        type: 'success',
+      })
     })
 
     prevPageBtn?.addEventListener('click', () => {
@@ -450,8 +471,15 @@ export class LibraryView {
       this.options.onInsertBibtex(bibtexVal)
     })
 
-    memoEl.querySelector('#btn-delete-paper')?.addEventListener('click', () => {
-      if (confirm(`Hapus paper "${paper.title}" dari Library?`)) {
+    memoEl.querySelector('#btn-delete-paper')?.addEventListener('click', async () => {
+      const confirmed = await tacticalConfirm({
+        title: t('Hapus Literatur', 'Delete Paper', getLang()),
+        specTag: t('LIBRARY // HAPUS PAPER', 'LIBRARY // DELETE PAPER', getLang()),
+        message: t(`Hapus paper "${paper.title}" dari Research Library?`, `Delete paper "${paper.title}" from Research Library?`, getLang()),
+        confirmText: t('YA, HAPUS', 'YES, DELETE', getLang()),
+        danger: true,
+      })
+      if (confirmed) {
         deletePaper(paper.id).then(async () => {
           this.papers = await getAllPapers()
           this.selectedPaper = this.papers[0] || null
@@ -599,12 +627,17 @@ export class LibraryView {
       }
     }
 
-    canvas.onpointerdown = (e: PointerEvent) => {
+    canvas.onpointerdown = async (e: PointerEvent) => {
       e.preventDefault()
       const pos = getPos(e)
 
       if (this.activeTool === 'text') {
-        const text = prompt('Tulis catatan pada posisi ini di PDF:')
+        const text = await tacticalPrompt({
+          title: t('Catatan PDF', 'PDF Text Note', getLang()),
+          specTag: t('PDF // CATATAN TEKS', 'PDF // TEXT NOTE', getLang()),
+          message: t('Tulis catatan pada posisi ini di PDF:', 'Write note at this position in PDF:', getLang()),
+          placeholder: 'e.g. Periksa metodologi ini',
+        })
         if (text && text.trim()) {
           this.addAnnotation({
             type: 'text',
@@ -796,17 +829,52 @@ export class LibraryView {
     }
     this.selectedPaper.bibtex = bibtexVal
 
-    savePaper(this.selectedPaper).then(() => {
-      alert('✓ Catatan analisis riset & BibTeX berhasil disimpan secara persisten!')
+    savePaper(this.selectedPaper).then(async () => {
+      await tacticalAlert({
+        title: t('Catatan Riset Disimpan', 'Research Notes Saved', getLang()),
+        specTag: t('LIBRARY // CATATAN PERSISTEN', 'LIBRARY // PERSISTENT NOTES', getLang()),
+        message: t(
+          '✓ Catatan analisis riset & BibTeX berhasil disimpan secara persisten!',
+          '✓ Research analysis notes & BibTeX saved persistently!',
+          getLang()
+        ),
+        type: 'success',
+      })
     })
   }
 
-  private promptAddPaper(): void {
-    const title = prompt('Judul Paper / Literatur Ilmiah:')
+  private async promptAddPaper(): Promise<void> {
+    const title = await tacticalPrompt({
+      title: t('Tambah Literatur Ilmiah', 'Add Research Literature', getLang()),
+      specTag: t('LIBRARY // ENTRY BARU', 'LIBRARY // NEW ENTRY', getLang()),
+      message: t('Judul Paper / Literatur Ilmiah:', 'Paper Title / Research Literature:', getLang()),
+      placeholder: 'e.g. Deep Residual Learning for Image Recognition',
+    })
     if (!title) return
-    const authors = prompt('Penulis (misal: John Doe, Jane Smith):') || ''
-    const year = prompt('Tahun Terbit (misal: 2026):') || new Date().getFullYear().toString()
-    const venue = prompt('Venue / Jurnal (misal: IEEE / Nature / CVPR / NeurIPS):') || ''
+
+    const authors =
+      (await tacticalPrompt({
+        title: t('Penulis Makalah', 'Paper Authors', getLang()),
+        specTag: t('LIBRARY // METADATA', 'LIBRARY // METADATA', getLang()),
+        message: t('Penulis (misal: He et al., John Doe, Jane Smith):', 'Authors (e.g. He et al., John Doe, Jane Smith):', getLang()),
+        placeholder: 'e.g. He, Zhang, Ren, Sun',
+      })) || ''
+
+    const year =
+      (await tacticalPrompt({
+        title: t('Tahun Terbit', 'Publication Year', getLang()),
+        specTag: t('LIBRARY // TAHUN', 'LIBRARY // YEAR', getLang()),
+        message: t('Tahun Terbit:', 'Publication Year:', getLang()),
+        defaultValue: new Date().getFullYear().toString(),
+      })) || new Date().getFullYear().toString()
+
+    const venue =
+      (await tacticalPrompt({
+        title: t('Venue / Jurnal', 'Venue / Journal', getLang()),
+        specTag: t('LIBRARY // VENUE', 'LIBRARY // VENUE', getLang()),
+        message: t('Venue / Jurnal (misal: IEEE CVPR, Nature, NeurIPS):', 'Venue / Journal (e.g. IEEE CVPR, Nature, NeurIPS):', getLang()),
+        placeholder: 'e.g. IEEE CVPR 2026',
+      })) || ''
 
     const id = title
       .toLowerCase()

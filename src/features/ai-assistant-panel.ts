@@ -19,6 +19,8 @@ import {
   upsertSkill,
 } from '../ai'
 import type { WasmTex } from '../wasmtex'
+import { tacticalAlert, tacticalConfirm } from '../ui/tactical-dialog'
+import { t } from '../ui/i18n'
 
 export interface AiAssistantPanelOptions {
   getEditor: () => WasmTex | null
@@ -706,7 +708,12 @@ export class AiAssistantPanel {
     const existing =
       cur !== null ? (typeof cur === 'string' ? cur : new TextDecoder().decode(cur)) : ''
     fs.writeFile('refs.bib', `${existing.trim()}\n\n${bibtex}\n`)
-    alert('Entri berhasil ditambahkan ke refs.bib!')
+    tacticalAlert({
+      title: 'BibTeX',
+      specTag: t('AI // BIBTEX', 'AI // BIBTEX', this.config.locale),
+      message: t('Entri berhasil ditambahkan ke refs.bib!', 'Entry successfully appended to refs.bib!', this.config.locale),
+      type: 'success',
+    })
   }
 
   private renderSkillsList(skills: Skill[]): string {
@@ -908,7 +915,7 @@ export class AiAssistantPanel {
       }
     })
 
-    container.querySelector('#ai-save-proj-mem')?.addEventListener('click', () => {
+    container.querySelector('#ai-save-proj-mem')?.addEventListener('click', async () => {
       const summary = (
         container.querySelector('#ai-mem-summary') as HTMLTextAreaElement
       ).value.trim()
@@ -916,7 +923,12 @@ export class AiAssistantPanel {
         container.querySelector('#ai-mem-topic') as HTMLInputElement
       ).value.trim()
       updateProjectMemory(projId, { summary, activeTopic })
-      alert('Memori proyek berhasil diperbarui!')
+      await tacticalAlert({
+        title: t('Memori Disimpan', 'Memory Saved', this.config.locale),
+        specTag: t('AI // MEMORI PROYEK', 'AI // PROJECT MEMORY', this.config.locale),
+        message: t('Memori proyek berhasil diperbarui!', 'Project memory updated successfully!', this.config.locale),
+        type: 'success',
+      })
     })
 
     container.querySelector('#ai-compact-btn')?.addEventListener('click', () => {
@@ -941,7 +953,7 @@ export class AiAssistantPanel {
       if (newSkillForm) newSkillForm.style.display = 'none'
     })
 
-    container.querySelector('#ai-submit-skill')?.addEventListener('click', () => {
+    container.querySelector('#ai-submit-skill')?.addEventListener('click', async () => {
       const name = (container.querySelector('#ai-new-skill-name') as HTMLInputElement).value.trim()
       const description = (
         container.querySelector('#ai-new-skill-desc') as HTMLInputElement
@@ -959,16 +971,29 @@ export class AiAssistantPanel {
         upsertSkill({ name, description, trigger, rules })
         this.renderMemoryTab(container)
       } else {
-        alert('Nama skill dan minimal satu aturan wajib diisi.')
+        await tacticalAlert({
+          title: t('Validasi Skill', 'Skill Validation', this.config.locale),
+          message: t('Nama skill dan minimal satu aturan wajib diisi.', 'Skill name and at least one rule are required.', this.config.locale),
+          type: 'warning',
+        })
       }
     })
 
     container.querySelectorAll('.ai-del-skill').forEach((btn) => {
-      btn.addEventListener('click', (e) => {
+      btn.addEventListener('click', async (e) => {
         const id = (e.currentTarget as HTMLElement).getAttribute('data-id')
-        if (id && confirm('Hapus skill ini?')) {
-          deleteSkill(id)
-          this.renderMemoryTab(container)
+        if (id) {
+          const confirmed = await tacticalConfirm({
+            title: t('Hapus Skill', 'Delete Skill', this.config.locale),
+            specTag: t('AI // PUSTAKA SKILL', 'AI // SKILLS LIBRARY', this.config.locale),
+            message: t('Hapus skill ini dari pustaka pembelajaran AI?', 'Delete this skill from AI learned skills?', this.config.locale),
+            confirmText: t('YA, HAPUS', 'YES, DELETE', this.config.locale),
+            danger: true,
+          })
+          if (confirmed) {
+            deleteSkill(id)
+            this.renderMemoryTab(container)
+          }
         }
       })
     })
